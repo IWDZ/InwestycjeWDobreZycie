@@ -1,0 +1,163 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 40px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    color: #333;
+}
+
+.modal h1 {
+    font-size: 2.5rem;
+    color: #ff2500;
+    margin-bottom: 10px;
+}
+
+.modal p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.btn-container {
+    display: flex;
+    gap: 15px;
+    flex-direction: column;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-create {
+    background: #ff3000;
+    color: #fff;
+}
+
+.btn-create:hover {
+    background: #ff2500;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+}
+
+.btn-join {
+    background: #e8e8e8;
+    color: #ff2500;
+}
+
+.btn-join:hover {
+    background: #d0d0d0;
+    transform: translateY(-2px);
+}
+
+.players-info {
+    background: #f5f5f5;
+    color: #333;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.players-info span {
+    color: #ff3500;
+    font-size: 1.3rem;
+}
+
+.dialog-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialog-overlay.active {
+    display: flex;
+}
+
+.dialog-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.dialog-box h2 {
+    color: #ff2500;
+    margin-bottom: 20px;
+}
+
+.dialog-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border 0.3s;
+}
+
+.dialog-box input:focus {
+    outline: none;
+    border-color: #ff2500;
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.dialog-buttons button {
+    flex: 1;
+}
+
+.btn-confirm {
+    background: #ff2500;
+    color: #fff;
+}
+
+.btn-confirm:hover {
+    background: #ff3500;
+}
+
+.btn-cancel {
+    background: #ddd;
+    color: #333;
+}
+
+.btn-cancel:hover {
+    background: #bbb;
+}

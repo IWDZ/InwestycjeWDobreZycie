@@ -1,11 +1,12 @@
 import { useState } from 'react'
-//import './style/lobby.css'
+import './style/lobby.css'
+import "./services/socket.js"
 
 export default function App() {
   const [createOpen, setCreateOpen] = useState(false)
   const [joinOpen, setJoinOpen] = useState(false)
   const [gameName, setGameName] = useState('')
-  const [maxPlayers, setMaxPlayers] = useState(4)
+  const [maxPlayers, setMaxPlayers] = useState(2)
   const [joinCode, setJoinCode] = useState('')
 
   return (
@@ -32,9 +33,9 @@ export default function App() {
             />
             <input
               type="number"
-              placeholder="Ilość graczy"
+              placeholder="Ilość graczy (2-6)"
               min={2}
-              max={10}
+              max={6}
               value={maxPlayers}
               onChange={e => setMaxPlayers(e.target.value)}
             />
