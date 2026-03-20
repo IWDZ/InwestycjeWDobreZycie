@@ -1,24 +1,60 @@
 import { useState } from 'react'
 import { RoomService } from './RoomService';
+import { RoomManager } from '../services/RoomManager';
+
+import { errorNotif } from "../App";
+
+export const roomManager = new RoomManager();
 
 export function LobbyService() {
   const [createOpen, setCreateOpen] = useState(false)
+  const [createRoomButtonActive, setCreateRoomButtonActive] = useState(true);
+  const [joinRoomButtonActive, setJoinRoomButtonActive] = useState(true);
   const [joinOpen, setJoinOpen] = useState(false)
   const [roomStatusOpen, setRoomStatusOpen] = useState(false);
-  const [gameName, setGameName] = useState('')
+  const [username, setUsername] = useState('')
   const [maxPlayers, setMaxPlayers] = useState(2)
   const [joinCode, setJoinCode] = useState('')
+  const [modalOpen, setModalOpen] = useState(true);
+
+  async function createRoom() {
+    setCreateRoomButtonActive(false);
+    const result = await roomManager.createRoom(username, maxPlayers);
+    if (result.ok) {
+      setRoomStatusOpen(true);
+      setCreateOpen(false);
+      setModalOpen(false);
+    } else {
+      console.error("Wystąpił błąd w tworzeniu pokoju: " + result.error + "\n");
+      errorNotif.current?.show(result.error)
+      setCreateRoomButtonActive(true);
+    }
+  }
+
+  async function joinRoom() {
+    setJoinRoomButtonActive(false);
+    const result = await roomManager.joinRoom(username, joinCode);
+    if (result.ok) {
+      setRoomStatusOpen(true);
+      setJoinOpen(false);
+      setModalOpen(false);
+    } else {
+      console.error("Wystąpił błąd w dołączaniu do pokoju: " + result.error + "\n");
+      errorNotif.current?.show(result.error)
+      setJoinRoomButtonActive(true);
+    }
+  }
 
   return (
     <>
-      <div className="modal">
+      {modalOpen && (<div className="modal">
         <h1>Gra</h1>
         <p>Dołącz do gry lub stwórz nową rozgrywkę</p>
         <div className="btn-container">
           <button className="btn-create" onClick={() => setCreateOpen(true)}>Stwórz grę</button>
           <button className="btn-join" onClick={() => setJoinOpen(true)}>Dołącz do gry</button>
         </div>
-      </div>
+      </div>)}
 
       {createOpen && (
         <div className="dialog-overlay active">
@@ -26,10 +62,10 @@ export function LobbyService() {
             <h2>Stwórz nową grę</h2>
             <input
               type="text"
-              placeholder="Nazwa gry"
-              maxLength={30}
-              value={gameName}
-              onChange={e => setGameName(e.target.value)}
+              placeholder="Imie gracza"
+              maxLength={20}
+              value={username}
+              onChange={e => setUsername(e.target.value)}
             />
             <input
               type="number"
@@ -40,11 +76,10 @@ export function LobbyService() {
               onChange={e => setMaxPlayers(Number(e.target.value))}
             />
             <div className="dialog-buttons">
-              <button className="btn-confirm">Stwórz</button>
-              <button className="btn-cancel" onClick={() => {
-                setRoomStatusOpen(true);
-                setCreateOpen(false)
-              }}>Anuluj</button>
+              <button className="btn-confirm"
+                disabled={!createRoomButtonActive}
+                onClick={async () => await createRoom()}>  {createRoomButtonActive ? "Stwórz" : "Tworzenie..."}</button>
+              <button className="btn-cancel" onClick={() => setCreateOpen(false) }>Anuluj</button>
             </div>
           </div>
         </div>
@@ -59,13 +94,23 @@ export function LobbyService() {
             <h2>Dołącz do gry</h2>
             <input
               type="text"
+              placeholder="Imie gracza"
+              maxLength={20}
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+            />
+            <input
+              type="text"
               placeholder="Kod gry"
               maxLength={10}
               value={joinCode}
               onChange={e => setJoinCode(e.target.value)}
             />
             <div className="dialog-buttons">
-              <button className="btn-confirm">Dołącz</button>
+              <button className="btn-confirm"
+              disabled={!joinRoomButtonActive}
+              onClick={async () => await joinRoom()}
+              >{joinRoomButtonActive ? "Dołącz" : "Dołączanie"}</button>
               <button className="btn-cancel" style={{ width: '100%' }} onClick={() => setJoinOpen(false)}>Zamknij</button>
             </div>
           </div>
