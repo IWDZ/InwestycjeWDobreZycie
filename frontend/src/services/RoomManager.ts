@@ -42,8 +42,8 @@ export class RoomManager {
                 this.roomId = undefined;
                 this.playerList = [];
                 this.onRoomLeft?.();
+                showError("Host wyszedl z pokoju.");
             }
-            showError("Host wyszedl z pokoju.");
         });
     }
 
