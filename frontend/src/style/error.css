@@ -1,54 +1,84 @@
-
 .error-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 99999;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
 }
 
 .error-modal {
-    z-index: 100000;
-    background-color: #fff;
-    display: flex;
-    width: 100%;
-    max-width: 460px;
-    border: 1px solid #6d6d6d;
-    border-radius: 15px;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    flex-direction: column;
-    overflow: hidden;
-    text-align: center;
+  z-index: 100000;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  max-width: 460px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  text-align: center;
 }
 
 .error-modal-header {
-    padding: "1rem 1.25rem";
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #fafafa;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fafafa;
+  border-bottom: 1px solid #eee;
 }
 
 .error-modal-header-text {
-    margin-left: 15px;
-    font-size: 24px;
-    font-weight: 500;
-    color: #791F1F
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #791f1f;
+}
+
+.error-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.error-modal-close:hover {
+  color: #ff2500;
 }
 
 .error-modal-body {
-    padding: 1.5rem;
-    color: #791F1F;
+  padding: 1.75rem 1.5rem;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.error-modal-footer {
+  padding: 0 1.5rem 1.25rem;
 }
 
 .error-modal-button {
-    padding: 9px;
-    width: 80%;
-    align-self: center;
-    background-color: #E24B4A;
-    color: white;
-    margin-bottom: 15px;
+  width: 100%;
+  padding: 12px;
+  background: #ff2500;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-modal-button:hover {
+  background: #ff3500;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
 }
