@@ -8,7 +8,7 @@ export const ErrorNotif = forwardRef<ErrorNotifRef>((_, ref) => {
     const [message, setMessage] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => ({
-        show: (msg: string) => setMessage(msg)
+        show: (msg: string) => setMessage(msg),
     }));
 
     if (!message) return null;
@@ -19,12 +19,15 @@ export const ErrorNotif = forwardRef<ErrorNotifRef>((_, ref) => {
             <div className="error-modal">
                 <div className="error-modal-header">
                     <p className="error-modal-header-text">Wystąpił błąd</p>
-                    <button onClick={() => setMessage(null)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#A32D2D", fontSize: 18, lineHeight: 1 }}>×</button>
+                    <button className="error-modal-close" onClick={() => setMessage(null)}>×</button>
                 </div>
                 <div className="error-modal-body">
                     <p>{message}</p>
                 </div>
-                <button className="error-modal-button" onClick={() => setMessage(null)}>OK</button>
-            </div></>
+                <div className="error-modal-footer">
+                    <button className="error-modal-button" onClick={() => setMessage(null)}>OK</button>
+                </div>
+            </div>
+        </>
     );
 });

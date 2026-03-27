@@ -11,115 +11,162 @@ export class Player {
     }
 }
 
-const DEBUG = true;
-
 export class RoomManager {
     public isInRoom: boolean;
     public isHost: boolean;
     public roomId: string | undefined;
     public playerList: Array<Player>;
+
     onRoomJoined?: () => void;
     onRoomLeft?: () => void;
-
 
     constructor() {
         this.isInRoom = false;
         this.isHost = false;
         this.playerList = [];
+
+        ws.socket.on("player_joined", (data: { players: string[] }) => {
+            this.syncPlayers(data.players);
+            this.onRoomJoined?.();
+        });
+
+        ws.socket.on("host_left", () => {
+            this.isInRoom = false;
+            this.isHost = false;
+            this.roomId = undefined;
+            this.playerList = [];
+            this.onRoomLeft?.();
+        });
     }
 
     public async createRoom(username: string, playerCount: number): Promise<Result<void>> {
         if (playerCount > 6 || playerCount < 2) {
             return Err("Niepoprawna ilosc graczy");
         }
-
         if (username.length > 20 || username.length < 3) {
             return Err("Niepoprawny username");
         }
 
-        if (!DEBUG) {
-            const response = await ws.request("create_room", { username: username, playersAmount: playerCount });
-            console.log(response);
+        const result = await this.request<{ gameCode: string; players: string[] }>(
+            "create_game",
+            "game_created",
+            { username, playersAmount: playerCount }
+        );
 
-            if (!response.ok) {
-                return Err(response.error)
-            }
+        if (!result.ok) return Err(result.error);
 
-            this.roomId = (response.value as any).gameCode;
-        } else {
-            this.roomId = "temp"
-        }
+        const { gameCode, players } = result.value;
 
-        // Ws request do websocketow i potem stworz z tego pokoj
-
+        this.roomId = gameCode;
         this.isHost = true;
         this.isInRoom = true;
+        this.playerList = players.map(
+            (name) => new Player(name, name === username)
+        );
         this.onRoomJoined?.();
-        this.addPlayer(new Player(username, true))
 
-        return Ok(undefined)
+        return Ok(undefined);
     }
 
     public async joinRoom(username: string, roomId: string): Promise<Result<void>> {
-        if (roomId.length == 0) {
-            return Err("Zly kod pokoju")
+        if (roomId.length === 0) {
+            return Err("Zly kod pokoju");
         }
         if (username.length > 20 || username.length < 3) {
             return Err("Niepoprawny username");
         }
 
-        if (!DEBUG) {
-            const response = await ws.request("join_game", { username: username, gameCode: roomId });
-            console.log(response);
+        const result = await this.request<{ host: string; gameCode: string; players: string[] }>(
+            "join_game",
+            "joined",
+            { username, gameCode: roomId }
+        );
 
-            if (!response.ok) {
-                return Err(response.error)
-            }
-        }
+        if (!result.ok) return Err(result.error);
 
+        const { host, gameCode, players } = result.value;
+
+        this.roomId = gameCode;
         this.isInRoom = true;
+        this.isHost = false;
+        this.playerList = players.map(
+            (name) => new Player(name, name === host)
+        );
         this.onRoomJoined?.();
-        this.roomId = roomId;
-        this.addPlayer(new Player(username, false))
 
-        return Ok(undefined)
+        return Ok(undefined);
     }
 
     public async leaveRoom(): Promise<Result<void>> {
         if (!this.roomId || !this.isInRoom) {
-            return Err("Nie jestes w pokoju")
+            return Err("Nie jestes w pokoju");
         }
 
-        if (!DEBUG) {
-            const response = await ws.request("leave_game", {gameCode: this.roomId});
+        const result = await this.request<void>("leave_game", "left", this.roomId);
 
-            if (!response.ok) {
-                return Err(response.error)
-            }
-        }
+        if (!result.ok) return Err(result.error);
 
         this.isInRoom = false;
+        this.isHost = false;
         this.roomId = undefined;
-        this.onRoomLeft?.();
         this.playerList = [];
+        this.onRoomLeft?.();
 
-        return Ok(undefined)
+        return Ok(undefined);
     }
 
     public getPlayers(): Array<Player> {
-        return this.playerList
+        return this.playerList;
     }
 
     public addPlayer(player: Player): void {
         this.playerList.push(player);
     }
 
-    public removePlayer(playerName: string) {
-        let player = this.playerList.find((p) => p.name === playerName);
-        if (!player) {
+    public removePlayer(playerName: string): void {
+        const exists = this.playerList.find((p) => p.name === playerName);
+        if (!exists) {
             console.warn(`Gracz o nazwie ${playerName} nie istnieje`);
             return;
         }
-        this.playerList = this.playerList.filter(p => p.name !== playerName);
+        this.playerList = this.playerList.filter((p) => p.name !== playerName);
+    }
+
+    private syncPlayers(usernames: string[]): void {
+        const currentHost = this.playerList.find((p) => p.isHost)?.name;
+        this.playerList = usernames.map(
+            (name) => new Player(name, name === currentHost)
+        );
+    }
+
+    private request<TRes>(event: string, responseEvent: string, data: unknown): Promise<Result<TRes>> {
+        return new Promise((resolve) => {
+            if (!ws.isConnected()) ws.connect();
+
+            const cleanup = () => {
+                clearTimeout(timeout);
+                ws.socket.off("error", onError);
+                ws.socket.off(responseEvent, onResponse);
+            };
+
+            const onError = (msg: string) => {
+                cleanup();
+                resolve(Err(msg));
+            };
+
+            const onResponse = (response: TRes) => {
+                cleanup();
+                resolve(Ok(response));
+            };
+
+            const timeout = setTimeout(() => {
+                cleanup();
+                resolve(Err(`Zbyt długie oczekiwanie: ${event}`));
+            }, 5000);
+
+            ws.socket.once("error", onError);
+            ws.socket.once(responseEvent, onResponse);
+            ws.socket.emit(event, data);
+        });
     }
 }

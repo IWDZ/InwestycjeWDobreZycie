@@ -20,7 +20,7 @@ function leaveGame(io, socket, gameCode) {
 
     if (game.host.socketId === socket.id && !game.started) {
         socket.emit("left");
-        games.players.forEach(player => io.to(player.socketId).emit("host_left"));
+        game.players.forEach(player => io.to(player.socketId).emit("host_left"));
         games.delete(gameCode);
         return;
     }
@@ -29,7 +29,7 @@ function leaveGame(io, socket, gameCode) {
 
     const usernames = game.players.map(player => player.username);
 
-    games.players.forEach(player => {
+    game.players.forEach(player => {
         io.to(player.socketId).emit("player_left", {
             players: usernames
         });
