@@ -6,6 +6,10 @@ import { errorNotif } from "../App";
 
 export const roomManager = new RoomManager();
 
+export function showError(message: string) {
+  errorNotif.current?.show(message);
+}
+
 export function LobbyService() {
   const [createOpen, setCreateOpen] = useState(false)
   const [createRoomButtonActive, setCreateRoomButtonActive] = useState(true);
@@ -16,6 +20,13 @@ export function LobbyService() {
   const [maxPlayers, setMaxPlayers] = useState(2)
   const [joinCode, setJoinCode] = useState('')
   const [modalOpen, setModalOpen] = useState(true);
+  
+  function leaveRoom() {
+    setModalOpen(true);
+    setRoomStatusOpen(false);
+    setJoinRoomButtonActive(true);
+    setCreateRoomButtonActive(true);
+  }
 
   async function createRoom() {
     setCreateRoomButtonActive(false);
@@ -26,7 +37,7 @@ export function LobbyService() {
       setModalOpen(false);
     } else {
       console.error("Wystąpił błąd w tworzeniu pokoju: " + result.error + "\n");
-      errorNotif.current?.show(result.error)
+      showError(result.error)
       setCreateRoomButtonActive(true);
     }
   }
@@ -40,7 +51,7 @@ export function LobbyService() {
       setModalOpen(false);
     } else {
       console.error("Wystąpił błąd w dołączaniu do pokoju: " + result.error + "\n");
-      errorNotif.current?.show(result.error)
+      showError(result.error)
       setJoinRoomButtonActive(true);
     }
   }
@@ -86,7 +97,7 @@ export function LobbyService() {
       )}
 
       {roomStatusOpen && (
-        <RoomService></RoomService>)}
+        <RoomService onLeave={leaveRoom}></RoomService>)}
 
       {joinOpen && (
         <div className="dialog-overlay active">

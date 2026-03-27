@@ -18,6 +18,9 @@ export class RoomManager {
     public isHost: boolean;
     public roomId: string | undefined;
     public playerList: Array<Player>;
+    onRoomJoined?: () => void;
+    onRoomLeft?: () => void;
+
 
     constructor() {
         this.isInRoom = false;
@@ -51,10 +54,16 @@ export class RoomManager {
 
         this.isHost = true;
         this.isInRoom = true;
+        this.onRoomJoined?.();
+        this.addPlayer(new Player(username, true))
+
         return Ok(undefined)
     }
 
     public async joinRoom(username: string, roomId: string): Promise<Result<void>> {
+        if (roomId.length == 0) {
+            return Err("Zly kod pokoju")
+        }
         if (username.length > 20 || username.length < 3) {
             return Err("Niepoprawny username");
         }
@@ -69,8 +78,36 @@ export class RoomManager {
         }
 
         this.isInRoom = true;
+        this.onRoomJoined?.();
         this.roomId = roomId;
+        this.addPlayer(new Player(username, false))
+
         return Ok(undefined)
+    }
+
+    public async leaveRoom(): Promise<Result<void>> {
+        if (!this.roomId || !this.isInRoom) {
+            return Err("Nie jestes w pokoju")
+        }
+
+        if (!DEBUG) {
+            const response = await ws.request("leave_game", {gameCode: this.roomId});
+
+            if (!response.ok) {
+                return Err(response.error)
+            }
+        }
+
+        this.isInRoom = false;
+        this.roomId = undefined;
+        this.onRoomLeft?.();
+        this.playerList = [];
+
+        return Ok(undefined)
+    }
+
+    public getPlayers(): Array<Player> {
+        return this.playerList
     }
 
     public addPlayer(player: Player): void {

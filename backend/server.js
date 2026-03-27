@@ -1,6 +1,6 @@
 import http from 'http';
 import { Server } from 'socket.io';
-import { handleConnection } from './sockets/handler.js';
+import connectionHandler from './sockets/connectionHandler.js';
 
 const server = http.createServer();
 
@@ -11,7 +11,7 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-    handleConnection(socket);
+    connectionHandler(io, socket);
 });
 
 server.listen(3000, () => {

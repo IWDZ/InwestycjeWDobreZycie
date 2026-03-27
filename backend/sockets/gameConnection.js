@@ -1,9 +1,14 @@
+import leaveGame from "../exports/leaveGame.js";
 import { gameCodeCharacters, gameCodeLength, games, maxPlayers } from "../gameStorage.js";
 
-export function gameConnection(socket) {
+function gameConnection(io, socket) {
 
     socket.on("create_game", (data) => {
-        const [username, playersAmount] = data;
+        if (typeof data !== "object") {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+        const {username, playersAmount} = data;
         if (typeof username !== "string" || typeof playersAmount !== "number" ||
             (playersAmount < 2 || playersAmount > maxPlayers)) {
             socket.emit("error", "Invalid data");
@@ -42,7 +47,11 @@ export function gameConnection(socket) {
     });
 
     socket.on("join_game", (data) => {
-        const [username, gameCode] = data;
+        if (typeof data !== "object") {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+        const {username, gameCode} = data;
         if (typeof username !== "string" || typeof gameCode !== "string") {
             socket.emit("error", "Invalid data");
             return;
@@ -102,40 +111,8 @@ export function gameConnection(socket) {
     });
 
     socket.on("leave_game", gameCode => {
-        if (typeof gameCode !== "string") {
-            socket.emit("error", "Invalid data");
-            return;
-        }
-
-        if (!games.has(gameCode)) {
-            socket.emit("error", "Game Not Found");
-            return;
-        }
-
-        const game = games.get(gameCode);
-        const isPlayerInGame = game.players.some(player => player.socketId === socket.id);
-        if (!isPlayerInGame) {
-            socket.emit("error", "Player not in the game");
-            return;
-        }
-
-        if (game.host.socketId === socket.id && !game.started) {
-            socket.emit("left");
-            games.players.forEach(player => io.to(player.socketId).emit("host_left"));
-            games.delete(gameCode);
-            return;
-        }
-
-        game.players = game.players.filter(player => player.socketId !== socket.id);
-
-        const usernames = game.players.map(player => player.username);
-
-        games.players.forEach(player => {
-            io.to(player.socketId).emit("player_left", {
-                players: usernames
-            });
-        });
-
-        socket.emit("left");
+        leaveGame(io, socket, gameCode);
     });
 }
+
+export default gameConnection;
