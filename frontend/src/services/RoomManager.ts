@@ -1,3 +1,4 @@
+import { showError } from "../components/LobbyService";
 import { Err, Ok, Result } from "./Utilities";
 import { ws } from "./WebsocketManager";
 
@@ -30,12 +31,19 @@ export class RoomManager {
             this.onRoomJoined?.();
         });
 
+        ws.socket.on("player_left", (data: { players: string[]}) => {
+            this.syncPlayers(data.players);
+        })
+
         ws.socket.on("host_left", () => {
-            this.isInRoom = false;
-            this.isHost = false;
-            this.roomId = undefined;
-            this.playerList = [];
-            this.onRoomLeft?.();
+            if (!this.isHost) {
+                this.isInRoom = false;
+                this.isHost = false;
+                this.roomId = undefined;
+                this.playerList = [];
+                this.onRoomLeft?.();
+            }
+            showError("Host wyszedl z pokoju.");
         });
     }
 

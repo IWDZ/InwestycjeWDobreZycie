@@ -35,6 +35,7 @@ export function RoomService({ onLeave }: RoomServiceProps) {
         roomManager.onRoomLeft = () => {
             setIsInRoom(false);
             setPlayers([]);
+            onLeave();
         };
     }, []);
 
