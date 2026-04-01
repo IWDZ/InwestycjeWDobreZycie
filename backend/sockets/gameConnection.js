@@ -1,5 +1,5 @@
 import leaveGame from "../exports/leaveGame.js";
-import { gameCodeCharacters, gameCodeLength, games, maxPlayers } from "../gameStorage.js";
+import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_PLAYERS } from "../gameStorage.js";
 
 function gameConnection(io, socket) {
 
@@ -10,20 +10,20 @@ function gameConnection(io, socket) {
         }
         const {username, playersAmount} = data;
         if (typeof username !== "string" || typeof playersAmount !== "number" ||
-            (playersAmount < 2 || playersAmount > maxPlayers)) {
+            (playersAmount < 2 || playersAmount > MAX_PLAYERS)) {
             socket.emit("error", "Invalid data");
             return;
         }
 
         let gameCode = "";
         while (gameCode === ""){
-            for (let i = 0; i < gameCodeLength; i++) {
-                gameCode += gameCodeCharacters[Math.floor(Math.random() * gameCodeCharacters.length)];
+            for (let i = 0; i < GAME_CODE_LENGTH; i++) {
+                gameCode += GAME_CODE_CHARACTERS[Math.floor(Math.random() * GAME_CODE_CHARACTERS.length)];
             }
-            if (games.has(gameCode)) gameCode = "";
+            if (GAMES.has(gameCode)) gameCode = "";
         }
 
-        games.set(gameCode,
+        GAMES.set(gameCode,
             {
                 host: {
                     username: username,
@@ -39,7 +39,7 @@ function gameConnection(io, socket) {
                 started: false
             }
         );
-        console.log(`Game created with code "${gameCode}": \n${games.get(gameCode)}`);
+        console.log(`Game created with code "${gameCode}": \n${GAMES.get(gameCode)}`);
         socket.emit("game_created", {
             gameCode: gameCode,
             players: [username]
@@ -57,18 +57,18 @@ function gameConnection(io, socket) {
             return;
         }
 
-        if (!games.has(gameCode)) {
+        if (!GAMES.has(gameCode)) {
             socket.emit("error", "Game Not Found");
             return;
         }
 
-        let game = [...games.values()].find(game => game.players.some(player => player.socketId === socket.id));
+        let game = [...GAMES.values()].find(game => game.players.some(player => player.socketId === socket.id));
         if (game) {
             socket.emit("error", "Player already in a game");
             return;
         }
 
-        game = games.get(gameCode);
+        game = GAMES.get(gameCode);
         
         const players = game.players;
 
