@@ -20,6 +20,7 @@ export class RoomManager {
 
     onRoomJoined?: () => void;
     onRoomLeft?: () => void;
+    onPlayersChanged: () => void = () => {};
 
     constructor() {
         this.isInRoom = false;
@@ -32,6 +33,8 @@ export class RoomManager {
         });
 
         ws.socket.on("player_left", (data: { players: string[]}) => {
+            showError("player left");
+            console.log(data.players);
             this.syncPlayers(data.players);
         })
 
@@ -123,6 +126,20 @@ export class RoomManager {
         return Ok(undefined);
     }
 
+    public async startGame(): Promise<Result<void>> {
+        if (!this.roomId || !this.isInRoom) {
+            return Err("Nie jestes w pokoju");
+        }
+
+        if (!this.isHost) {
+            return Err("Nie jestes hostem")
+        }
+
+        // To Do - Add connection to backend
+
+        return Ok(undefined)
+    }
+
     public getPlayers(): Array<Player> {
         return this.playerList;
     }
@@ -145,6 +162,7 @@ export class RoomManager {
         this.playerList = usernames.map(
             (name) => new Player(name, name === currentHost)
         );
+        this.onPlayersChanged();
     }
 
     private request<TRes>(event: string, responseEvent: string, data: unknown): Promise<Result<TRes>> {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { roomManager, showError } from "./LobbyService";
 
 interface RoomServiceProps {
@@ -37,6 +37,9 @@ export function RoomService({ onLeave }: RoomServiceProps) {
             setPlayers([]);
             onLeave();
         };
+        roomManager.onPlayersChanged = () => {
+            setPlayers(roomManager.getPlayers());
+        }
     }, []);
 
     const playerSlots = Array.from({ length: 6 }, (_, i) => players[i] ?? null);
