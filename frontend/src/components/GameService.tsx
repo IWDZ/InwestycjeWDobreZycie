@@ -1,9 +1,12 @@
 import { useState } from "react"
+import { createPortal } from 'react-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
     faHammer, faMap, faChartBar, faUsers,
     faShop
 } from '@fortawesome/free-solid-svg-icons'
+import { BuildPanel } from "./gamePanels/BuildPanel";
+import { getMaterialColor, getMaterialName, Materials } from "../services/game/statics/Materials";
 
 const TABS: { id: string; label: string; icon: any }[] = [
     { id: 'build', label: 'Buduj', icon: faHammer },
@@ -12,6 +15,10 @@ const TABS: { id: string; label: string; icon: any }[] = [
     { id: 'stats', label: 'Statystyki', icon: faChartBar },
     { id: 'players', label: 'Gracze', icon: faUsers },
 ]
+
+const materials = Object.values(Materials).filter(
+  v => typeof v === "number"
+) as Materials[];
 
 export function GameService() {
     const [activeTab, setActiveTab] = useState("")
@@ -45,10 +52,10 @@ export function GameService() {
                                 <div className="happiness-progress-bar">
                                     <div
                                         className="happiness-fill"
-                                        style={{ width: `${happiness}%`, background: happinessColor(happiness)}}
+                                        style={{ width: `${happiness}%`, background: happinessColor(happiness) }}
                                     />
                                 </div>
-                                <span className="happiness-percentage" id="happiness-percentage" style={{color: happinessColor(happiness)}}>
+                                <span className="happiness-percentage" id="happiness-percentage" style={{ color: happinessColor(happiness) }}>
                                     {happiness}%
                                 </span>
                             </div>
@@ -64,7 +71,18 @@ export function GameService() {
                                     <div className="materials-dropdown">
                                         <p className="materials-dropdown-title">Magazyn</p>
                                         <div className="materials-grid">
-
+                                            {materials.map(mat => (
+                                                <div key={mat} className="material-item">
+                                                    <div
+                                                        className="material-swatch"
+                                                        style={{ background: getMaterialColor(mat) }}
+                                                    />
+                                                    <div className="material-info">
+                                                        <span className="material-name">{getMaterialName(mat)}</span>
+                                                        <span className="material-value">0</span>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 )}
@@ -75,7 +93,6 @@ export function GameService() {
                     <main className="game-map">
 
                     </main>
-
 
                     <footer className="game-footer">
                         {TABS.map(tab => (
@@ -91,6 +108,15 @@ export function GameService() {
                     </footer>
                 </div>
             </div>
+
+            {activeTab && createPortal(
+                <div className="panel-overlay" onClick={() => setActiveTab('')}>
+                    <div className="panel-popup" onClick={e => e.stopPropagation()}>
+                        {activeTab === 'build' && <BuildPanel />}
+                    </div>
+                </div>,
+                document.body
+            )}
         </>
     )
 }
