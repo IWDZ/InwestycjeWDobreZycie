@@ -17,6 +17,9 @@ export class RoomManager {
     public isHost: boolean;
     public roomId: string | undefined;
     public playerList: Array<Player>;
+    onRoomJoined?: () => void;
+    onRoomLeft?: () => void;
+
 
     onRoomJoined?: () => void;
     onRoomLeft?: () => void;
@@ -125,6 +128,31 @@ export class RoomManager {
 
     public getPlayers(): Array<Player> {
         return this.playerList;
+    }
+
+    public async leaveRoom(): Promise<Result<void>> {
+        if (!this.roomId || !this.isInRoom) {
+            return Err("Nie jestes w pokoju")
+        }
+
+        if (!DEBUG) {
+            const response = await ws.request("leave_game", {gameCode: this.roomId});
+
+            if (!response.ok) {
+                return Err(response.error)
+            }
+        }
+
+        this.isInRoom = false;
+        this.roomId = undefined;
+        this.onRoomLeft?.();
+        this.playerList = [];
+
+        return Ok(undefined)
+    }
+
+    public getPlayers(): Array<Player> {
+        return this.playerList
     }
 
     public addPlayer(player: Player): void {
