@@ -1,177 +1,155 @@
-    import Building from "../exports/Building";
-    import { getGame } from "../exports/utils";
-    import { BUILDINGS, GAMES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MONEY } from "../gameStorage";
+import Building from "../exports/Building";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientPlayerObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney } from "../exports/utils";
+import { BUILDINGS, GAMES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY } from "../gameStorage";
 
-    function gameLogic(io, socket) {
-        socket.on("start_game", data => {
-            if (typeof data !== "object" || data === null || Array.isArray(data)) {
-                socket.emit("error", "Invalid data");
-                return;
-            }
-            const {gameCode, populationPool, buildingCost, buildMarketVolatility} = data;
+function gameLogic(io, socket) {
+    socket.on("start_game", data => {
+        if (!isValidData(data)) {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+        const {gameCode, populationPool, buildingCost, buildMarketVolatility} = data;
 
-            if (typeof gameCode !== "string" || 
-                (!Number.isInteger(populationPool) || populationPool < 50 || populationPool > 100) || 
-                !Number.isInteger(buildingCost) || !Number.isInteger(buildMarketVolatility)) {
-                    socket.emit("error", "Invalid Data");
-            }
-
-            const game = getGame(socket, gameCode);
-            if (!game) return;
-
-            game.started = true;
-            game.settings = {
-                POPULATION: ((populationPool / 100) * POPULATION),
-                BUILDING_COST: buildingCost,
-                BUILD_MARKET_VOLATILITY: buildMarketVolatility,
-                NEXT_BUILDING_ID: 1
-            };
-
-            if (game.host.socketId !== socket.id) {
-                socket.emit("error", "Access Denied");
-                return;
-            }
-
-            game.players.forEach(player => {
-                player.field = Array.from({ length: MAX_FIELD_SIZE }, () => Array(MAX_FIELD_SIZE));
-                const middle = Math.floor(MAX_FIELD_SIZE / 2);
-                for (let i = -1; i <= 1; i++) {
-                    for (let j = -1; j <= 1; j++) {
-                        player.field[middle+i][middle+j] = null;
-                    }
-                }
-                player.field[middle][middle] = new Building(BUILDINGS.TOWN_HALL, game.settings.NEXT_BUILDING_ID, [middle, middle], false);
-                player.happiness = START_HAPPINESS;
-                player.money = START_MONEY;
-                game.settings.NEXT_BUILDING_ID++;
-            });
-
-            game.players.forEach(player => {
-                io.to(player.socketId).emit("game_start", {
-                    population: game.settings.POPULATION,
-                    money: player.money,
-                    happiness: player.happiness,
-                    field: player.field,
-                    buildings: BUILDINGS
-                });
-            });
-        });
-
-        socket.on("create_building", data => {
-            if (typeof data !== "object" || data === null || Array.isArray(data)) {
-                socket.emit("error", "Invalid data");
-                return;
-            }
-            const {gameCode, buildingName, startLocation, isVertical} = data;
-
-            if (typeof gameCode !== "string" || !Array.isArray(startLocation) || 
-                !Number.isInteger(startLocation[0]) || startLocation[0] > (MAX_FIELD_SIZE - 1) || startLocation[0] < 0 || 
-                !Number.isInteger(startLocation[1]) || startLocation[1] > (MAX_FIELD_SIZE - 1) || startLocation[1] < 0 || typeof isVertical !== "boolean") {
-                    socket.emit("error", "Invalid Data");
-                    return;
-            }
-
-            const building = Object.values(BUILDINGS).find(b => b.name === buildingName);
-            if (!building) {
-                socket.emit("error", "Building not found");
-                return;
-            }
-
-            const game = getGame(socket, gameCode);
-            if (!game) return;
-
-            const field = game.players.find(p => p.socketId === socket.id).field;
-            const columnStart = startLocation[1];
-            const rowStart = startLocation[0];
-
-            switch (buildingName) {
-                default:
-                    const height = isVertical ? building.WIDTH : building.HEIGHT;
-                    const width = isVertical ? building.HEIGHT : building.WIDTH;
-                    
-                    const columnEnd = columnStart + height - 1;
-                    const rowEnd = rowStart + width - 1;
-
-                    // TODO: price check
-
-                    for (let y = columnStart; y <= columnEnd; y++) {
-                        for (let x = rowStart; x <= rowEnd; x++) {
-                            if (field[y][x] !== null) {
-                                socket.emit("error", "Space Occupied");
-                                return;
-                            }
-                        }
-                    }
-
-                    const id = game.settings.NEXT_BUILDING_ID++;
-
-                    for (let y = columnStart; y <= columnEnd; y++) {
-                        for (let x = rowStart; x <= rowEnd; x++) {
-                            field[y][x] = new Building(id, building, [columnStart, rowStart], isVertical);
-                        }
-                    }
-                    break;
-            }
-
-            socket.emit("field_update", field);
-        });
-
-        socket.on("delete_building", data => {
-            if (typeof data !== "object" || data === null || Array.isArray(data)) {
-                socket.emit("error", "Invalid data");
-                return;
-            }
-            const {gameCode, location} = data;
-
-            if (typeof gameCode !== "string" || !Array.isArray(location)) {
+        if (typeof gameCode !== "string" || 
+            !Number.isInteger(populationPool) || populationPool < 50 || populationPool > 100 || 
+            !Number.isInteger(buildingCost) || !Number.isInteger(buildMarketVolatility)) {
                 socket.emit("error", "Invalid Data");
                 return;
-            }
+        }
 
-            const [x, y] = location;
-            if (!Number.isInteger(x) || !Number.isInteger(y)) {
+        const game = getGame(gameCode);
+        if (!game) {
+            socket.emit("error", "Game Not Found");
+            return;
+        }
+        
+        game.started = true;
+        game.settings = getDefaultSettings(populationPool, buildingCost, buildMarketVolatility);
+
+        if (!isHost(game, socket.id)) {
+            socket.emit("error", "Access Denied");
+            return;
+        }
+
+        const middle = getFieldMiddle();
+        game.players.forEach(player => {
+            setUpPlayer(game, player, middle);
+            io.to(player.socketId).emit("game_start", getDefaultClientPlayerObject(game, player));
+        });
+    });
+
+    socket.on("create_building", data => {
+        if (!isValidData(data)) {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+        const {gameCode, buildingName, startLocation, isVertical} = data;
+
+        if (typeof gameCode !== "string" || !Array.isArray(startLocation) || 
+            !Number.isInteger(startLocation[0]) || startLocation[0] > (MAX_FIELD_SIZE - 1) || startLocation[0] < 0 || 
+            !Number.isInteger(startLocation[1]) || startLocation[1] > (MAX_FIELD_SIZE - 1) || startLocation[1] < 0 || typeof isVertical !== "boolean") {
                 socket.emit("error", "Invalid Data");
                 return;
-            }
+        }
 
-            const game = getGame(socket, gameCode);
-            if (!game) return;
-            
-            const field = game.players.find(p => p.socketId === socket.id).field;
-            const buildingObject = field[y][x];
+        const building = getBuildingByName(buildingName);
+        if (!building) {
+            socket.emit("error", "Building not found");
+            return;
+        }
 
-            const { id, building, startLocation, isVertical } = buildingObject;
+        const game = getGame(socket, gameCode);
+        if (!game) return;
 
-            if (!buildingObject) {
-                socket.emit("error", "Not a building");
-                return;
-            }
-            if (building.NAME === BUILDINGS.TOWN_HALL.NAME) {
-                socket.emit("error", "Cannot Delete The Town Hall");
-                return;
-            }
+        const player = getPlayer(game, socket.id);
+        const field = player.field;
 
-            const columnStart = startLocation[1];
-            const rowStart = startLocation[0];
+        if (!hasRequiredBuilding(building, field)) {
+            socket.emit("error", "Required Building Not Found");
+            return;
+        }
 
-            const height = isVertical ? building.WIDTH : building.HEIGHT;
-            const width = isVertical ? building.HEIGHT : building.WIDTH;
-            
-            const columnEnd = columnStart + height - 1;
-            const rowEnd = rowStart + width - 1;
+        if (!hasRequiredMaterials(building.MATERIAL_COST, player.materials)) {
+            socket.emit("error", "Not Enough Materials");
+            return;
+        }
 
-            for (let y = columnStart; y <= columnEnd; y++) {
-                for (let x = rowStart; x <= rowEnd; x++) {
-                    if (field[y][x] !== buildingObject) {
-                        socket.emit("error", "Something Went Wrong With Deleting A Building");
-                        return;
-                    }
-                    field[y][x] = null;
-                }
-            }
+        if (hasRequiredMoney(building.MONEY_COST, player.money)) {
+            socket.emit("error", "Not Enough Money");
+            return;
+        }
 
-            socket.emit("field_update", field);
-        });
-    }
+        const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(building, startLocation, isVertical);
 
-    export default gameLogic;
+        if (isPlacementInBounds(rowEnd, columnEnd)) {
+            socket.emit("error", "Out Of Bounds");
+            return;
+        }
+
+        const placementErrorMessage = hasPlacementError(field, rowStart, columnStart, rowEnd, columnEnd);
+        if (placementErrorMessage) {
+            socket.emit("error", placementErrorMessage);
+            return;
+        }
+
+        const id = getCurrentBuildingId(game);
+        removeMaterials(player, building.MATERIAL_COST);
+        removeMoney(player, building.MONEY_COST)
+
+        placeBuilding(field, rowStart, columnStart, rowEnd, columnEnd, id, building, isVertical);
+
+        socket.emit("field_update", {field, materials: player.materials, money: player.money});
+    });
+
+    socket.on("delete_building", data => {
+        if (!isValidData(data)) {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+        const {gameCode, location} = data;
+
+        if (typeof gameCode !== "string" || !Array.isArray(location)) {
+            socket.emit("error", "Invalid Data");
+            return;
+        }
+
+        const [y, x] = location;
+        if (!Number.isInteger(y) || !Number.isInteger(x)) {
+            socket.emit("error", "Invalid Data");
+            return;
+        }
+
+        const game = getGame(socket, gameCode);
+        if (!game) return;
+        
+        const player = getPlayer(game, socket.id);
+        const field = player.field;
+        const buildingObject = field[y][x];
+
+        if (!buildingObject) {
+            socket.emit("error", "Not a building");
+            return;
+        }
+
+        const { id, building, startLocation, isVertical } = buildingObject;
+
+        if (isTownHall(building.NAME)) {
+            socket.emit("error", "Cannot Delete The Town Hall");
+            return;
+        }
+
+        const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(building, startLocation, isVertical);
+
+        if (!couldDeleteBuilding(field, rowStart, columnStart, rowEnd, columnEnd, buildingObject)) {
+            socket.emit("error", "Something Went Wrong With Deleting A Building");
+            return;
+        }
+
+        returnMaterials(player, building.MATERIAL_COST);
+        returnMoney(player, building.MONEY_COST);
+
+        socket.emit("field_update", {field, materials: player.materials, money: player.money});
+    });
+}
+
+export default gameLogic;
