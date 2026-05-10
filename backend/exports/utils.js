@@ -1,4 +1,4 @@
-import { BUILDINGS, MAX_FIELD_SIZE, POPULATION, START_MATERIALS } from "../gameStorage";
+import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_FIELD_SIZE, POPULATION, START_MATERIALS } from "../gameStorage";
 import Building from "./Building";
 
 export function getCurrentBuildingId(game) {
@@ -22,7 +22,7 @@ export function getDefaultSettings(populationPool, buildingCost, buildMarketVola
     };
 }
 
-export function getDefaultClientPlayerObject(game, player) {
+export function getDefaultClientGameDataObject(game, player) {
     return {
         population: game.settings.POPULATION,
         money: player.money,
@@ -158,4 +158,59 @@ export function couldDeleteBuilding(field, rowStart, columnStart, rowEnd, column
         }
     }
     return true;
+}
+
+export function generateGameCode() {
+    let gameCode;
+    do {
+        gameCode = "";
+        for (let i = 0; i < GAME_CODE_LENGTH; i++) {
+            gameCode += GAME_CODE_CHARACTERS[Math.floor(Math.random() * GAME_CODE_CHARACTERS.length)];
+        }
+    } while (GAMES.has(gameCode));
+    return gameCode;
+}
+
+export function getDefaultGameObject(username, socketId, playersAmount) {
+    return {
+        host: {
+            username: username,
+            socketId: socketId
+        },
+        players: [
+            {
+                username: username,
+                socketId: socketId
+            }
+        ],
+        maxPlayers: playersAmount,
+        started: false
+    };
+}
+
+export function isPlayerInGame(socketId) {
+    for (const game of GAMES.values()) {
+        if (game.players.some(player => player.socketId === socketId)) return true;
+    }
+    return false;
+}
+
+export function isGameFull(game) {
+    return game.players.length >= game.maxPlayers;
+}
+
+export function hasGameStarted(game) {
+    return game.started;
+}
+
+export function hasPlayerWithUsername(game, username) {
+    return game.players.some(player => player.username === username)
+}
+
+export function hasPlayer(game, socketId) {
+    return game.players.some(player => player.socketId === socketId);
+}
+
+export function removePlayer(game, socketId) {
+    game.players = game.players.filter(player => player.socketId !== socketId);
 }

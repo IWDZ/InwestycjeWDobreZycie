@@ -1,43 +1,35 @@
-import { GAMES } from "../gameStorage";
+import { getGame, hasGameStarted, hasPlayer, isHost, removePlayer } from "./utils";
 
-function leaveGame(io, socket, gameCode) {
+export default function leaveGame(io, socket, gameCode) {
     if (typeof gameCode !== "string") {
         socket.emit("error", "Invalid data");
         return;
     }
 
-    if (!GAMES.has(gameCode)) {
-        socket.emit("error", "Game Not Found");
-        return;
-    }
-
-    const game = getGame(socket, gameCode);
+    const game = getGame(gameCode);
     if (!game) return;
-    
-    const isPlayerInGame = game.players.some(player => player.socketId === socket.id);
-    if (!isPlayerInGame) {
+
+    if (!hasPlayer(game, socket.id)) {
         socket.emit("error", "Player not in the game");
         return;
     }
 
-    if (game.host.socketId === socket.id && !game.started) {
+    if (isHost(game, socket.id) && !hasGameStarted(game)) {
         socket.emit("left");
-        GAMES.players.forEach(player => io.to(player.socketId).emit("host_left"));
-        GAMES.delete(gameCode);
+        game.players.forEach(player => io.to(player.socketId).emit("host_left"));
+        game.delete(gameCode);
         return;
     }
 
-    game.players = game.players.filter(player => player.socketId !== socket.id);
+    removePlayer(game, socket.id);
 
     const usernames = game.players.map(player => player.username);
 
-    GAMES.players.forEach(player => {
+    for (const player of game.players) {
         io.to(player.socketId).emit("player_left", {
             players: usernames
         });
-    });
+    }
 
     socket.emit("left");
 }
-
-export default leaveGame;

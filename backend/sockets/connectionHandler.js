@@ -5,18 +5,14 @@ import gameConnection from "./gameConnection.js";
 import gameLogic from "./gameLogic.js";
 
 function connectionHandler(io, socket) {
-    console.log("User connected: ", socket.id);
-
     gameConnection(io, socket);
     
     gameLogic(io, socket);
 
     socket.on("disconnect", () => {
-        console.log("User disconnected: ", socket.id);
-        const inGame = [...GAMES.entries()].find(([_, game]) => game.players.some(player => player.socketId === socket.id));
-        
+        const inGame = Array.from(GAMES.entries()).find(([_, game]) => game.players.some(player => player.socketId === socket.id));
         if (inGame) {
-            const {gameCode} = inGame;
+            const [gameCode, _] = inGame;
             leaveGame(io, socket, gameCode);
         }
     });

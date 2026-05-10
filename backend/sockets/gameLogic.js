@@ -1,5 +1,5 @@
 import Building from "../exports/Building";
-import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientPlayerObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney } from "../exports/utils";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney } from "../exports/utils";
 import { BUILDINGS, GAMES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY } from "../gameStorage";
 
 function gameLogic(io, socket) {
@@ -25,6 +25,7 @@ function gameLogic(io, socket) {
         
         game.started = true;
         game.settings = getDefaultSettings(populationPool, buildingCost, buildMarketVolatility);
+        game.gameTickInterval = setInterval(() => doGameTick(), 2000);
 
         if (!isHost(game, socket.id)) {
             socket.emit("error", "Access Denied");
@@ -34,7 +35,7 @@ function gameLogic(io, socket) {
         const middle = getFieldMiddle();
         game.players.forEach(player => {
             setUpPlayer(game, player, middle);
-            io.to(player.socketId).emit("game_start", getDefaultClientPlayerObject(game, player));
+            io.to(player.socketId).emit("game_start", getDefaultClientGameDataObject(game, player));
         });
     });
 
@@ -150,6 +151,10 @@ function gameLogic(io, socket) {
 
         socket.emit("field_update", {field, materials: player.materials, money: player.money});
     });
+}
+
+function doGameTick(game, players) {
+    
 }
 
 export default gameLogic;
