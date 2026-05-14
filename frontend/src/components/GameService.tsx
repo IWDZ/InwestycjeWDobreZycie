@@ -7,6 +7,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { BuildPanel } from "./gamePanels/BuildPanel";
 import { getMaterialColor, getMaterialName, Materials } from "../services/game/statics/Materials";
+import { PlotPanel } from "./gamePanels/PlotPanel";
+import { StatsPanel } from "./gamePanels/StatsPanel";
 
 const TABS: { id: string; label: string; icon: any }[] = [
     { id: 'build', label: 'Buduj', icon: faHammer },
@@ -113,6 +115,8 @@ export function GameService() {
                 <div className="panel-overlay" onClick={() => setActiveTab('')}>
                     <div className="panel-popup" onClick={e => e.stopPropagation()}>
                         {activeTab === 'build' && <BuildPanel />}
+                        {activeTab === 'plots' && <PlotPanel />}
+                        {activeTab === 'stats' && <StatsPanel />}
                     </div>
                 </div>,
                 document.body
