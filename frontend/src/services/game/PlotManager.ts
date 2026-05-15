@@ -7,7 +7,7 @@ export class PlotManager {
   public unlockedPlots: Set<number>;
   public plotPrices: Map<number, number>;
 
-  constructor(gridSize = 9, unlockedRadius = 0) {
+  constructor(gridSize = 7, unlockedRadius = 1) {
     this.buildings = new Array();
     this.gridSize = gridSize;
     this.unlockedRadius = unlockedRadius;

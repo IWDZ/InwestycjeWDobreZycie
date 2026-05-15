@@ -9,6 +9,7 @@ import { BuildPanel } from "./gamePanels/BuildPanel";
 import { getMaterialColor, getMaterialName, Materials } from "../services/game/statics/Materials";
 import { PlotPanel } from "./gamePanels/PlotPanel";
 import { StatsPanel } from "./gamePanels/StatsPanel";
+import { ShopPanel } from "./gamePanels/ShopPanel";
 
 const TABS: { id: string; label: string; icon: any }[] = [
     { id: 'build', label: 'Buduj', icon: faHammer },
@@ -117,6 +118,7 @@ export function GameService() {
                         {activeTab === 'build' && <BuildPanel />}
                         {activeTab === 'plots' && <PlotPanel />}
                         {activeTab === 'stats' && <StatsPanel />}
+                        {activeTab === 'shop' && <ShopPanel />}
                     </div>
                 </div>,
                 document.body
