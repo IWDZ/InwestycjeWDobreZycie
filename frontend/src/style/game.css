@@ -1,3 +1,33 @@
+.game-countdown-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-countdown-number {
+  font-size: 8rem;
+  font-weight: 900;
+  color: #000;
+  animation: countdown-pop 0.6s ease-out;
+}
+
+@keyframes countdown-pop {
+  0% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .game-wrapper {
   position: fixed;
   inset: 0;
@@ -223,6 +253,46 @@
     linear-gradient(rgba(150, 180, 140, 0.3) 1px, transparent 1px),
     linear-gradient(90deg, rgba(150, 180, 140, 0.3) 1px, transparent 1px);
   background-size: 40px 40px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.game-grid {
+  width: min(100%, 100cqh);
+  display: grid;
+  height: 100%;
+  gap: 2px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.plot {
+  border-radius: 4px;
+  transition: filter 0.15s;
+  aspect-ratio: unset;
+}
+
+.plot-hidden {
+  background: transparent;
+  pointer-events: none;
+}
+
+.plot-unlocked {
+  background: #c8dfc0;
+  border: 1px solid rgba(150, 180, 140, 0.5);
+  cursor: pointer;
+}
+
+.plot-unlocked:hover {
+  filter: brightness(1.1);
+}
+
+.plot-port {
+  background: #a8c8e8;
+  border: 1px solid rgba(100, 160, 210, 0.5);
 }
 
 .game-footer {
@@ -1007,4 +1077,52 @@
 .shop-action-btn--disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.leaderboard-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.leaderboard-player {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.leaderboard-place {
+  font-size: 0.85rem;
+  font-weight: 700;
+  width: 2rem;
+  text-align: center;
+  color: #f5a800;
+}
+
+.leaderboard-player:nth-child(1) .leaderboard-place {
+  color: #FFD700;
+}
+
+.leaderboard-player:nth-child(2) .leaderboard-place {
+  color: #C0C0C0;
+}
+
+.leaderboard-player:nth-child(3) .leaderboard-place {
+  color: #CD7F32;
+}
+
+.leaderboard-name {
+  flex: 1;
+  font-weight: 500;
+  color: #222;
+}
+
+.leaderboard-money {
+  font-weight: 600;
+  color: #1D9E75;
 }

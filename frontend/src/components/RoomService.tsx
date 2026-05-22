@@ -3,19 +3,29 @@ import { roomManager, showError } from "./LobbyService";
 
 interface RoomServiceProps {
     onLeave: () => void;
+    onStart: () => void;
 }
 
 interface GameSettings {
     popularityPool: number;
 }
 
-export function RoomService({ onLeave }: RoomServiceProps) {
+export function RoomService({ onLeave, onStart }: RoomServiceProps) {
     const [players, setPlayers] = useState<{ name: string; isHost: boolean }[]>([]);
     const [isInRoom, setIsInRoom] = useState(roomManager.isInRoom);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [settings, setSettings] = useState<GameSettings>({
         popularityPool: 100,
     });
+
+    async function startGame() {
+        const response = await roomManager.startGame();
+        if (!response.ok) {
+            showError(response.error);
+        } else {
+            onStart()
+        }
+    }
 
     async function leaveRoom() {
         const response = await roomManager.leaveRoom();
@@ -114,7 +124,7 @@ export function RoomService({ onLeave }: RoomServiceProps) {
 
                     <div className="room-actions">
                         {roomManager.isHost && (
-                            <button className="btn-start" onClick={() => { }}>
+                            <button className="btn-start" onClick={async () => await startGame()}>
                                 Zacznij grę
                             </button>
                         )}

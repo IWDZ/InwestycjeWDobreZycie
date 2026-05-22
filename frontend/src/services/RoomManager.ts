@@ -39,7 +39,7 @@ export class RoomManager {
         })
 
         ws.socket.on("host_left", () => {
-            if (!this.isHost) {
+            if (!this.isHost && this.isInRoom) {
                 this.isInRoom = false;
                 this.isHost = false;
                 this.roomId = undefined;

@@ -11,9 +11,18 @@ import { GameService } from './components/GameService.tsx';
 export const errorNotif = { current: null as ErrorNotifRef | null };
 
 export default function App() {
-  const [lobbyServiceOpen, setLobbyServiceOpen] = useState(false);
-  const [gameServiceOpen, setGameServiceOpen] = useState(true);
+  const [lobbyServiceOpen, setLobbyServiceOpen] = useState(true);
+  const [gameServiceOpen, setGameServiceOpen] = useState(false);
+  const [shouldStartGame, setShouldStartGame] = useState(false)
   const ref = useRef<ErrorNotifRef>(null);
+
+  function onStart() {
+    setLobbyServiceOpen(false)
+    setGameServiceOpen(true)
+    setShouldStartGame(true)
+  }
+
+  function onFinish() { }
 
   useEffect(() => {
     errorNotif.current = ref.current;
@@ -24,10 +33,10 @@ export default function App() {
     <>
       <ErrorNotif ref={ref} />
       {lobbyServiceOpen && (
-        <LobbyService></LobbyService>
+        <LobbyService onStart={onStart} onFinish={onFinish}></LobbyService>
       )}
       {gameServiceOpen && (
-        <GameService></GameService>
+        <GameService shouldStart={shouldStartGame} />
       )}
     </>
   )

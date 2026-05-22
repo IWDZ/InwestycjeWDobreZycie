@@ -27,9 +27,15 @@ export class GameManager {
 
     public startGame() {
         this.plotManager = new PlotManager();
+        this.inventory = new Inventory();
+        this.leaderboard = new Leaderboard();
+        this.shopManager = new ShopManager();
     }
 
     public reset() {
         this.plotManager = new PlotManager();
+        this.inventory = new Inventory();
+        this.leaderboard = new Leaderboard();
+        this.shopManager = new ShopManager();
     }
 }

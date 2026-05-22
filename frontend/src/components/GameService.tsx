@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { createPortal } from 'react-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -10,6 +10,8 @@ import { getMaterialColor, getMaterialName, Materials } from "../services/game/s
 import { PlotPanel } from "./gamePanels/PlotPanel";
 import { StatsPanel } from "./gamePanels/StatsPanel";
 import { ShopPanel } from "./gamePanels/ShopPanel";
+import { LeaderboardPanel } from "./gamePanels/LeaderboardPanel";
+import { GameMap } from "./GameMap";
 
 const TABS: { id: string; label: string; icon: any }[] = [
     { id: 'build', label: 'Buduj', icon: faHammer },
@@ -20,13 +22,63 @@ const TABS: { id: string; label: string; icon: any }[] = [
 ]
 
 const materials = Object.values(Materials).filter(
-  v => typeof v === "number"
+    v => typeof v === "number"
 ) as Materials[];
 
-export function GameService() {
+type GamePhase = 'idle' | 'countdown' | 'playing'
+
+export interface GameServiceRef {
+    shouldStart: boolean
+}
+
+export function GameService({ shouldStart }: GameServiceRef) {
+    const [gamePhase, setGamePhase] = useState<GamePhase>('idle')
+    const [countdown, setCountdown] = useState(3)
     const [activeTab, setActiveTab] = useState("")
     const [materialsOpen, setMaterialsOpen] = useState(false)
     const [happiness, setHappiness] = useState(50);
+
+    function stopGame() {
+        setGamePhase('idle');
+    }
+
+    function startGame() {
+        setGamePhase('countdown')
+        setCountdown(3);
+    }
+
+    useEffect(() => {
+        if (shouldStart) startGame()
+        else stopGame()
+    }, [shouldStart])
+
+    useEffect(() => {
+        if (gamePhase !== 'countdown') return
+
+        if (countdown === 0) {
+            const t = setTimeout(() => setGamePhase('playing'), 900)
+            return () => clearTimeout(t)
+        }
+
+        const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+        return () => clearTimeout(t)
+    }, [gamePhase, countdown])
+
+    if (gamePhase === 'idle') {
+        return (<></>)
+    }
+
+    if (gamePhase === 'countdown') {
+        return (
+            <div className="game-wrapper">
+                <div className="game-container game-countdown-screen">
+                    <span key={countdown} className="game-countdown-number">
+                        {countdown === 0 ? 'START!' : countdown}
+                    </span>
+                </div>
+            </div>
+        )
+    }
 
     function happinessColor(pct: number): string {
         if (pct === 50) return '#f5a800'
@@ -94,7 +146,7 @@ export function GameService() {
                     </header>
 
                     <main className="game-map">
-
+                        <GameMap />
                     </main>
 
                     <footer className="game-footer">
@@ -119,6 +171,7 @@ export function GameService() {
                         {activeTab === 'plots' && <PlotPanel />}
                         {activeTab === 'stats' && <StatsPanel />}
                         {activeTab === 'shop' && <ShopPanel />}
+                        {activeTab === 'players' && <LeaderboardPanel />}
                     </div>
                 </div>,
                 document.body

@@ -10,7 +10,12 @@ export function showError(message: string) {
   errorNotif.current?.show(message);
 }
 
-export function LobbyService() {
+interface LobbyServiceProps {
+    onStart: () => void
+    onFinish: () => void
+}
+
+export function LobbyService({ onStart, onFinish }: LobbyServiceProps) {
   const [createOpen, setCreateOpen] = useState(false)
   const [createRoomButtonActive, setCreateRoomButtonActive] = useState(true);
   const [joinRoomButtonActive, setJoinRoomButtonActive] = useState(true);
@@ -97,7 +102,7 @@ export function LobbyService() {
       )}
 
       {roomStatusOpen && (
-        <RoomService onLeave={leaveRoom}></RoomService>)}
+        <RoomService onLeave={leaveRoom} onStart={onStart}></RoomService>)}
 
       {joinOpen && (
         <div className="dialog-overlay active">

@@ -18,7 +18,7 @@ export const ErrorNotif = forwardRef<ErrorNotifRef>((_, ref) => {
             <div className="error-backdrop" onClick={() => setMessage(null)} />
             <div className="error-modal">
                 <div className="error-modal-header">
-                    <p className="error-modal-header-text">Wystąpił błąd</p>
+                    <p className="error-modal-header-text">Błąd</p>
                     <button className="error-modal-close" onClick={() => setMessage(null)}>×</button>
                 </div>
                 <div className="error-modal-body">
