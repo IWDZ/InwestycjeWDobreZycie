@@ -1,6 +1,6 @@
 import Building from "../exports/Building";
-import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney } from "../exports/utils";
-import { BUILDINGS, GAMES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY } from "../gameStorage";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket } from "../exports/utils";
+import { BUILDINGS, GAMES, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY } from "../gameStorage";
 
 function gameLogic(io, socket) {
     socket.on("start_game", data => {
@@ -8,11 +8,11 @@ function gameLogic(io, socket) {
             socket.emit("error", "Invalid data");
             return;
         }
-        const {gameCode, populationPool, buildingCost, buildMarketVolatility} = data;
+        const {gameCode, populationPool, buildingCost, marketVolatility} = data;
 
         if (typeof gameCode !== "string" || 
             !Number.isInteger(populationPool) || populationPool < 50 || populationPool > 100 || 
-            !Number.isInteger(buildingCost) || !Number.isInteger(buildMarketVolatility)) {
+            !Number.isInteger(buildingCost) || !Number.isInteger(marketVolatility)) {
                 socket.emit("error", "Invalid Data");
                 return;
         }
@@ -24,8 +24,14 @@ function gameLogic(io, socket) {
         }
         
         game.started = true;
-        game.settings = getDefaultSettings(populationPool, buildingCost, buildMarketVolatility);
-        game.gameTickInterval = setInterval(() => doGameTick(), 2000);
+        game.settings = getDefaultSettings(populationPool, buildingCost, marketVolatility);
+        game.currentTick = {
+            tickNumber: 1,
+            sales: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0])),
+            purchases: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0]))
+        };
+        game.materialPrices = MATERIAL_PRICES;
+        game.gameTickInterval = setInterval(() => doGameTick(), 3000);
 
         if (!isHost(game, socket.id)) {
             socket.emit("error", "Access Denied");
@@ -87,7 +93,7 @@ function gameLogic(io, socket) {
             return;
         }
 
-        const placementErrorMessage = hasPlacementError(field, rowStart, columnStart, rowEnd, columnEnd);
+        const placementErrorMessage = hasPlacementError(buildingName, field, rowStart, columnStart, rowEnd, columnEnd);
         if (placementErrorMessage) {
             socket.emit("error", placementErrorMessage);
             return;
@@ -154,7 +160,11 @@ function gameLogic(io, socket) {
 }
 
 function doGameTick(game, players) {
-    
+    const currentTick = game.currentTick;
+    if (currentTick.tickNumber % 3 === 0) {
+        updateMarket(game, currentTick);
+    }
+    currentTick.tickNumber++;
 }
 
 export default gameLogic;

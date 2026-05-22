@@ -4,7 +4,7 @@ class Building {
     #id;
     #building;
     #startLocation;
-    #isVertical
+    #isVertical;
 
     constructor(id, building, startLocation, isVertical) {
         this.#id = id;

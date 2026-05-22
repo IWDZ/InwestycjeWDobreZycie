@@ -1,4 +1,4 @@
-import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_FIELD_SIZE, POPULATION, START_MATERIALS } from "../gameStorage";
+import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_MATERIALS } from "../gameStorage";
 import Building from "./Building";
 
 export function getCurrentBuildingId(game) {
@@ -13,11 +13,11 @@ export function isValidData(data) {
     return typeof data === "object" && data !== null && !Array.isArray(data);
 }
 
-export function getDefaultSettings(populationPool, buildingCost, buildMarketVolatility) {
+export function getDefaultSettings(populationPool, buildingCost, marketVolatility) {
     return {
         POPULATION: ((populationPool / 100) * POPULATION),
         BUILDING_COST: buildingCost,
-        BUILD_MARKET_VOLATILITY: buildMarketVolatility,
+        BUILD_MARKET_VOLATILITY: marketVolatility,
         NEXT_BUILDING_ID: 1
     };
 }
@@ -56,6 +56,13 @@ export function setUpPlayer(game, player, middle) {
     player.happiness = START_HAPPINESS;
     player.materials = { ...START_MATERIALS };
     player.money = START_MONEY;
+    player.population = {
+        livingPopulation: 3,
+        workingPopulation: 3,
+        maxLivingPolulation: 5,
+        maxWorkingPopulation: 5,
+        unemployedPopulation: 0
+    }
 }
 
 export function getBuildingByName(buildingName) {
@@ -106,7 +113,10 @@ export function isPlacementInBounds(rowEnd, columnEnd) {
     return rowEnd <= (MAX_FIELD_SIZE - 1) && columnEnd <= (MAX_FIELD_SIZE - 1)
 }
 
-export function hasPlacementError(field, rowStart, columnStart, rowEnd, columnEnd) {
+export function hasPlacementError(buildingName, field, rowStart, columnStart, rowEnd, columnEnd) {
+    if (buildingName === BUILDINGS.PORT.NAME && columnStart !== 0) {
+        return "A port can only be placed on the far-left cell";
+    }
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
             if (field[y][x] === undefined) {
@@ -213,4 +223,46 @@ export function hasPlayer(game, socketId) {
 
 export function removePlayer(game, socketId) {
     game.players = game.players.filter(player => player.socketId !== socketId);
+}
+
+export function isMaterialPriceAboveMultiplier(game, material, multiplier) {
+    return game.materialPrices[material] > MATERIAL_PRICES[material] * multiplier;
+}
+
+export function updateMarket(game, currentTick) {
+    for (const material in MATERIALS) {
+        const net = currentTick.purchases[material] - currentTick.sales[material];
+        let newPrice = game.materialPrices[material];
+        if (net === 0) {
+            const changeNumber = Math.floor(Math.random() * 3);
+            if (changeNumber === 1) {
+                if (isMaterialPriceAboveMultiplier(game, material, 1/3))
+                    newPrice *= Math.random() * 0.2 + 0.8;
+            }else if (changeNumber === 2) {
+                if (!isMaterialPriceAboveMultiplier(game, material, 2.5))
+                    newPrice *= Math.random() * 0.2 + 1;
+            }
+        }else if (net > 0) {
+            while (net > 0 && !isMaterialPriceAboveMultiplier(game, material, 2.5)) {
+                if (isMaterialPriceAboveMultiplier(game, material, 1.5)) {
+                    newPrice *= 1.005;
+                }else{
+                    newPrice *= 1.01;
+                }
+                net--;
+            }
+        }else{
+            while (net > 0 && !isMaterialPriceAboveMultiplier(game, material, 1/3)) {
+                if (isMaterialPriceAboveMultiplier(game, material, 1.5)) {
+                    newPrice *= 0.99;
+                }else if (isMaterialPriceAboveMultiplier(game, material, 0.5)) {
+                    newPrice *= 0.998;
+                }else{
+                    newPrice *= 0.995;
+                }
+                net--;
+            }
+        }
+        game.materialPrices[material] *= newPrice * game.settings.marketVolatility;
+    }
 }

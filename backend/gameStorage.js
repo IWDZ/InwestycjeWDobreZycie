@@ -8,6 +8,7 @@
   * @property {number} JOBS
   * @property {number} HAPPINESS
   * @property {number} MONEY_COST
+  * @property {number} MONEY_PER_JOB
   * @property {Object<string, number>} MATERIAL_COST
   * @property {string} REQUIRED_BUILDING
   */
@@ -48,6 +49,16 @@ export const MATERIALS = {
     URANIUM: "uranium"
 }
 
+export const MATERIAL_PRICES = {
+    [MATERIALS.WOOD]: 10,
+    [MATERIALS.STONE]: 15,
+    [MATERIALS.COAL]: 20,
+    [MATERIALS.CONCRETE]: 25,
+    [MATERIALS.STEEL]: 35,
+    [MATERIALS.GLASS]: 50,
+    [MATERIALS.URANIUM]: 150
+}
+
 export const BUILDINGS = {
     TOWN_HALL: setBuilding({
         NAME: "town_hall",
@@ -58,6 +69,7 @@ export const BUILDINGS = {
         JOBS: 5,
         HAPPINESS: 0,
         MONEY_COST: 0,
+        MONEY_PER_JOB: 40,
         MATERIAL_COST: {}
     }),
     AIRPORT: setBuilding({
@@ -68,10 +80,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 10,
         HAPPINESS: 4,
-        MONEY_COST: 0,
+        MONEY_COST: 16000,
+        MONEY_PER_JOB: 120,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.CONCRETE]: 10
+            [MATERIALS.STEEL]: 500,
+            [MATERIALS.CONCRETE]: 500,
+            [MATERIALS.GLASS]: 150
         }
     }),
     PORT: setBuilding({
@@ -82,10 +96,11 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 8,
         HAPPINESS: 1,
-        MONEY_COST: 0,
+        MONEY_COST: 7000,
+        MONEY_PER_JOB: 90,
         MATERIAL_COST: {
-            [MATERIALS.WOOD]: 10,
-            [MATERIALS.STEEL]: 10
+            [MATERIALS.STEEL]: 350,
+            [MATERIALS.CONCRETE]: 400
         }
     }),
     PLAYGROUND: setBuilding({
@@ -96,9 +111,10 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 0,
         HAPPINESS: 1,
-        MONEY_COST: 0,
+        MONEY_COST: 800,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.WOOD]: 10
+            [MATERIALS.WOOD]: 30
         }
     }),
     PARK: setBuilding({
@@ -109,9 +125,10 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 0,
         HAPPINESS: 2,
-        MONEY_COST: 0,
+        MONEY_COST: 1000,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.WOOD]: 10
+            [MATERIALS.CONCRETE]: 20
         }
     }),
     CHURCH: setBuilding({
@@ -123,9 +140,10 @@ export const BUILDINGS = {
         JOBS: 0,
         HAPPINESS: 2,
         MONEY_COST: 0,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.STONE]: 10,
-            [MATERIALS.WOOD]: 10
+            [MATERIALS.STONE]: 100,
+            [MATERIALS.WOOD]: 40
         }
     }),
     POLICE_STATION: setBuilding({
@@ -136,9 +154,11 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 4,
         HAPPINESS: 1,
-        MONEY_COST: 0,
+        MONEY_COST: 5000,
+        MONEY_PER_JOB: 32,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10
+            [MATERIALS.STEEL]: 80,
+            [MATERIALS.CONCRETE]: 30
         }
     }),
     HOSPITAL: setBuilding({
@@ -149,10 +169,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 8,
         HAPPINESS: 3,
-        MONEY_COST: 0,
+        MONEY_COST: 5000,
+        MONEY_PER_JOB: 58,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.CONCRETE]: 10
+            [MATERIALS.STEEL]: 150,
+            [MATERIALS.CONCRETE]: 100,
+            [MATERIALS.GLASS]: 30
         }
     }),
     SCHOOL: setBuilding({
@@ -163,10 +185,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 5,
         HAPPINESS: 2,
-        MONEY_COST: 0,
+        MONEY_COST: 2500,
+        MONEY_PER_JOB: 35,
         MATERIAL_COST: {
-            [MATERIALS.WOOD]: 10,
-            [MATERIALS.STEEL]: 10
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.STEEL]: 50,
+            [MATERIALS.WOOD]: 30
         }
     }),
     UNIVERSITY: setBuilding({
@@ -177,10 +201,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 12,
         HAPPINESS: 3,
-        MONEY_COST: 0,
+        MONEY_COST: 6000,
+        MONEY_PER_JOB: 85,
         MATERIAL_COST: {
-            [MATERIALS.CONCRETE]: 10,
-            [MATERIALS.GLASS]: 10
+            [MATERIALS.CONCRETE]: 200,
+            [MATERIALS.STEEL]: 100,
+            [MATERIALS.GLASS]: 60
         }
     }),
     STADIUM: setBuilding({
@@ -191,11 +217,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 15,
         HAPPINESS: 5,
-        MONEY_COST: 0,
+        MONEY_COST: 20000,
+        MONEY_PER_JOB: 95,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.CONCRETE]: 10,
-            [MATERIALS.GLASS]: 10
+            [MATERIALS.STEEL]: 600,
+            [MATERIALS.CONCRETE]: 700,
+            [MATERIALS.GLASS]: 150
         }
     }),
     MARKET: setBuilding({
@@ -206,10 +233,9 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 2,
         HAPPINESS: 1,
-        MONEY_COST: 0,
-        MATERIAL_COST: {
-            [MATERIALS.WOOD]: 10
-        }
+        MONEY_COST: 500,
+        MONEY_PER_JOB: 20,
+        MATERIAL_COST: {}
     }),
     GROCERY_STORE: setBuilding({
         NAME: "grocery_store",
@@ -219,9 +245,11 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 3,
         HAPPINESS: 2,
-        MONEY_COST: 0,
+        MONEY_COST: 1500,
+        MONEY_PER_JOB: 28,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10
+            [MATERIALS.STEEL]: 40,
+            [MATERIALS.WOOD]: 20
         }
     }),
     SHOPPING_CENTER: setBuilding({
@@ -232,10 +260,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 10,
         HAPPINESS: 3,
-        MONEY_COST: 0,
+        MONEY_COST: 6000,
+        MONEY_PER_JOB: 70,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.GLASS]: 10
+            [MATERIALS.STEEL]: 100,
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.GLASS]: 50
         }
     }),
     BANK: setBuilding({
@@ -246,10 +276,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 5,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 3500,
+        MONEY_PER_JOB: 55,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.GLASS]: 10
+            [MATERIALS.STEEL]: 100,
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.GLASS]: 50
         }
     }),
     BASIC_OFFICE: setBuilding({
@@ -260,9 +292,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 5,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 2000,
+        MONEY_PER_JOB: 30,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10
+            [MATERIALS.STEEL]: 120,
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.GLASS]: 40
         }
     }),
     CORPORATE_OFFICE: setBuilding({
@@ -273,10 +308,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 8,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 3500,
+        MONEY_PER_JOB: 45,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.GLASS]: 10
+            [MATERIALS.STEEL]: 120,
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.GLASS]: 40
         }
     }),
     SKYSCRAPER: setBuilding({
@@ -287,10 +324,12 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 12,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 5500,
+        MONEY_PER_JOB: 65,
         MATERIAL_COST: {
-            [MATERIALS.CONCRETE]: 10,
-            [MATERIALS.GLASS]: 10
+            [MATERIALS.STEEL]: 180,
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.GLASS]: 100
         }
     }),
     FACTORY: setBuilding({
@@ -301,10 +340,11 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 8,
         HAPPINESS: -1,
-        MONEY_COST: 0,
+        MONEY_COST: 4500,
+        MONEY_PER_JOB: 50,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.CONCRETE]: 10
+            [MATERIALS.STEEL]: 150,
+            [MATERIALS.CONCRETE]: 80
         }
     }),
     COAL_PLANT: setBuilding({
@@ -315,10 +355,13 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 6,
         HAPPINESS: -2,
-        MONEY_COST: 0,
+        MONEY_COST: 4000,
+        MONEY_PER_JOB: 60,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 10,
-            [MATERIALS.COAL]: 10
+            [MATERIALS.COAL]: 60,
+            [MATERIALS.STEEL]: 80,
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.STONE]: 60
         }
     }),
     NUCLEAR_REACTOR: setBuilding({
@@ -329,10 +372,13 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 10,
         HAPPINESS: -1,
-        MONEY_COST: 0,
+        MONEY_COST: 12000,
+        MONEY_PER_JOB: 110,
         MATERIAL_COST: {
-            [MATERIALS.CONCRETE]: 10,
-            [MATERIALS.URANIUM]: 10
+            [MATERIALS.URANIUM]: 40,
+            [MATERIALS.STEEL]: 300,
+            [MATERIALS.CONCRETE]: 200,
+            [MATERIALS.URANIUM]: 120
         }
     }),
     WOODEN_HOUSE: setBuilding({
@@ -343,9 +389,10 @@ export const BUILDINGS = {
         APARTMENTS: 2,
         JOBS: 0,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 800,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.WOOD]: 10
+            [MATERIALS.WOOD]: 30
         }
     }),
     STONE_HOUSE: setBuilding({
@@ -356,9 +403,11 @@ export const BUILDINGS = {
         APARTMENTS: 3,
         JOBS: 0,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 1100,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.STONE]: 10
+            [MATERIALS.STONE]: 35,
+            [MATERIALS.WOOD]: 15
         }
     }),
     CONCRETE_HOUSE: setBuilding({
@@ -369,9 +418,11 @@ export const BUILDINGS = {
         APARTMENTS: 5,
         JOBS: 0,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 1600,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.CONCRETE]: 10
+            [MATERIALS.CONCRETE]: 50,
+            [MATERIALS.STEEL]: 15
         }
     }),
     SOVIET_BLOCK: setBuilding({
@@ -382,9 +433,11 @@ export const BUILDINGS = {
         APARTMENTS: 6,
         JOBS: 0,
         HAPPINESS: -2,
-        MONEY_COST: 0,
+        MONEY_COST: 2200,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.CONCRETE]: 10
+            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.STEEL]: 25
         }
     }),
     APARTMENT_BLOCK: setBuilding({
@@ -395,10 +448,11 @@ export const BUILDINGS = {
         APARTMENTS: 10,
         JOBS: 0,
         HAPPINESS: 0,
-        MONEY_COST: 0,
+        MONEY_COST: 3000,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.CONCRETE]: 10,
-            [MATERIALS.STEEL]: 10
+            [MATERIALS.CONCRETE]: 100,
+            [MATERIALS.STEEL]: 60
         }
     }),
     PENTHOUSE: setBuilding({
@@ -409,10 +463,12 @@ export const BUILDINGS = {
         APARTMENTS: 15,
         JOBS: 0,
         HAPPINESS: 2,
-        MONEY_COST: 0,
+        MONEY_COST: 4500,
+        MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.GLASS]: 10,
-            [MATERIALS.STEEL]: 10
+            [MATERIALS.STEEL]: 80,
+            [MATERIALS.CONCRETE]: 60,
+            [MATERIALS.GLASS]: 50
         }
     }),
 };
