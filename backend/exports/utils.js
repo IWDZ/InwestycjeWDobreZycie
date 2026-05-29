@@ -1,5 +1,5 @@
-import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_MATERIALS } from "../gameStorage";
-import Building from "./Building";
+import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_MATERIALS } from "../gameStorage.js";
+import Building from "./Building.js";
 
 export function getCurrentBuildingId(game) {
     return game.settings.NEXT_BUILDING_ID++;

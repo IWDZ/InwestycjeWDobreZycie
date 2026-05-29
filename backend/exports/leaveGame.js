@@ -1,4 +1,4 @@
-import { getGame, hasGameStarted, hasPlayer, isHost, removePlayer } from "./utils";
+import { getGame, hasGameStarted, hasPlayer, isHost, removePlayer } from "./utils.js";
 
 export default function leaveGame(io, socket, gameCode) {
     if (typeof gameCode !== "string") {

@@ -1,4 +1,4 @@
-import { BUILDINGS } from "../gameStorage";
+import { BUILDINGS } from "../gameStorage.js";
 
 class Building {
     #id;

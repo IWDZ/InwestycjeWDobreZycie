@@ -1,6 +1,6 @@
-import Building from "../exports/Building";
-import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket } from "../exports/utils";
-import { BUILDINGS, GAMES, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY } from "../gameStorage";
+import Building from "../exports/Building.js";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket } from "../exports/utils.js";
+import { BUILDINGS, GAMES, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY } from "../gameStorage.js";
 
 function gameLogic(io, socket) {
     socket.on("start_game", data => {
