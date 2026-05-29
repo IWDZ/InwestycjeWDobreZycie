@@ -60,8 +60,7 @@ export function setUpPlayer(game, player, middle) {
         livingPopulation: 3,
         workingPopulation: 3,
         maxLivingPolulation: 5,
-        maxWorkingPopulation: 5,
-        unemployedPopulation: 0
+        maxWorkingPopulation: 5
     }
 }
 
@@ -146,19 +145,21 @@ export function removeMoney(player, moneyToRemove) {
     player.money -= moneyToRemove;
 }
 
-export function placeBuilding(field, rowStart, columnStart, rowEnd, columnEnd, buildingId, building, isVertical) {
+export function placeBuilding(player, field, rowStart, columnStart, rowEnd, columnEnd, buildingId, building, isVertical) {
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
             field[y][x] = new Building(buildingId, building, [rowStart, columnStart], isVertical);
         }
     }
+    player.population.maxLivingPopulation += building.APARTMENTS;
+    player.population.maxWorkingPopulation += building.JOBS;
 }
 
 export function isTownHall(buildingName) {
     return buildingName === BUILDINGS.TOWN_HALL.NAME;
 }
 
-export function couldDeleteBuilding(field, rowStart, columnStart, rowEnd, columnEnd, buildingObject) {
+export function couldDeleteBuilding(player, building, field, rowStart, columnStart, rowEnd, columnEnd, buildingObject) {
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
             if (field[y][x] !== buildingObject) {
@@ -167,6 +168,10 @@ export function couldDeleteBuilding(field, rowStart, columnStart, rowEnd, column
             field[y][x] = null;
         }
     }
+    player.population.maxLivingPopulation -= building.APARTMENTS;
+    player.population.maxWorkingPopulation -= building.JOBS;
+    if (player.population.livingPopulation > player.population.maxLivingPolulation || player.population.workingPopulation > player.population.maxWorkingPopulation)
+        
     return true;
 }
 

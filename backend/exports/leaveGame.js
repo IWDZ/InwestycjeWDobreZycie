@@ -1,3 +1,4 @@
+import { GAMES } from "../gameStorage.js";
 import { getGame, hasGameStarted, hasPlayer, isHost, removePlayer } from "./utils.js";
 
 export default function leaveGame(io, socket, gameCode) {
@@ -17,7 +18,7 @@ export default function leaveGame(io, socket, gameCode) {
     if (isHost(game, socket.id) && !hasGameStarted(game)) {
         socket.emit("left");
         game.players.forEach(player => io.to(player.socketId).emit("host_left"));
-        game.delete(gameCode);
+        GAMES.delete(gameCode);
         return;
     }
 

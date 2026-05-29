@@ -103,7 +103,7 @@ function gameLogic(io, socket) {
         removeMaterials(player, building.MATERIAL_COST);
         removeMoney(player, building.MONEY_COST)
 
-        placeBuilding(field, rowStart, columnStart, rowEnd, columnEnd, id, building, isVertical);
+        placeBuilding(player, field, rowStart, columnStart, rowEnd, columnEnd, id, building, isVertical);
 
         socket.emit("field_update", {field, materials: player.materials, money: player.money});
     });
@@ -147,7 +147,7 @@ function gameLogic(io, socket) {
 
         const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(building, startLocation, isVertical);
 
-        if (!couldDeleteBuilding(field, rowStart, columnStart, rowEnd, columnEnd, buildingObject)) {
+        if (!couldDeleteBuilding(player, building, field, rowStart, columnStart, rowEnd, columnEnd, buildingObject)) {
             socket.emit("error", "Something Went Wrong With Deleting A Building");
             return;
         }

@@ -18,15 +18,6 @@ export const GAME_CODE_LENGTH = 6;
 export const MAX_PLAYERS = 6;
 export const MAX_FIELD_SIZE = 7;
 export const POPULATION = 300;
-export const START_MATERIALS = {
-    [MATERIALS.STEEL]: 0,
-    [MATERIALS.CONCRETE]: 0,
-    [MATERIALS.WOOD]: 0,
-    [MATERIALS.STONE]: 0,
-    [MATERIALS.GLASS]: 0,
-    [MATERIALS.COAL]: 0,
-    [MATERIALS.URANIUM]: 0
-};
 export const START_MONEY = 5000;
 export const START_HAPPINESS = 50;
 
@@ -48,6 +39,16 @@ export const MATERIALS = {
     COAL: "coal",
     URANIUM: "uranium"
 }
+
+export const START_MATERIALS = {
+    [MATERIALS.STEEL]: 0,
+    [MATERIALS.CONCRETE]: 0,
+    [MATERIALS.WOOD]: 0,
+    [MATERIALS.STONE]: 0,
+    [MATERIALS.GLASS]: 0,
+    [MATERIALS.COAL]: 0,
+    [MATERIALS.URANIUM]: 0
+};
 
 export const MATERIAL_PRICES = {
     [MATERIALS.WOOD]: 10,
