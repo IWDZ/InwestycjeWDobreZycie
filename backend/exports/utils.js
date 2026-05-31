@@ -59,7 +59,7 @@ export function setUpPlayer(game, player, middle) {
     player.population = {
         livingPopulation: 3,
         workingPopulation: 3,
-        maxLivingPolulation: 5,
+        maxLivingPopulation: 5,
         maxWorkingPopulation: 5
     }
 }
@@ -93,7 +93,8 @@ export function hasRequiredMoney(moneyCost, money) {
     return money >= moneyCost;
 }
 
-export function getBuildingBounds(building, startLocation, isVertical) {
+export function getBuildingBounds(buildingObject) {
+    const {building, startLocation, isVertical} = buildingObject;
     const height = isVertical ? building.WIDTH : building.HEIGHT;
     const width = isVertical ? building.HEIGHT : building.WIDTH;
 
@@ -159,7 +160,8 @@ export function isTownHall(buildingName) {
     return buildingName === BUILDINGS.TOWN_HALL.NAME;
 }
 
-export function couldDeleteBuilding(player, building, field, rowStart, columnStart, rowEnd, columnEnd, buildingObject) {
+export function couldDeleteBuilding(game, player, buildingObject, field) {
+    const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(buildingObject);
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
             if (field[y][x] !== buildingObject) {
@@ -168,11 +170,102 @@ export function couldDeleteBuilding(player, building, field, rowStart, columnSta
             field[y][x] = null;
         }
     }
-    player.population.maxLivingPopulation -= building.APARTMENTS;
-    player.population.maxWorkingPopulation -= building.JOBS;
-    if (player.population.livingPopulation > player.population.maxLivingPolulation || player.population.workingPopulation > player.population.maxWorkingPopulation)
-        
+    const building = buildingObject.building;
+    const population = player.population;
+    
+    population.workingPopulation -= buildingObject.workers;
+    population.livingPopulation -= buildingObject.residents;
+    population.maxLivingPopulation -= building.APARTMENTS;
+    population.maxWorkingPopulation -= building.JOBS;
+
+    if (population.livingPopulation > population.maxLivingPopulation || population.workingPopulation > population.maxWorkingPopulation) {
+        const livingPopulationDifference = population.livingPopulation - population.maxLivingPopulation;
+        const workingPopulationDifference = population.workingPopulation - population.maxWorkingPopulation;
+        const populationToDecrease = livingPopulationDifference > workingPopulationDifference ? livingPopulationDifference : workingPopulationDifference;
+        decreasePopulation(player, populationToDecrease, populationToDecrease);
+    }
     return true;
+}
+
+export function increasePopulation(player, workersToIncrease, residentsToIncrease, blockedIDs = []) {
+    if (workersToIncrease <= 0 && residentsToIncrease <= 0) return;
+    const population = player.population;
+    if (population.workingPopulation + workersToIncrease > population.maxWorkingPopulation || population.livingPopulation + residentsToIncrease > population.maxLivingPopulation) return;
+    
+    const worstBuilding = getWorstBuilding(player, blockedIDs);
+
+    const emptyJobs = worstBuilding.building.JOBS - worstBuilding.workers;
+    const emptyApartments = worstBuilding.building.APARTMENTS - worstBuilding.residents;
+
+    if (emptyJobs >= workersToIncrease) {
+        population.workingPopulation += workersToIncrease;
+        worstBuilding.workers += workersToIncrease;
+        workersToIncrease = 0;
+    }else{
+        population.workingPopulation += emptyJobs;
+        workersToIncrease -= emptyJobs;
+        worstBuilding.workers += emptyJobs;
+    }
+
+    if (emptyApartments >= residentsToIncrease) {
+        population.livingPopulation += residentsToIncrease;
+        worstBuilding.residents += residentsToIncrease;
+        residentsToIncrease = 0;
+    }else{
+        population.livingPopulation += emptyApartments;
+        residentsToIncrease -= emptyApartments;
+        worstBuilding.residents += emptyApartments;
+    }
+
+    blockedIDs.push(worstBuilding.id);
+    return increasePopulation(player, workersToIncrease, residentsToIncrease, blockedIDs);
+}
+
+export function decreasePopulation(player, workersToDecrease, residentsToDecrease, blockedIDs = []) {
+    if (workersToDecrease <= 0 && residentsToDecrease <= 0) return;
+
+    const population = player.population;
+    const worstBuilding = getWorstBuilding(player, blockedIDs);
+
+    if (worstBuilding.workers >= workersToDecrease) {
+        population.workingPopulation -= workersToDecrease;
+        worstBuilding.workers -= workersToDecrease;
+        workersToDecrease = 0;
+    }else{
+        population.workingPopulation -= worstBuilding.workers;
+        workersToDecrease -= worstBuilding.workers;
+        worstBuilding.workers = 0;
+    }
+
+    if (worstBuilding.residents >= residentsToDecrease) {
+        population.livingPopulation -= residentsToDecrease;
+        worstBuilding.residents -= residentsToDecrease;
+        residentsToDecrease = 0;
+    }else{
+        population.livingPopulation -= worstBuilding.residents;
+        residentsToDecrease -= worstBuilding.residents;
+        worstBuilding.residents = 0;
+    }
+
+    blockedIDs.push(worstBuilding.id);
+    return decreasePopulation(player, workersToDecrease, residentsToDecrease, blockedIDs);
+}
+
+export function getWorstBuilding(player, blockedIDs) {
+    let worstY = 0;
+    let worstX = 0;
+    let minSalary = Infinity;
+    for (let y = 0; y < MAX_FIELD_SIZE; y++) {
+        for (let x = 0; x < MAX_FIELD_SIZE; x++) {
+            if (player.field[y][x] instanceof Building && player.field[y][x].building.MONEY_PER_JOB < minSalary && (player.field[y][x].workers > 0 || player.field[y][x].residents > 0) && !blockedIDs.includes(player.field[y][x].id)) {
+                minSalary = player.field[y][x].building.MONEY_PER_JOB;
+                worstY = y;
+                worstX = x;
+            }
+        }
+    }
+
+    return player.filter[y][x];
 }
 
 export function generateGameCode() {

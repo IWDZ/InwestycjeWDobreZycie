@@ -138,16 +138,12 @@ function gameLogic(io, socket) {
             return;
         }
 
-        const { id, building, startLocation, isVertical } = buildingObject;
-
-        if (isTownHall(building.NAME)) {
+        if (isTownHall(buildingObject.building.NAME)) {
             socket.emit("error", "Cannot Delete The Town Hall");
             return;
         }
 
-        const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(building, startLocation, isVertical);
-
-        if (!couldDeleteBuilding(player, building, field, rowStart, columnStart, rowEnd, columnEnd, buildingObject)) {
+        if (!couldDeleteBuilding(player, buildingObject, field)) {
             socket.emit("error", "Something Went Wrong With Deleting A Building");
             return;
         }

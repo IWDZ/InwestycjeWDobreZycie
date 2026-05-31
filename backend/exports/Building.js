@@ -1,3 +1,4 @@
+import res from "express/lib/response.js";
 import { BUILDINGS } from "../gameStorage.js";
 
 class Building {
@@ -5,12 +6,18 @@ class Building {
     #building;
     #startLocation;
     #isVertical;
+    workers;
+    residents;
 
     constructor(id, building, startLocation, isVertical) {
         this.#id = id;
         this.#building = building;
         this.#startLocation = startLocation;
         this.#isVertical = isVertical;
+        if (building.NAME === BUILDINGS.TOWN_HALL.NAME) {
+            this.workers = 3;
+            this.residents = 3;
+        }
     }
 
     get id() {
