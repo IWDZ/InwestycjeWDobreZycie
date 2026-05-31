@@ -39,10 +39,10 @@ function gameLogic(io, socket) {
         }
 
         const middle = getFieldMiddle();
-        game.players.forEach(player => {
+        for (const player of game.players) {
             setUpPlayer(game, player, middle);
             io.to(player.socketId).emit("game_start", getDefaultClientGameDataObject(game, player));
-        });
+        }
     });
 
     socket.on("buy_material", data => {
@@ -65,7 +65,6 @@ function gameLogic(io, socket) {
 
         if (!buyMaterial(game, player, material, amount)) {
             socket.emit("error", "Not Enough Money");
-            return;
         }
     });
 
@@ -89,7 +88,6 @@ function gameLogic(io, socket) {
 
         if (!sellMaterial(game, player, material, amount)) {
             socket.emit("error", "Not Enough Materials");
-            return;
         }
     })
 

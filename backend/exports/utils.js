@@ -338,7 +338,7 @@ export function hasGameStarted(game) {
 }
 
 export function hasPlayerWithUsername(game, username) {
-    return game.players.some(player => player.username === username)
+    return game.players.some(player => player.username.toLowerCase() === username.toLowerCase())
 }
 
 export function hasPlayer(game, socketId) {

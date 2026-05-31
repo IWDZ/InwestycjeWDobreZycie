@@ -17,7 +17,9 @@ export default function leaveGame(io, socket, gameCode) {
 
     if (isHost(game, socket.id) && !hasGameStarted(game)) {
         socket.emit("left");
-        game.players.forEach(player => io.to(player.socketId).emit("host_left"));
+        for (const player of game.players) {
+            io.to(player.socketId).emit("host_left");
+        }
         GAMES.delete(gameCode);
         return;
     }
