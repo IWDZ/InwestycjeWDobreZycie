@@ -131,7 +131,7 @@ export function hasPlacementError(buildingName, field, rowStart, columnStart, ro
 }
 
 export function returnMaterials(player, materialsToReturn) {
-    Object.entries(materialsToAdd).every(([material, amount]) => player.materials[material] += Math.floor(amount / 2));
+    Object.entries(materialsToReturn).every(([material, amount]) => player.materials[material] += Math.floor(amount / 2));
 }
 
 export function removeMaterials(player, materialsToRemove) {
