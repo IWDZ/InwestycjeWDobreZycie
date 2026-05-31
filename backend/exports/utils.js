@@ -130,6 +130,32 @@ export function hasPlacementError(buildingName, field, rowStart, columnStart, ro
     return false;
 }
 
+export function buyMaterial(game, player, material, amount) {
+    const cost = game.materialPrices[material] * amount;
+    if (!hasRequiredMoney(cost, player.money)) {
+        return false;
+    }
+
+    removeMoney(player, cost);
+    player.materials[material] += amount;
+
+    return true;
+}
+
+export function sellMaterial(game, player, material, amount) {
+    const materialCostObject = {[material]: amount};
+    if (!hasRequiredMaterials(materialCostObject, player.materials)) {
+        return false;
+    }
+
+    removeMaterials(player, materialCostObject);
+    
+    const cost = game.materialPrices[material] * amount;
+    player.money += cost;
+
+    return true;
+}
+
 export function returnMaterials(player, materialsToReturn) {
     Object.entries(materialsToReturn).every(([material, amount]) => player.materials[material] += Math.floor(amount / 2));
 }

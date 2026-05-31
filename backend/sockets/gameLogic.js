@@ -1,5 +1,5 @@
 import Building from "../exports/Building.js";
-import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket } from "../exports/utils.js";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial } from "../exports/utils.js";
 import { BUILDINGS, GAMES, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY } from "../gameStorage.js";
 
 function gameLogic(io, socket) {
@@ -44,6 +44,54 @@ function gameLogic(io, socket) {
             io.to(player.socketId).emit("game_start", getDefaultClientGameDataObject(game, player));
         });
     });
+
+    socket.on("buy_material", data => {
+        if (!isValidData(data)) {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+
+        const { gameCode, material, amount } = data;
+
+        if (typeof gameCode !== "string" || !Object.values(MATERIALS).includes(material) || !Number.isInteger(amount)) {
+            socket.emit("error", "Invalid Data");
+            return;
+        }
+
+        const game = getGame(socket, gameCode);
+        if (!game) return;
+
+        const player = getPlayer(game, socket.id);
+
+        if (!buyMaterial(game, player, material, amount)) {
+            socket.emit("error", "Not Enough Money");
+            return;
+        }
+    });
+
+    socket.on("sell_material", data => {
+        if (!isValidData(data)) {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+
+        const { gameCode, material, amount } = data;
+
+        if (typeof gameCode !== "string" || !Object.values(MATERIALS).includes(material) || !Number.isInteger(amount)) {
+            socket.emit("error", "Invalid Data");
+            return;
+        }
+
+        const game = getGame(socket, gameCode);
+        if (!game) return;
+
+        const player = getPlayer(game, socket.id);
+
+        if (!sellMaterial(game, player, material, amount)) {
+            socket.emit("error", "Not Enough Materials");
+            return;
+        }
+    })
 
     socket.on("create_building", data => {
         if (!isValidData(data)) {
