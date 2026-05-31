@@ -40,6 +40,15 @@ export const MATERIALS = {
     URANIUM: "uranium"
 }
 
+export const ATOMIC_BOMB = {
+    MATERIAL_COST: {
+        [MATERIALS.URANIUM]: 750,
+        [MATERIALS.STEEL]: 350,
+        [MATERIALS.COAL]: 250
+    },
+    MONEY_COST: 50000
+}
+
 export const START_MATERIALS = {
     [MATERIALS.STEEL]: 0,
     [MATERIALS.CONCRETE]: 0,
