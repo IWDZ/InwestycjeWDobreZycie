@@ -8,11 +8,11 @@ function gameLogic(io, socket) {
             socket.emit("error", "Invalid data");
             return;
         }
-        const {gameCode, populationPool, buildingCost, marketVolatility} = data;
+        const {gameCode, populationPool, marketVolatility} = data;
 
         if (typeof gameCode !== "string" || 
-            !Number.isInteger(populationPool) || populationPool < 50 || populationPool > 100 || 
-            !Number.isInteger(buildingCost) || !Number.isInteger(marketVolatility)) {
+            !Number.isInteger(populationPool) || populationPool < 50 || populationPool > 100 ||
+            !Number.isInteger(marketVolatility)) {
                 socket.emit("error", "Invalid Data");
                 return;
         }
@@ -24,7 +24,7 @@ function gameLogic(io, socket) {
         }
         
         game.started = true;
-        game.settings = getDefaultSettings(populationPool, buildingCost, marketVolatility);
+        game.settings = getDefaultSettings(populationPool, marketVolatility);
         game.currentTick = {
             tickNumber: 1,
             sales: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0])),

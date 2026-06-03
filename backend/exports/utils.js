@@ -13,11 +13,10 @@ export function isValidData(data) {
     return typeof data === "object" && data !== null && !Array.isArray(data);
 }
 
-export function getDefaultSettings(populationPool, buildingCost, marketVolatility) {
+export function getDefaultSettings(populationPool, marketVolatility) {
     return {
         POPULATION: ((populationPool / 100) * POPULATION),
-        BUILDING_COST: buildingCost,
-        BUILD_MARKET_VOLATILITY: marketVolatility,
+        MARKET_VOLATILITY: marketVolatility,
         NEXT_BUILDING_ID: 1
     };
 }
@@ -388,7 +387,7 @@ export function updateMarket(game, currentTick) {
                 net--;
             }
         }
-        game.materialPrices[material] *= newPrice * game.settings.marketVolatility;
+        game.materialPrices[material] *= newPrice * game.settings.MARKET_VOLATILITY;
     }
 }
 
