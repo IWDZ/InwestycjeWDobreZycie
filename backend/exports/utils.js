@@ -393,9 +393,19 @@ export function updateMarket(game, currentTick) {
     }
 }
 
-export function endGame(game) {
-    clearInterval(game.gameTickInterval);
-    const players = structuredClone(game.players);
+export function updatePopulation(game) {
+    for (const player of game.players) {
+        const happinessFactor = (player.happiness - START_HAPPINESS) * HAPPINESS_MULTIPLIER;
+        const workFactor = (player.population.maxWorkingPopulation - player.population.workingPopulation) * WORK_MULTIPLIER;
+        const rawChange = (happinessFactor + workFactor) * (Math.random() * 0.6 + 0.7);
+        const populationChange = rawChange >= 0 ? Math.ceil(rawChange) : Math.floor(rawChange);
+        if (populationChange < 0) {
+            if(decreasePopulation(player, Math.abs(populationChange))) game.settings.POPULATION += populationChange;
+        }else{
+            if(increasePopulation(player, populationChange)) game.settings.POPULATION -= populationChange;
+        }
+    }
+}
 
 export function sumUpPlayers(game) {
     for (const player of game.players) {
