@@ -20,6 +20,12 @@ export const MAX_FIELD_SIZE = 7;
 export const POPULATION = 300;
 export const START_MONEY = 5000;
 export const START_HAPPINESS = 50;
+export const WORTH_PER_PERSON = 750;
+export const HAPPINESS_MULTIPLIER = 0.05;
+export const WORK_MULTIPLIER = 0.02;
+export const GAME_TICK_SECONDS = 3;
+export const MARKET_UPDATE_TICK_INTERVAL = 3;
+export const GAME_DURATION_TICKS = 120;
 
 export const BUILDING_TYPES = {
     SPECIAL: "Special",

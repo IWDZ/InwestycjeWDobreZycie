@@ -1,4 +1,4 @@
-import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_MATERIALS } from "../gameStorage.js";
+import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
 import Building from "./Building.js";
 
 export function getCurrentBuildingId(game) {
@@ -305,7 +305,7 @@ export function generateGameCode() {
     return gameCode;
 }
 
-export function getDefaultGameObject(username, socketId, playersAmount) {
+export function getDefaultGameObject(gameCode, username, socketId, playersAmount) {
     return {
         host: {
             username: username,
@@ -318,7 +318,8 @@ export function getDefaultGameObject(username, socketId, playersAmount) {
             }
         ],
         maxPlayers: playersAmount,
-        started: false
+        started: false,
+        gameCode: gameCode
     };
 }
 
@@ -389,4 +390,55 @@ export function updateMarket(game, currentTick) {
         }
         game.materialPrices[material] *= newPrice * game.settings.marketVolatility;
     }
+}
+
+export function endGame(game) {
+    clearInterval(game.gameTickInterval);
+    const players = structuredClone(game.players);
+
+export function sumUpPlayers(game) {
+    for (const player of game.players) {
+        const moneyWorth = player.money;
+        let materialWorth = {};
+        for (const [material, amount] of Object.entries(player.materials)){
+            const moneyBeforeSelling = player.money;
+            sellMaterial(game, player, material, amount);
+            materialWorth = {...materialWorth, [material]: player.money - moneyBeforeSelling};
+        }
+        const field = player.field;
+        const ignoredIDs = [];
+        let buildingsWorth = 0;
+        for (let y = 0; y < MAX_FIELD_SIZE; y++) {
+            for (let x = 0; x < MAX_FIELD_SIZE; x++) {
+                const cell = field[y][x];
+                if (!(cell instanceof Building) || ignoredIDs.includes(cell.id)) continue;
+                const worth = cell.building.MONEY_COST;
+                buildingsWorth += worth;
+                player.money += worth;
+                ignoredIDs.push(cell.id);
+            }
+        }
+        const populationWorth = player.population.livingPopulation * WORTH_PER_PERSON;
+        player.money += populationWorth;
+        player.worth = {
+            moneyWorth: moneyWorth,
+            materialWorth: materialWorth,
+            buildingsWorth: buildingsWorth,
+            populationWorth: populationWorth,
+            totalWorth: player.money
+        }
+    }
+
+    const leaderboard = [...game.players].sort((a, b) => b.worth.totalWorth - a.worth.totalWorth).map(player => (
+        {
+            username: player.username,
+            worth: player.worth.totalWorth
+        }
+    ));
+    return leaderboard;
+}
+
+export function endGame(game) {
+    clearInterval(game.gameTickInterval);
+    GAMES.delete(game.gameCode);
 }

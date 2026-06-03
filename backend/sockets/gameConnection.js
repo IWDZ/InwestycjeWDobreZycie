@@ -17,7 +17,7 @@ function gameConnection(io, socket) {
 
         let gameCode = generateGameCode();
 
-        GAMES.set(gameCode, getDefaultGameObject(username, socket.id, playersAmount));
+        GAMES.set(gameCode, getDefaultGameObject(gameCode, username, socket.id, playersAmount));
         
         socket.emit("game_created", {
             gameCode: gameCode,
