@@ -72,6 +72,22 @@ export function getPlayer(game, socketId) {
     return game.players.find(p => p.socketId === socketId);
 }
 
+export function generateIncome(player) {
+    const field = player.field;
+    const ignoredIDs = [];
+    let income = 0;
+    for (let y = 0; y < MAX_FIELD_SIZE; y++) {
+        for (let x = 0; x < MAX_FIELD_SIZE; x++) {
+            const cell = field[y][x];
+            if (!(cell instanceof Building) || ignoredIDs.includes(cell.id)) continue;
+            income += cell.building.MONEY_PER_JOB * cell.workers;
+            ignoredIDs.push(cell.id);
+        }
+    }
+    addMoney(player, income);
+    return income;
+}
+
 export function isCellBought(cell) {
     return cell instanceof Building || cell === null;
 }
@@ -155,14 +171,18 @@ export function removeMaterials(player, materialsToRemove) {
     Object.entries(materialsToRemove).forEach(([material, requiredAmount]) => player.materials[material] -= requiredAmount);
 }
 
-export function returnMoney(player, moneyToReturn) {
-    const returnedMoney = Math.floor(moneyToReturn / 2)
-    player.money += returnedMoney;
-    return returnedMoney;
+export function returnMoney(player, amount) {
+    const moneyToReturn = Math.floor(amount / 2)
+    addMoney(player, moneyToReturn);
+    return moneyToReturn;
 }
 
-export function removeMoney(player, moneyToRemove) {
-    player.money -= moneyToRemove;
+export function addMoney(player, amount) {
+    player.money += amount;
+}
+
+export function removeMoney(player, amount) {
+    player.money -= amount;
 }
 
 export function placeBuilding(player, field, rowStart, columnStart, rowEnd, columnEnd, buildingId, building, isVertical) {

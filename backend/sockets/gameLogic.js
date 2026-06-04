@@ -1,7 +1,7 @@
 import Building from "../exports/Building.js";
 import { sendCellPriceUpdate, sendFieldUpdate, sendHappinessUpdate, sendMaterialPricesUpdate, sendMaterialsUpdate, sendMaxPopulationUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate } from "../exports/clientUpdates.js";
-import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial, endGame, sumUpPlayers, decreasePopulation, increasePopulation, updatePopulation, hasAdjacentCell, buyCell } from "../exports/utils.js";
-import { BUILDINGS, CELL_PRICE_INCREASE, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAME_TICKS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER } from "../gameStorage.js";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial, endGame, sumUpPlayers, decreasePopulation, increasePopulation, updatePopulation, hasAdjacentCell, buyCell, generateIncome } from "../exports/utils.js";
+import { BUILDINGS, CELL_PRICE_INCREASE, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER } from "../gameStorage.js";
 
 function gameLogic(io, socket) {
     socket.on("start_game", data => {
@@ -260,6 +260,11 @@ function gameLogic(io, socket) {
 
 function doGameTick(io, game) {
     const currentTick = game.currentTick;
+
+    for (const player of game.players) {
+        sendMoneyIncrease(generateIncome(player));
+        sendMoneyUpdate(io, player);
+    }
 
     if (currentTick.tickNumber >= GAME_DURATION_TICKS) {
         const leaderboard = sumUpPlayers(game);
