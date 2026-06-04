@@ -1,4 +1,4 @@
-import { BUILDINGS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
 import Building from "./Building.js";
 
 export function getCurrentBuildingId(game) {
@@ -52,6 +52,7 @@ export function createField(middle) {
 export function setUpPlayer(game, player, middle) {
     player.field = createField(middle);
     player.field[middle][middle] = new Building(BUILDINGS.TOWN_HALL, getCurrentBuildingId(game), [middle, middle], false);
+    player.nextCellPrice = DEFAULT_CELL_PRICE;
     player.happiness = START_HAPPINESS;
     player.materials = { ...START_MATERIALS };
     player.money = START_MONEY;
@@ -69,6 +70,34 @@ export function getBuildingByName(buildingName) {
 
 export function getPlayer(game, socketId) {
     return game.players.find(p => p.socketId === socketId);
+}
+
+export function isCellBought(cell) {
+    return cell instanceof Building || cell === null;
+}
+
+export function hasAdjacentCell(field, location) {
+    const y = location[0];
+    const x = location[1];
+
+    return (
+        isCellBought(field[y-1]?.[x]) ||
+        isCellBought(field[y+1]?.[x]) ||
+        isCellBought(field[y]?.[x-1]) ||
+        isCellBought(field[y]?.[x+1])
+    );
+}
+
+export function buyCell(player, location) {
+    if (!hasRequiredMoney(player.nextCellPrice, player.money)) return false;
+
+    removeMoney(player, player.nextCellPrice);
+    const y = location[0];
+    const x = location[1];
+    player.field[y][x] = null;
+    player.nextCellPrice += CELL_PRICE_INCREASE;
+
+    return true;
 }
 
 export function hasRequiredBuilding(building, field) {

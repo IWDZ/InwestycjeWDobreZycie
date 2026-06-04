@@ -1,5 +1,5 @@
 import Building from "../exports/Building.js";
-import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial, endGame, sumUpPlayers, decreasePopulation, increasePopulation, updatePopulation } from "../exports/utils.js";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial, endGame, sumUpPlayers, decreasePopulation, increasePopulation, updatePopulation, hasAdjacentCell, buyCell } from "../exports/utils.js";
 import { BUILDINGS, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAME_TICKS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER } from "../gameStorage.js";
 
 function gameLogic(io, socket) {
@@ -42,6 +42,36 @@ function gameLogic(io, socket) {
         for (const player of game.players) {
             setUpPlayer(game, player, middle);
             io.to(player.socketId).emit("game_start", getDefaultClientGameDataObject(game, player));
+        }
+    });
+
+    socket.on("buy_cell", data => {
+        if (!isValidData(data)) {
+            socket.emit("error", "Invalid data");
+            return;
+        }
+
+        const { gameCode, location } = data;
+
+        if (typeof gameCode !== "string" || !Array.isArray(location) || 
+            !Number.isInteger(location[0]) || location[0] > (MAX_FIELD_SIZE - 1) || location[0] < 0 || 
+            !Number.isInteger(location[1]) || location[1] > (MAX_FIELD_SIZE - 1) || location[1] < 0) {
+            socket.emit("error", "Invalid Data");
+            return;
+        }
+
+        const game = getGame(gameCode);
+        const player = getPlayer(game, socket.id);
+        const field = player.field;
+
+        if (!hasAdjacentCell(field, location)) {
+            socket.emit("error", "You can only buy cell adjacent to an owned cell");
+            return;
+        }
+
+        if (!buyCell(player, location)) {
+            socket.emit("error", "Not Enough Money");
+            return;
         }
     });
 
