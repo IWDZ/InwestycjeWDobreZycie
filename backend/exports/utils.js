@@ -156,7 +156,9 @@ export function removeMaterials(player, materialsToRemove) {
 }
 
 export function returnMoney(player, moneyToReturn) {
-    player.money += Math.floor(moneyToReturn / 2);
+    const returnedMoney = Math.floor(moneyToReturn / 2)
+    player.money += returnedMoney;
+    return returnedMoney;
 }
 
 export function removeMoney(player, moneyToRemove) {
@@ -215,7 +217,8 @@ export function hasPlacementError(buildingName, field, rowStart, columnStart, ro
     return false;
 }
 
-export function couldDeleteBuilding(player, buildingObject, field) {
+export function couldDeleteBuilding(game, player, buildingObject) {
+    const field = player.field;
     const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(buildingObject);
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
@@ -238,7 +241,7 @@ export function couldDeleteBuilding(player, buildingObject, field) {
         const livingPopulationDifference = population.livingPopulation - population.maxLivingPopulation;
         const workingPopulationDifference = population.workingPopulation - population.maxWorkingPopulation;
         const populationToDecrease = livingPopulationDifference > workingPopulationDifference ? livingPopulationDifference : workingPopulationDifference;
-        decreasePopulation(player, populationToDecrease);
+        if(decreasePopulation(player, populationToDecrease)) game.settings.POPULATION += populationChange;
     }
     return true;
 }
