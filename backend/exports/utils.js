@@ -121,43 +121,6 @@ export function hasRequiredMoney(moneyCost, money) {
     return money >= moneyCost;
 }
 
-export function getBuildingBounds(buildingObject) {
-    const {building, startLocation, isVertical} = buildingObject;
-    const height = isVertical ? building.WIDTH : building.HEIGHT;
-    const width = isVertical ? building.HEIGHT : building.WIDTH;
-
-    const rowStart = startLocation[0];
-    const columnStart = startLocation[1];
-
-    return {
-        rowStart,
-        columnStart,
-        rowEnd: rowStart + height - 1,
-        columnEnd: columnStart + width - 1
-    };
-}
-
-export function isPlacementInBounds(rowEnd, columnEnd) {
-    return rowEnd <= (MAX_FIELD_SIZE - 1) && columnEnd <= (MAX_FIELD_SIZE - 1)
-}
-
-export function hasPlacementError(buildingName, field, rowStart, columnStart, rowEnd, columnEnd) {
-    if (buildingName === BUILDINGS.PORT.NAME && columnStart !== 0) {
-        return "A port can only be placed on the far-left cell";
-    }
-    for (let y = rowStart; y <= rowEnd; y++) {
-        for (let x = columnStart; x <= columnEnd; x++) {
-            if (field[y][x] === undefined) {
-                return "Out Of Available Space";
-            }
-            if (field[y][x] !== null) {
-                return "Space Occupied";
-            }
-        }
-    }
-    return false;
-}
-
 export function buyMaterial(game, player, material, amount) {
     const cost = game.materialPrices[material] * amount;
     if (!hasRequiredMoney(cost, player.money)) {
@@ -206,6 +169,7 @@ export function placeBuilding(player, field, rowStart, columnStart, rowEnd, colu
             field[y][x] = new Building(buildingId, building, [rowStart, columnStart], isVertical);
         }
     }
+    player.happiness += building.HAPPINESS;
     player.population.maxLivingPopulation += building.APARTMENTS;
     player.population.maxWorkingPopulation += building.JOBS;
 }
@@ -214,7 +178,44 @@ export function isTownHall(buildingName) {
     return buildingName === BUILDINGS.TOWN_HALL.NAME;
 }
 
-export function couldDeleteBuilding(game, player, buildingObject, field) {
+export function getBuildingBounds(buildingObject) {
+    const {building, startLocation, isVertical} = buildingObject;
+    const height = isVertical ? building.WIDTH : building.HEIGHT;
+    const width = isVertical ? building.HEIGHT : building.WIDTH;
+
+    const rowStart = startLocation[0];
+    const columnStart = startLocation[1];
+
+    return {
+        rowStart,
+        columnStart,
+        rowEnd: rowStart + height - 1,
+        columnEnd: columnStart + width - 1
+    };
+}
+
+export function isPlacementInBounds(rowEnd, columnEnd) {
+    return rowEnd <= (MAX_FIELD_SIZE - 1) && columnEnd <= (MAX_FIELD_SIZE - 1)
+}
+
+export function hasPlacementError(buildingName, field, rowStart, columnStart, rowEnd, columnEnd) {
+    if (buildingName === BUILDINGS.PORT.NAME && columnStart !== 0) {
+        return "A port can only be placed on the far-left cell";
+    }
+    for (let y = rowStart; y <= rowEnd; y++) {
+        for (let x = columnStart; x <= columnEnd; x++) {
+            if (field[y][x] === undefined) {
+                return "Out Of Available Space";
+            }
+            if (field[y][x] !== null) {
+                return "Space Occupied";
+            }
+        }
+    }
+    return false;
+}
+
+export function couldDeleteBuilding(player, buildingObject, field) {
     const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(buildingObject);
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
@@ -225,6 +226,7 @@ export function couldDeleteBuilding(game, player, buildingObject, field) {
         }
     }
     const building = buildingObject.building;
+    player.happiness -= building.HAPPINESS;
     const population = player.population;
     
     population.workingPopulation -= buildingObject.workers;
