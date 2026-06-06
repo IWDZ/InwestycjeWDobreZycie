@@ -32,7 +32,9 @@ export function getDefaultClientGameDataObject(game, player) {
         money: player.money,
         happiness: player.happiness,
         field: player.field,
-        buildings: BUILDINGS
+        buildings: BUILDINGS,
+        materials: MATERIALS,
+        playerMaterials: player.materials
     };
 }
 
