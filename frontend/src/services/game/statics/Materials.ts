@@ -9,7 +9,17 @@ export enum Materials {
     Uranium
 }
 
-const MATERIAL_MAP: Record<string, Materials> = {
+export const MATERIAL_SERVER_KEY: Record<Materials, string> = {
+    [Materials.Wood]: "wood",
+    [Materials.Stone]: "stone",
+    [Materials.Coal]: "coal",
+    [Materials.Concrete]: "concrete",
+    [Materials.Steel]: "steel",
+    [Materials.Glass]: "glass",
+    [Materials.Uranium]: "uranium",
+};
+
+export const MATERIAL_MAP: Record<string, Materials> = {
     "wood": Materials.Wood,
     "stone": Materials.Stone,
     "steel": Materials.Steel,
@@ -46,17 +56,5 @@ export function getMaterialColor(material: Materials): string {
         case Materials.Glass: return '#a8d8ea'
         case Materials.Coal: return '#0c0c0c'
         case Materials.Uranium: return '#57a639'
-    }
-}
-
-export function getMaterialBasePrice(material: Materials): number {
-    switch (material) {
-        case Materials.Wood: return 10
-        case Materials.Stone: return 15
-        case Materials.Steel: return 35
-        case Materials.Concrete: return 25
-        case Materials.Glass: return 50
-        case Materials.Coal: return 20
-        case Materials.Uranium: return 150
     }
 }

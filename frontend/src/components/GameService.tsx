@@ -12,6 +12,7 @@ import { BuildPanel } from "./gamePanels/BuildPanel";
 import {
   getMaterialColor,
   getMaterialName,
+  MATERIAL_MAP,
   Materials,
 } from "../services/game/statics/Materials";
 import { PlotPanel } from "./gamePanels/PlotPanel";
@@ -23,6 +24,7 @@ import { BUILDINGS } from "../services/game/statics/BuildingData";
 import { GameManager } from "../services/game/GameManager";
 import { ws } from "../services/WebsocketManager";
 import { roomManager } from "./LobbyService";
+import { MaterialMarket } from "../services/game/MaterialMarket";
 
 const TABS: { id: string; label: string; icon: any }[] = [
   { id: "build", label: "Buduj", icon: faHammer },
@@ -98,6 +100,28 @@ export function GameService({ shouldStart }: GameServiceRef) {
       forceUpdate((v) => v + 1);
     };
 
+    const onMaterialsUpdate = (data: Record<string, number>) => {
+      gameManager.inventory.syncMaterials(data);
+      forceUpdate((v) => v + 1);
+    };
+
+    ws.register_handler("materials_update", onMaterialsUpdate);
+
+    ws.register_handler(
+      "material_prices_update",
+      (data: Record<string, number>) => {
+        const market = MaterialMarket.getInstance();
+        const updates = Object.entries(data)
+          .filter(([, price]) => price != null)
+          .map(([key, price]) => ({
+            mat: MATERIAL_MAP[key.toLowerCase()],
+            value: price,
+          }))
+          .filter((x) => x.mat !== undefined);
+        market.addMaterialPrice(updates);
+      },
+    );
+
     ws.register_handler("money_increase", onMoneyIncrease);
     ws.register_handler("money_decrease", onMoneyDecrease);
     ws.register_handler("field_update", onFieldUpdate);
@@ -110,6 +134,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
       ws.unregister_handler("field_update", onFieldUpdate);
       ws.unregister_handler("happiness_update", onHappinessUpdate);
       ws.unregister_handler("money_update", onMoneyUpdate);
+      ws.unregister_handler("materials_update", onMaterialsUpdate);
     };
   }, []);
 
@@ -234,7 +259,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
                             <span className="material-name">
                               {getMaterialName(mat)}
                             </span>
-                            <span className="material-value">0</span>
+                            <span className="material-value">{gameManager.inventory.materialCount[mat]}</span>
                           </div>
                         </div>
                       ))}

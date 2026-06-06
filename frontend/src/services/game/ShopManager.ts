@@ -1,10 +1,11 @@
-import { Materials } from "./statics/Materials"
-import { Inventory } from "./Inventory"
+import { MATERIAL_SERVER_KEY, Materials } from "./statics/Materials"
 import { MaterialMarket } from "./MaterialMarket";
+import { Inventory } from "./Inventory";
+import { ws } from "../WebsocketManager";
+import { roomManager } from "../../components/LobbyService";
 
 export class ShopManager {
     private static instance: ShopManager;
-
     public static getInstance(): ShopManager {
         if (!ShopManager.instance) {
             ShopManager.instance = new ShopManager();
@@ -13,36 +14,30 @@ export class ShopManager {
     }
 
     public buy(material: Materials, count: number): boolean {
-        var inventory = Inventory.getInstance();
-        var materialMarket = MaterialMarket.getInstance();
-
-        var materialPrice = materialMarket.getCurrentPrice(material);
-
+        const inventory = Inventory.getInstance();
+        const materialMarket = MaterialMarket.getInstance();
+        const materialPrice = materialMarket.getCurrentPrice(material);
         if (!inventory.hasEnoughMoney(materialPrice * count)) {
-            return false
+            return false;
         }
-
-        // request do serwa ze kupujemy materialy
-
-        inventory.removeMoney(materialPrice * count);
-        inventory.addMaterials(material, count);
-        return true
+      ws.notify("buy_material", {
+          gameCode: roomManager.roomId,
+          material: MATERIAL_SERVER_KEY[material],
+          amount: count,
+      });
+        return true;
     }
 
     public sell(material: Materials, count: number): boolean {
-        var inventory = Inventory.getInstance();
-        var materialMarket = MaterialMarket.getInstance();
-
-        var materialPrice = materialMarket.getCurrentPrice(material);
-
+        const inventory = Inventory.getInstance();
         if (!inventory.hasEnoughMaterials(material, count)) {
-            return false
+            return false;
         }
-
-        // request do serwa ze sprzedajemy materialy
-
-        inventory.addMoney(materialPrice * count);
-        inventory.removeMaterials(material, count);
-        return true
+        ws.notify("sell_material", {
+            gameCode: roomManager.roomId,
+            material: MATERIAL_SERVER_KEY[material],
+            amount: count,
+        });
+        return true;
     }
 }

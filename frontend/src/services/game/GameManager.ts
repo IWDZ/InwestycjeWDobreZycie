@@ -34,12 +34,12 @@ export class GameManager {
     this.plotManager = new PlotManager();
     this.plotManager.syncFromServer(data.field)
     
-    this.inventory = new Inventory();
+    this.inventory = Inventory.getInstance();
     this.inventory.money = data.money;
     
     this.leaderboard = new Leaderboard();
     
-    this.shopManager = new ShopManager();
+    this.shopManager = ShopManager.getInstance();
     
     this.happiness = new Happiness();
     this.happiness.level = data.happiness;
