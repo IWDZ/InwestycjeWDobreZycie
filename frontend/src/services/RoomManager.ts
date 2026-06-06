@@ -1,4 +1,5 @@
 import { showError } from "../components/LobbyService";
+import { GameManager } from "./game/GameManager";
 import { Err, Ok, Result } from "./Utilities";
 import { ws } from "./WebsocketManager";
 
@@ -14,7 +15,6 @@ export class Player {
 
 export type RoomSettings = {
   populationPool: number;
-  buildingCost: number;
   marketVolatility: number;
 };
 
@@ -27,6 +27,7 @@ export class RoomManager {
 
   onRoomJoined?: () => void;
   onRoomLeft?: () => void;
+  onGameStart: (() => void) | null = null;
   onPlayersChanged: () => void = () => {};
 
   constructor() {
@@ -36,7 +37,6 @@ export class RoomManager {
     this.roomSettings = {
       populationPool: 60,
       marketVolatility: 1,
-      buildingCost: 1,
     };
 
     ws.socket.on("player_joined", (data: { players: string[] }) => {
@@ -64,6 +64,8 @@ export class RoomManager {
     ws.socket.on("game_start", (data) => {
       if (!this.isHost) {
         console.log(data);
+        GameManager.getInstance().startGame(data);
+        this.onGameStart?.();
       }
     });
   }
@@ -164,26 +166,24 @@ export class RoomManager {
       return Err("Nie jestes hostem");
     }
 
-    // To Do - Add connection to backend
     console.log(this.roomSettings.populationPool);
     console.log(this.roomSettings.marketVolatility);
-    console.log(this.roomSettings.buildingCost);
     
-    const result = await this.request<{
-      gameId: string;
-      populationCost: number;
-      buildingCost: number;
-      marketVolatility: number;
-    }>("start_game", "game_start", {
+    const result = await this.request("start_game", "game_start", {
       gameCode: this.roomId,
       populationPool: this.roomSettings.populationPool,
       marketVolatility: this.roomSettings.marketVolatility,
-      buildingCost: this.roomSettings.buildingCost,
     });
 
-    console.log(result);
-
-    return Ok(undefined);
+    if (result.ok) {
+      console.log(result.value);
+      GameManager.getInstance().startGame(result.value);
+  
+      return Ok(undefined);
+    } else {
+      return Err(result.error)
+    }
+    
   }
 
   public getPlayers(): Array<Player> {

@@ -21,6 +21,8 @@ import { LeaderboardPanel } from "./gamePanels/LeaderboardPanel";
 import { GameMap } from "./GameMap";
 import { BUILDINGS } from "../services/game/statics/BuildingData";
 import { GameManager } from "../services/game/GameManager";
+import { ws } from "../services/WebsocketManager";
+import { roomManager } from "./LobbyService";
 
 const TABS: { id: string; label: string; icon: any }[] = [
   { id: "build", label: "Buduj", icon: faHammer },
@@ -49,6 +51,65 @@ export function GameService({ shouldStart }: GameServiceRef) {
   const [placingBuilding, setPlacingBuilding] = useState<
     (typeof BUILDINGS)[0] | null
   >(null);
+  const [, forceUpdate] = useState(0);
+  const [moneyPopups, setMoneyPopups] = useState<
+    { id: number; amount: number; x: number; type: "increase" | "decrease" }[]
+  >([]);
+  const [isVertical, setIsVertical] = useState(false);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "r" || e.key === "R") setIsVertical((v) => !v);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
+  useEffect(() => {
+    setIsVertical(false);
+  }, [placingBuilding]);
+
+  useEffect(() => {
+    ws.socket.on("money_increase", (amount) => {
+      const id = Date.now();
+      const x = Math.random() * 60 - 30;
+      setMoneyPopups((prev) => [...prev, { id, amount, x, type: "increase" }]);
+      setTimeout(
+        () => setMoneyPopups((prev) => prev.filter((p) => p.id !== id)),
+        1000,
+      );
+    });
+    ws.socket.on("field_update", (data) => {
+      gameManager.plotManager.syncFromServer(data);
+    })
+    ws.socket.on("happiness_update", (amount) => {
+      gameManager.happiness.level = amount;
+      
+    })
+    ws.socket.on("money_decrease", (amount) => {
+      const id = Date.now() + 1;
+      const x = Math.random() * 60 - 30;
+      setMoneyPopups((prev) => [...prev, { id, amount, x, type: "decrease" }]);
+      setTimeout(
+        () => setMoneyPopups((prev) => prev.filter((p) => p.id !== id)),
+        1000,
+      );
+    });
+    return () => {
+      ws.socket.off("money_increase");
+      ws.socket.off("money_decrease");
+    };
+  }, []);
+
+  useEffect(() => {
+    ws.socket.on("money_update", (data) => {
+      gameManager.inventory.money = data;
+      forceUpdate((v) => v + 1);
+    });
+    return () => {
+      ws.socket.off("money_update");
+    };
+  }, []);
 
   function stopGame() {
     setGamePhase("idle");
@@ -57,7 +118,6 @@ export function GameService({ shouldStart }: GameServiceRef) {
   function startGame() {
     setGamePhase("countdown");
     setCountdown(3);
-    GameManager.getInstance().startGame();
   }
 
   useEffect(() => {
@@ -106,14 +166,24 @@ export function GameService({ shouldStart }: GameServiceRef) {
           <header className="game-header">
             <div className="game-header-left">
               <span className="game-city-name">Miasto</span>
-              <span className="game-turn-info">Tura 1</span>
+              <span className="game-turn-info">Tick 1</span>
             </div>
 
-            <div className="game-money-info">
+            <div className="game-money-info" style={{ position: "relative" }}>
               <span className="game-money-symbol">$</span>
               <p className="game-money" id="game-money">
-                10000
+                {gameManager.inventory.money}
               </p>
+              {moneyPopups.map((popup) => (
+                <span
+                  key={popup.id}
+                  className={`money-popup money-popup--${popup.type}`}
+                  style={{ left: `calc(50% + ${popup.x}px)` }}
+                >
+                  {popup.type === "increase" ? "+" : "-"}
+                  {popup.amount}
+                </span>
+              ))}
             </div>
 
             <div className="game-header-right">
@@ -173,7 +243,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
             </div>
           </header>
 
-          <main className="game-map" style={{ position: "relative" }}>
+          <main className="game-map" >
             {placingBuilding && (
               <div className="placing-bar">
                 <span>
@@ -183,10 +253,21 @@ export function GameService({ shouldStart }: GameServiceRef) {
               </div>
             )}
             <GameMap
+              placingBuilding={placingBuilding}
+              isVertical={isVertical}
               onPlotClick={
                 placingBuilding
                   ? (plotId) => {
-                      console.log("Plot ID:", plotId);
+                      const row = Math.floor(plotId / 7);
+                      const col = plotId % 7;
+                    console.log(placingBuilding.id.toLowerCase());
+                    console.log(roomManager.roomId);
+                      ws.socket.emit("create_building", {
+                        gameCode: roomManager.roomId,
+                        buildingName: placingBuilding.id.toLowerCase(),
+                        startLocation: [row, col],
+                        isVertical,
+                      });
                     }
                   : undefined
               }

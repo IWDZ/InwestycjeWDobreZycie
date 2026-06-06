@@ -9,6 +9,22 @@ export enum Materials {
     Uranium
 }
 
+const MATERIAL_MAP: Record<string, Materials> = {
+    "wood": Materials.Wood,
+    "stone": Materials.Stone,
+    "steel": Materials.Steel,
+    "concrete": Materials.Concrete,
+    "glass": Materials.Glass,
+    "coal": Materials.Coal,
+    "uranium": Materials.Uranium,
+};
+
+export function parseMaterialCost(cost: Record<string, number>): Partial<Record<Materials, number>> {
+    return Object.fromEntries(
+        Object.entries(cost).map(([key, value]) => [MATERIAL_MAP[key], value])
+    );
+}
+
 export function getMaterialName(material: Materials): string {
     switch (material) {
         case Materials.Wood: return "Drewno"

@@ -23,6 +23,7 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
         if (!response.ok) {
             showError(response.error);
         } else {
+          console.log("calling onstart")
             onStart()
         }
     }
@@ -50,6 +51,7 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
         roomManager.onPlayersChanged = () => {
             setPlayers(roomManager.getPlayers());
         }
+        roomManager.onGameStart = () => onStart();
     }, []);
 
     const playerSlots = Array.from({ length: 6 }, (_, i) => players[i] ?? null);

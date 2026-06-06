@@ -9,7 +9,8 @@ export function PlotPanel() {
   const handleUnlock = useCallback(
     (e: React.MouseEvent, index: number) => {
       e.stopPropagation();
-      plotManager.unlockPlot(index);
+      // TODO: unlock plot
+      //plotManager.unlockPlot(index);
       forceUpdate(v => v + 1);
     },
     [plotManager]
@@ -28,8 +29,10 @@ export function PlotPanel() {
       >
         {Array.from({ length: size * size }, (_, i) => {
           const unlocked = unlockedSet.has(i);
-          const price = plotManager.getPrice(i);
-
+          // TODO: get price
+          //const price = plotManager.getPrice(i);
+          const price = 0;
+          
           const row = Math.floor(i / size);
           return (
             <div
