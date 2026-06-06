@@ -1,22 +1,20 @@
 import leaveGame from "../exports/leaveGame.js";
-import { generateGameCode, getDefaultGameObject, getGame, hasGameStarted, hasPlayer, hasPlayerWithUsername, isGameFull, isHost, isPlayerInGame, isValidData, removePlayer } from "../exports/utils.js";
-import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_PLAYERS, MIN_PLAYERS } from "../gameStorage.js";
+import { generateGameCode, getDefaultGameObject, getGame, hasGameStarted, hasPlayer, hasPlayerWithUsername, isGameFull, isHost, isPlayerInGame, isValidData, removePlayer, throwError } from "../exports/utils.js";
+import { ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_PLAYERS, MIN_PLAYERS } from "../gameStorage.js";
+import { io } from "../server.js";
 
-function gameConnection(io, socket) {
+function gameConnection(socket) {
     socket.on("create_game", (data) => {
         if (isPlayerInGame(socket.id)) {
-            socket.emit("error", "Player already in a game");
-            return;
+            return throwError(socket.id, ERRORS.PLAYER_ALREADY_IN_GAME);
         }
         if (!isValidData(data)) {
-            socket.emit("error", "Invalid data");
-            return;
+            return throwError(socket.id, ERRORS.INVALID_DATA);
         }
         const {username, playersAmount} = data;
         if (typeof username !== "string" || !Number.isInteger(playersAmount) ||
             (playersAmount < MIN_PLAYERS || playersAmount > MAX_PLAYERS)) {
-            socket.emit("error", "Invalid data");
-            return;
+            return throwError(socket.id, ERRORS.INVALID_DATA);
         }
 
         let gameCode = generateGameCode();
@@ -31,36 +29,34 @@ function gameConnection(io, socket) {
 
     socket.on("join_game", (data) => {
         if (!isValidData(data)) {
-            socket.emit("error", "Invalid data");
-            return;
+            return throwError(socket.id, ERRORS.INVALID_DATA);
         }
+
         const {username, gameCode} = data;
+        
         if (typeof username !== "string" || typeof gameCode !== "string") {
-            socket.emit("error", "Invalid data");
-            return;
+            return throwError(socket.id, ERRORS.INVALID_DATA);
         }
 
         if (isPlayerInGame(socket.id)) {
-            socket.emit("error", "Player already in a game");
-            return;
+            return throwError(socket.id, ERRORS.PLAYER_ALREADY_IN_GAME);
         }
 
         const game = getGame(socket, gameCode);
-        if (!game) return;
-        
+        if (!game) {
+            return throwError(socket.id, ERRORS.GAME_NOT_FOUND);
+        }
+
         if (hasGameStarted(game)) {
-            socket.emit("error", "Game already started");
-            return;
+            return throwError(socket.id, ERRORS.GAME_ALREADY_STARTED);
         }
 
         if (isGameFull(game)) {
-            socket.emit("error", "The game is full");
-            return;
+            return throwError(socket.id, ERRORS.GAME_FULL);
         }
 
         if (hasPlayerWithUsername(game, username)) {
-            socket.emit("error", "User with this username is already in this game")
-            return;
+            return throwError(socket.id, ERRORS.USERNAME_TAKEN);
         }
 
         game.players.push({
@@ -86,7 +82,7 @@ function gameConnection(io, socket) {
     });
 
     socket.on("leave_game", gameCode => {
-        leaveGame(io, socket, gameCode);
+        leaveGame(socket, gameCode);
     });
 }
 

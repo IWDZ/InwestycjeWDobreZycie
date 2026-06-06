@@ -16,10 +16,7 @@ class Building {
         this.#startLocation = startLocation;
         this.#isVertical = isVertical;
         this.buildingName = building.NAME;
-        if (this.buildingName === BUILDINGS.TOWN_HALL.NAME) {
-            this.workers = 3;
-            this.residents = 3;
-        }
+        this.workers = this.residents = this.buildingName === BUILDINGS.TOWN_HALL.NAME ? 3 : 0;
     }
 
     get id() {

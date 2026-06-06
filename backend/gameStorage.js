@@ -506,3 +506,27 @@ function setBuilding(config) {
         ...config
     };
 }
+
+export const ERRORS = {
+    INVALID_DATA: "Invalid data",
+    PLAYER_NOT_IN_GAME: "Player not in the game",
+    PLAYER_ALREADY_IN_GAME: "Player already in a game",
+    GAME_NOT_FOUND: "Game not found",
+    GAME_ALREADY_STARTED: "Game already started",
+    GAME_FULL: "The game is full",
+    USERNAME_TAKEN: "User with this username is already in this game",
+    NOT_ENOUGH_PLAYERS: "Not enough players",
+    NO_ADJACENT_CELLS_OWNED: "You can only buy cell adjacent to an owned cell",
+    NOT_ENOUGH_MONEY: "Not Enough Money",
+    NOT_ENOUGH_MATERIALS: "Not Enough Materials",
+    BUILDING_NOT_FOUND: "Building not found",
+    NO_REQUIRED_BUILDING: "Required Building Not Found",
+    OUT_OF_BOUNDS: "Out Of Bounds",
+    PORT_ERROR: "A port can only be placed on the far-left cell",
+    CELL_OCCUPIED: "Cell Occupied",
+    CELL_NOT_OWNED: "Cell Not Owned",
+    CELL_NOT_A_BUILDING: "Cell is not a building",
+    CANNOT_DELETE_TOWN_HALL: "Cannot Delete The Town Hall",
+    UNEXPECTED_BUILDING_BOUNDS: "Unexpected building bounds",
+    HOST_FEATURE: "Only the host can do this"
+}

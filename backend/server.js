@@ -4,14 +4,14 @@ import connectionHandler from './sockets/connectionHandler.js';
 
 const server = http.createServer();
 
-const io = new Server(server, {
+export const io = new Server(server, {
     cors: {
         origin: "*"
     }
 });
 
 io.on("connection", (socket) => {
-    connectionHandler(io, socket);
+    connectionHandler(socket);
 });
 
 server.listen(3000, () => {

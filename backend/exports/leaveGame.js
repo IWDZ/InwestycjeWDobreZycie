@@ -1,18 +1,19 @@
-import { GAMES } from "../gameStorage.js";
-import { endGame, getGame, hasGameStarted, hasPlayer, isHost, removePlayer } from "./utils.js";
+import { ERRORS, GAMES, MIN_PLAYERS } from "../gameStorage.js";
+import { io } from "../server.js";
+import { endGame, getGame, hasGameStarted, hasPlayer, isHost, removePlayer, throwError } from "./utils.js";
 
-export default function leaveGame(io, socket, gameCode) {
+export default function leaveGame(socket, gameCode) {
     if (typeof gameCode !== "string") {
-        socket.emit("error", "Invalid data");
-        return;
+        return throwError(socket.id, ERRORS.INVALID_DATA);
     }
 
     const game = getGame(gameCode);
-    if (!game) return;
+    if (!game) {
+        return throwError(socket.id, ERRORS.GAME_NOT_FOUND);
+    }
 
     if (!hasPlayer(game, socket.id)) {
-        socket.emit("error", "Player not in the game");
-        return;
+        return throwError(socket.id, ERRORS.PLAYER_NOT_IN_GAME);
     }
 
     if (isHost(game, socket.id) && !hasGameStarted(game)) {
@@ -34,5 +35,5 @@ export default function leaveGame(io, socket, gameCode) {
 
     socket.emit("left");
 
-    if (game.players.length < 2) endGame(io, game);
+    if (game.players.length < MIN_PLAYERS) endGame(game);
 }

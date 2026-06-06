@@ -1,42 +1,37 @@
 import { endGame, getGame, getPlayer, hasRequiredMaterials, hasRequiredMoney, isValidData, removeMaterials, removeMoney, removePlayer } from "../exports/utils.js";
-import { ATOMIC_BOMB } from "../gameStorage.js";
+import { ERRORS, MIN_PLAYERS, ATOMIC_BOMB } from "../gameStorage.js";
+import { io } from "../server.js";
 
-function atomicBomb(io, socket) {
+function atomicBomb(socket) {
     socket.on("send_atomic_bomb", data => {
         if (!isValidData(data)) {
-            socket.emit("error", "Invalid data");
-            return;
+            return throwError(socket.id, ERRORS.INVALID_DATA);
         }
 
         const { gameCode, targetName } = data;
 
         if (typeof gameCode !== "string" || typeof targetName !== "string") {
-            socket.emit("error", "Invalid data");
-            return;
+            return throwError(socket.id, ERRORS.INVALID_DATA);
         }
 
         const game = getGame(gameCode);
         if (!game) {
-            socket.emit("error", "Game Not Found");
-            return;
+            return throwError(socket.id, ERRORS.GAME_NOT_FOUND);
         }
 
         const player = getPlayer(game, socket.id);
 
         const target = game.players.find(p => p.username === targetName);
         if (target.socketId === socket.id) {
-            socket.emit("error", "You can't nuke yourself");
-            return;
+            return socket.emit("error", ERRORS.SELF_NUKE);
         }
 
         if (!hasRequiredMoney(ATOMIC_BOMB.MONEY_COST, player.money)) {
-            socket.emit("error", "Not Enough Money");
-            return;
+            return throwError(socket.id, ERRORS.NOT_ENOUGH_MONEY);
         }
 
         if (!hasRequiredMaterials(ATOMIC_BOMB.MATERIAL_COST, player.materials)) {
-            socket.emit("error", "Not Enough Materials");
-            return;
+            return throwError(socket.id, ERRORS.NOT_ENOUGH_MATERIALS);
         }
         
         removeMoney(player, ATOMIC_BOMB.MONEY_COST);
@@ -48,7 +43,7 @@ function atomicBomb(io, socket) {
             io.to(player.socketId).emit("player_nuke", target.username);
         }
 
-        if (game.players.length < 2) endGame(io, game);
+        if (game.players.length < MIN_PLAYERS) endGame(game);
     });
 }
 

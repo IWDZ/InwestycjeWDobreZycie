@@ -1,5 +1,10 @@
-import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
+import { io } from "../server.js";
 import Building from "./Building.js";
+
+export function throwError(socketId, errorMessage) {
+    io.to(socketId).emit("error", errorMessage);
+}
 
 export function getCurrentBuildingId(game) {
     return game.settings.NEXT_BUILDING_ID++;
@@ -65,7 +70,7 @@ export function setUpPlayer(game, player, middle) {
 }
 
 export function getBuildingByName(buildingName) {
-    return Object.values(BUILDINGS).find(b => b.name === buildingName);
+    return Object.values(BUILDINGS).find(b => b.NAME === buildingName);
 }
 
 export function getPlayer(game, socketId) {
@@ -222,15 +227,15 @@ export function isPlacementInBounds(rowEnd, columnEnd) {
 
 export function hasPlacementError(buildingName, field, rowStart, columnStart, rowEnd, columnEnd) {
     if (buildingName === BUILDINGS.PORT.NAME && columnStart !== 0) {
-        return "A port can only be placed on the far-left cell";
+        return ERRORS.PORT_ERROR;
     }
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
             if (field[y][x] === null) {
-                return "Out Of Available Space";
+                return ERRORS.CELL_NOT_OWNED;
             }
             if (field[y][x] instanceof Building) {
-                return "Space Occupied";
+                return ERRORS.CELL_OCCUPIED;
             }
         }
     }
@@ -509,7 +514,7 @@ export function closeGame(game) {
     GAMES.delete(game.gameCode);
 }
 
-export function endGame(io, game) {
+export function endGame(game) {
     const leaderboard = sumUpPlayers(game);
     for (const player of game.players) {
         io.to(player.socketId).emit("game_end", {
