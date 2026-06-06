@@ -13,7 +13,7 @@ function gameLogic(socket) {
 
         if (typeof gameCode !== "string" || 
             !Number.isInteger(populationPool) || populationPool < 50 || populationPool > 100 ||
-            !Number.isInteger(marketVolatility)) {
+            typeof marketVolatility !== "number" || marketVolatility < 0.5 || marketVolatility > 5) {
                 return throwError(socket.id, ERRORS.INVALID_DATA);
         }
 
