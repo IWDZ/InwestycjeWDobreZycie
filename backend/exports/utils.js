@@ -34,6 +34,7 @@ export function getDefaultClientGameDataObject(game, player) {
         field: player.field,
         buildings: BUILDINGS,
         materials: MATERIALS,
+        materialPrices: MATERIAL_PRICES,
         playerMaterials: player.materials
     };
 }
