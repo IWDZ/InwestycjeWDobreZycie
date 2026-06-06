@@ -1,7 +1,7 @@
 import Building from "../exports/Building.js";
 import { sendCellPriceUpdate, sendFieldUpdate, sendHappinessUpdate, sendMaterialPricesUpdate, sendMaterialsUpdate, sendMaxPopulationUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate } from "../exports/clientUpdates.js";
 import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, couldDeleteBuilding, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial, closeGame, sumUpPlayers, decreasePopulation, increasePopulation, updatePopulation, hasAdjacentCell, buyCell, generateIncome, endGame, hasGameStarted, throwError } from "../exports/utils.js";
-import { BUILDINGS, CELL_PRICE_INCREASE, ERRORS, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, MIN_PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER } from "../gameStorage.js";
+import { CELL_PRICE_INCREASE, ERRORS, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, MIN_PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MONEY, WORK_MULTIPLIER } from "../gameStorage.js";
 import { io } from "../server.js";
 
 function gameLogic(socket) {
@@ -37,7 +37,7 @@ function gameLogic(socket) {
             sales: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0])),
             purchases: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0]))
         };
-        game.materialPrices = MATERIAL_PRICES;
+        game.materialPrices = { ...MATERIAL_PRICES};
         setTimeout(() => game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000), SECONDS_BEFORE_GAME_START * 1000);
 
         if (!isHost(game, socket.id)) {
@@ -256,7 +256,7 @@ function doGameTick(game) {
     if (currentTick.tickNumber >= GAME_DURATION_TICKS) {
         return endGame(game);
     }
-    
+
     if (currentTick.tickNumber % MARKET_UPDATE_TICK_INTERVAL === 0) {
         updateMarket(game, currentTick);
         sendMaterialPricesUpdate(game);
