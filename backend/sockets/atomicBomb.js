@@ -1,4 +1,4 @@
-import { getGame, getPlayer, hasRequiredMaterials, hasRequiredMoney, isValidData, removeMaterials, removeMoney, removePlayer } from "../exports/utils.js";
+import { endGame, getGame, getPlayer, hasRequiredMaterials, hasRequiredMoney, isValidData, removeMaterials, removeMoney, removePlayer } from "../exports/utils.js";
 import { ATOMIC_BOMB } from "../gameStorage.js";
 
 function atomicBomb(io, socket) {
@@ -47,6 +47,8 @@ function atomicBomb(io, socket) {
         for (const player of game.players) {
             io.to(player.socketId).emit("player_nuke", target.username);
         }
+
+        if (game.players.length < 2) endGame(io, game);
     });
 }
 

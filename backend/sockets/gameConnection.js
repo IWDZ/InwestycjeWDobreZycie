@@ -1,16 +1,20 @@
 import leaveGame from "../exports/leaveGame.js";
-import { generateGameCode, getDefaultGameObject, hasGameStarted, hasPlayer, hasPlayerWithUsername, isGameFull, isHost, isPlayerInGame, isValidData, removePlayer } from "../exports/utils.js";
-import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_PLAYERS } from "../gameStorage.js";
+import { generateGameCode, getDefaultGameObject, getGame, hasGameStarted, hasPlayer, hasPlayerWithUsername, isGameFull, isHost, isPlayerInGame, isValidData, removePlayer } from "../exports/utils.js";
+import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_PLAYERS, MIN_PLAYERS } from "../gameStorage.js";
 
 function gameConnection(io, socket) {
     socket.on("create_game", (data) => {
+        if (isPlayerInGame(socket.id)) {
+            socket.emit("error", "Player already in a game");
+            return;
+        }
         if (!isValidData(data)) {
             socket.emit("error", "Invalid data");
             return;
         }
         const {username, playersAmount} = data;
         if (typeof username !== "string" || !Number.isInteger(playersAmount) ||
-            (playersAmount < 2 || playersAmount > MAX_PLAYERS)) {
+            (playersAmount < MIN_PLAYERS || playersAmount > MAX_PLAYERS)) {
             socket.emit("error", "Invalid data");
             return;
         }
@@ -67,7 +71,7 @@ function gameConnection(io, socket) {
         const usernames = game.players.map(player => player.username);
 
         for (const player of game.players) {
-            if (player.socketId === socket.id) return;
+            if (player.socketId === socket.id) continue;
 
             io.to(player.socketId).emit("player_joined", {
                 players: usernames

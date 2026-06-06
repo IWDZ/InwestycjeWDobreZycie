@@ -1,4 +1,4 @@
-import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
 import Building from "./Building.js";
 
 export function getCurrentBuildingId(game) {
@@ -40,10 +40,10 @@ export function getFieldMiddle() {
 }
 
 export function createField(middle) {
-    const field = Array.from({ length: MAX_FIELD_SIZE }, () => Array.from({ length: MAX_FIELD_SIZE }, () => undefined));
+    const field = Array.from({ length: MAX_FIELD_SIZE }, () => Array.from({ length: MAX_FIELD_SIZE }, () => null));
     for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
-            field[middle+i][middle+j] = null;
+            field[middle+i][middle+j] = EMPTY_CELL_INDICATOR;
         }
     }
     return field;
@@ -51,7 +51,7 @@ export function createField(middle) {
 
 export function setUpPlayer(game, player, middle) {
     player.field = createField(middle);
-    player.field[middle][middle] = new Building(BUILDINGS.TOWN_HALL, getCurrentBuildingId(game), [middle, middle], false);
+    player.field[middle][middle] = new Building(getCurrentBuildingId(game), BUILDINGS.TOWN_HALL, [middle, middle], false);
     player.nextCellPrice = DEFAULT_CELL_PRICE;
     player.happiness = START_HAPPINESS;
     player.materials = { ...START_MATERIALS };
@@ -89,7 +89,7 @@ export function generateIncome(player) {
 }
 
 export function isCellBought(cell) {
-    return cell instanceof Building || cell === null;
+    return cell instanceof Building || cell === EMPTY_CELL_INDICATOR;
 }
 
 export function hasAdjacentCell(field, location) {
@@ -110,7 +110,7 @@ export function buyCell(player, location) {
     removeMoney(player, player.nextCellPrice);
     const y = location[0];
     const x = location[1];
-    player.field[y][x] = null;
+    player.field[y][x] = EMPTY_CELL_INDICATOR;
     player.nextCellPrice += CELL_PRICE_INCREASE;
 
     return true;
@@ -226,10 +226,10 @@ export function hasPlacementError(buildingName, field, rowStart, columnStart, ro
     }
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
-            if (field[y][x] === undefined) {
+            if (field[y][x] === null) {
                 return "Out Of Available Space";
             }
-            if (field[y][x] !== null) {
+            if (field[y][x] instanceof Building) {
                 return "Space Occupied";
             }
         }
@@ -245,7 +245,7 @@ export function couldDeleteBuilding(game, player, buildingObject) {
             if (field[y][x] !== buildingObject) {
                 return false;
             }
-            field[y][x] = null;
+            field[y][x] = EMPTY_CELL_INDICATOR;
         }
     }
     const building = buildingObject.building;
@@ -338,15 +338,16 @@ export function getWorstBuilding(player, blockedIDs) {
     let minSalary = Infinity;
     for (let y = 0; y < MAX_FIELD_SIZE; y++) {
         for (let x = 0; x < MAX_FIELD_SIZE; x++) {
-            if (player.field[y][x] instanceof Building && player.field[y][x].building.MONEY_PER_JOB < minSalary && (player.field[y][x].workers > 0 || player.field[y][x].residents > 0) && !blockedIDs.includes(player.field[y][x].id)) {
-                minSalary = player.field[y][x].building.MONEY_PER_JOB;
+            const cell = player.field[y][x];
+            if (cell instanceof Building && cell.building.MONEY_PER_JOB < minSalary && (cell.building.JOBS - cell.workers > 0 || cell.building.APARTMENTS - cell.residents > 0) && !blockedIDs.includes(cell.id)) {
+                minSalary = cell.building.MONEY_PER_JOB;
                 worstY = y;
                 worstX = x;
             }
         }
     }
 
-    return player.filter[y][x];
+    return player.field[worstY][worstX];
 }
 
 export function generateGameCode() {
@@ -503,7 +504,18 @@ export function sumUpPlayers(game) {
     return leaderboard;
 }
 
-export function endGame(game) {
+export function closeGame(game) {
     clearInterval(game.gameTickInterval);
     GAMES.delete(game.gameCode);
+}
+
+export function endGame(io, game) {
+    const leaderboard = sumUpPlayers(game);
+    for (const player of game.players) {
+        io.to(player.socketId).emit("game_end", {
+            worth: player.worth,
+            leaderboard: leaderboard
+        });
+    }
+    closeGame(game);
 }

@@ -6,6 +6,7 @@ class Building {
     #building;
     #startLocation;
     #isVertical;
+    buildingName
     workers;
     residents;
 
@@ -14,7 +15,8 @@ class Building {
         this.#building = building;
         this.#startLocation = startLocation;
         this.#isVertical = isVertical;
-        if (building.NAME === BUILDINGS.TOWN_HALL.NAME) {
+        this.buildingName = building.NAME;
+        if (this.buildingName === BUILDINGS.TOWN_HALL.NAME) {
             this.workers = 3;
             this.residents = 3;
         }

@@ -22,7 +22,7 @@ export function sendMoneyUpdate(io, player) {
 
 export function sendMaterialPricesUpdate(io, game) {
     for (const player of game.players) {
-        io.to(player.socketId).emit("materialPricesUpdate", game.materialPrices);
+        io.to(player.socketId).emit("material_prices_update", game.materialPrices);
     }
 }
 

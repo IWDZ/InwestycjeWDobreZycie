@@ -1,5 +1,5 @@
 import { GAMES } from "../gameStorage.js";
-import { getGame, hasGameStarted, hasPlayer, isHost, removePlayer } from "./utils.js";
+import { endGame, getGame, hasGameStarted, hasPlayer, isHost, removePlayer } from "./utils.js";
 
 export default function leaveGame(io, socket, gameCode) {
     if (typeof gameCode !== "string") {
@@ -29,10 +29,10 @@ export default function leaveGame(io, socket, gameCode) {
     const usernames = game.players.map(player => player.username);
 
     for (const player of game.players) {
-        io.to(player.socketId).emit("player_left", {
-            players: usernames
-        });
+        io.to(player.socketId).emit("player_left", player.username);
     }
 
     socket.emit("left");
+
+    if (game.players.length < 2) endGame(io, game);
 }
