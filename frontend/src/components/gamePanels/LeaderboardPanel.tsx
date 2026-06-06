@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { GameManager } from "../../services/game/GameManager";
 
 export function LeaderboardPanel() {

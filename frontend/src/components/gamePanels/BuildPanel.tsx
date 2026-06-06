@@ -1,7 +1,11 @@
 import { BUILDINGS, BuildingType } from "../../services/game/statics/BuildingData";
 import { getMaterialColor, getMaterialName, Materials } from "../../services/game/statics/Materials";
 
-export function BuildPanel() {
+interface BuildPanelProps {
+  onSelectBuilding: (building: typeof BUILDINGS[0]) => void;
+}
+
+export function BuildPanel({onSelectBuilding}: BuildPanelProps) {
   const groupedBuildings = Object.values(BuildingType).map(type => ({
     type,
     buildings: BUILDINGS.filter(b => b.type === type)
@@ -22,6 +26,7 @@ export function BuildPanel() {
                 className={`build-card ${b.locked ? "build-card--locked" : ""}`}
                 onClick={() => {
                   if (b.locked) return;
+                  onSelectBuilding(b);
                 }}
               >
                 {b.locked && (

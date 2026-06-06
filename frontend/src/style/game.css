@@ -1126,3 +1126,39 @@
   font-weight: 600;
   color: #1D9E75;
 }
+
+.placing-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: #fff;
+  border-bottom: 2px solid #ff2500;
+  color: #333;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.placing-bar strong {
+  color: #ff2500;
+}
+
+.placing-bar button {
+  background: transparent;
+  border: 1.5px solid #ff2500;
+  color: #ff2500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.placing-bar button:hover {
+  background: #ff2500;
+  color: #fff;
+}

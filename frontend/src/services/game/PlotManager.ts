@@ -1,38 +1,44 @@
 import { Building } from "./Building";
 
+const MAX_FIELD_SIZE = 7;
+
 export class PlotManager {
   public buildings: Array<Building>;
   public gridSize: number;
-  public unlockedRadius: number;
-  public unlockedPlots: Set<number>;
+  public field: (null | undefined)[][];
   public plotPrices: Map<number, number>;
 
-  constructor(gridSize = 7, unlockedRadius = 1) {
+  constructor() {
     this.buildings = new Array();
-    this.gridSize = gridSize;
-    this.unlockedRadius = unlockedRadius;
-    this.unlockedPlots = new Set();
+    this.gridSize = MAX_FIELD_SIZE;
     this.plotPrices = new Map();
 
-    const center = Math.floor(gridSize / 2);
-    for (let row = center - unlockedRadius; row <= center + unlockedRadius; row++) {
-      for (let col = center - unlockedRadius; col <= center + unlockedRadius; col++) {
-        this.unlockedPlots.add(row * gridSize + col);
+    const middle = Math.floor(MAX_FIELD_SIZE / 2);
+
+    this.field = Array.from({ length: MAX_FIELD_SIZE }, () =>
+      Array.from({ length: MAX_FIELD_SIZE }, () => undefined),
+    );
+
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        this.field[middle + i][middle + j] = null;
       }
     }
 
-    for (let i = 0; i < gridSize * gridSize; i++) {
-      if (!this.unlockedPlots.has(i)) {
-        const row = Math.floor(i / gridSize);
-        const col = i % gridSize;
-        const dist = Math.max(Math.abs(row - center), Math.abs(col - center));
-        this.plotPrices.set(i, dist * 500);
+    for (let row = 0; row < MAX_FIELD_SIZE; row++) {
+      for (let col = 0; col < MAX_FIELD_SIZE; col++) {
+        if (this.field[row][col] === undefined) {
+          const dist = Math.max(Math.abs(row - middle), Math.abs(col - middle));
+          this.plotPrices.set(row * MAX_FIELD_SIZE + col, dist * 500);
+        }
       }
     }
   }
 
   public isUnlocked(index: number): boolean {
-    return this.unlockedPlots.has(index);
+    const row = Math.floor(index / this.gridSize);
+    const col = index % this.gridSize;
+    return this.field[row]?.[col] !== undefined;
   }
 
   public getPrice(index: number): number {
@@ -40,8 +46,10 @@ export class PlotManager {
   }
 
   public unlockPlot(index: number): boolean {
-    if (this.unlockedPlots.has(index)) return false;
-    this.unlockedPlots.add(index);
+    const row = Math.floor(index / this.gridSize);
+    const col = index % this.gridSize;
+    if (this.field[row]?.[col] !== undefined) return false;
+    this.field[row][col] = null;
     return true;
   }
 }

@@ -1,181 +1,233 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
-import { createPortal } from 'react-dom'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { createPortal } from "react-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faHammer, faMap, faChartBar, faUsers,
-    faShop
-} from '@fortawesome/free-solid-svg-icons'
+  faHammer,
+  faMap,
+  faChartBar,
+  faUsers,
+  faShop,
+} from "@fortawesome/free-solid-svg-icons";
 import { BuildPanel } from "./gamePanels/BuildPanel";
-import { getMaterialColor, getMaterialName, Materials } from "../services/game/statics/Materials";
+import {
+  getMaterialColor,
+  getMaterialName,
+  Materials,
+} from "../services/game/statics/Materials";
 import { PlotPanel } from "./gamePanels/PlotPanel";
 import { StatsPanel } from "./gamePanels/StatsPanel";
 import { ShopPanel } from "./gamePanels/ShopPanel";
 import { LeaderboardPanel } from "./gamePanels/LeaderboardPanel";
 import { GameMap } from "./GameMap";
+import { BUILDINGS } from "../services/game/statics/BuildingData";
+import { GameManager } from "../services/game/GameManager";
 
 const TABS: { id: string; label: string; icon: any }[] = [
-    { id: 'build', label: 'Buduj', icon: faHammer },
-    { id: 'plots', label: 'Ploty', icon: faMap },
-    { id: 'shop', label: 'Sklep', icon: faShop },
-    { id: 'stats', label: 'Statystyki', icon: faChartBar },
-    { id: 'players', label: 'Gracze', icon: faUsers },
-]
+  { id: "build", label: "Buduj", icon: faHammer },
+  { id: "plots", label: "Ploty", icon: faMap },
+  { id: "shop", label: "Sklep", icon: faShop },
+  { id: "stats", label: "Statystyki", icon: faChartBar },
+  { id: "players", label: "Gracze", icon: faUsers },
+];
 
 const materials = Object.values(Materials).filter(
-    v => typeof v === "number"
+  (v) => typeof v === "number",
 ) as Materials[];
 
-type GamePhase = 'idle' | 'countdown' | 'playing'
+type GamePhase = "idle" | "countdown" | "playing";
 
 export interface GameServiceRef {
-    shouldStart: boolean
+  shouldStart: boolean;
 }
 
 export function GameService({ shouldStart }: GameServiceRef) {
-    const [gamePhase, setGamePhase] = useState<GamePhase>('idle')
-    const [countdown, setCountdown] = useState(3)
-    const [activeTab, setActiveTab] = useState("")
-    const [materialsOpen, setMaterialsOpen] = useState(false)
-    const [happiness, setHappiness] = useState(50);
+  const [gamePhase, setGamePhase] = useState<GamePhase>("idle");
+  const [countdown, setCountdown] = useState(3);
+  const [activeTab, setActiveTab] = useState("");
+  const [materialsOpen, setMaterialsOpen] = useState(false);
+  const gameManager = GameManager.getInstance();
+  const [placingBuilding, setPlacingBuilding] = useState<
+    (typeof BUILDINGS)[0] | null
+  >(null);
 
-    function stopGame() {
-        setGamePhase('idle');
+  function stopGame() {
+    setGamePhase("idle");
+  }
+
+  function startGame() {
+    setGamePhase("countdown");
+    setCountdown(3);
+    GameManager.getInstance().startGame();
+  }
+
+  useEffect(() => {
+    if (shouldStart) startGame();
+    else stopGame();
+  }, [shouldStart]);
+
+  useEffect(() => {
+    if (gamePhase !== "countdown") return;
+
+    if (countdown === 0) {
+      const t = setTimeout(() => setGamePhase("playing"), 900);
+      return () => clearTimeout(t);
     }
 
-    function startGame() {
-        setGamePhase('countdown')
-        setCountdown(3);
-    }
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [gamePhase, countdown]);
 
-    useEffect(() => {
-        if (shouldStart) startGame()
-        else stopGame()
-    }, [shouldStart])
+  if (gamePhase === "idle") {
+    return <></>;
+  }
 
-    useEffect(() => {
-        if (gamePhase !== 'countdown') return
-
-        if (countdown === 0) {
-            const t = setTimeout(() => setGamePhase('playing'), 900)
-            return () => clearTimeout(t)
-        }
-
-        const t = setTimeout(() => setCountdown(c => c - 1), 1000)
-        return () => clearTimeout(t)
-    }, [gamePhase, countdown])
-
-    if (gamePhase === 'idle') {
-        return (<></>)
-    }
-
-    if (gamePhase === 'countdown') {
-        return (
-            <div className="game-wrapper">
-                <div className="game-container game-countdown-screen">
-                    <span key={countdown} className="game-countdown-number">
-                        {countdown === 0 ? 'START!' : countdown}
-                    </span>
-                </div>
-            </div>
-        )
-    }
-
-    function happinessColor(pct: number): string {
-        if (pct === 50) return '#f5a800'
-        if (pct > 50) return '#1D9E75'
-        return '#e03030'
-    }
-
+  if (gamePhase === "countdown") {
     return (
-        <>
-            <div className="game-wrapper">
-                <div className="game-container">
-                    <header className="game-header">
-                        <div className="game-header-left">
-                            <span className="game-city-name">Miasto</span>
-                            <span className="game-turn-info">Tura 1</span>
-                        </div>
+      <div className="game-wrapper">
+        <div className="game-container game-countdown-screen">
+          <span key={countdown} className="game-countdown-number">
+            {countdown === 0 ? "START!" : countdown}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
-                        <div className="game-money-info">
-                            <span className="game-money-symbol">$</span>
-                            <p className="game-money" id="game-money">10000</p>
-                        </div>
+  function happinessColor(pct: number): string {
+    if (pct === 50) return "#f5a800";
+    if (pct > 50) return "#1D9E75";
+    return "#e03030";
+  }
 
-                        <div className="game-header-right">
-                            <div className="game-happiness">
-                                <span className="happiness-label">Zadowolenie</span>
-                                <div className="happiness-progress-bar">
-                                    <div
-                                        className="happiness-fill"
-                                        style={{ width: `${happiness}%`, background: happinessColor(happiness) }}
-                                    />
-                                </div>
-                                <span className="happiness-percentage" id="happiness-percentage" style={{ color: happinessColor(happiness) }}>
-                                    {happiness}%
-                                </span>
-                            </div>
-
-                            <div
-                                className="materials-button"
-                                onClick={() => setMaterialsOpen(o => !o)}
-                            >
-                                <span>Surowce</span>
-                                <span className={`materials-arrow ${materialsOpen ? 'open' : ''}`}>▾</span>
-
-                                {materialsOpen && (
-                                    <div className="materials-dropdown">
-                                        <p className="materials-dropdown-title">Magazyn</p>
-                                        <div className="materials-grid">
-                                            {materials.map(mat => (
-                                                <div key={mat} className="material-item">
-                                                    <div
-                                                        className="material-swatch"
-                                                        style={{ background: getMaterialColor(mat) }}
-                                                    />
-                                                    <div className="material-info">
-                                                        <span className="material-name">{getMaterialName(mat)}</span>
-                                                        <span className="material-value">0</span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </header>
-
-                    <main className="game-map">
-                        <GameMap />
-                    </main>
-
-                    <footer className="game-footer">
-                        {TABS.map(tab => (
-                            <button
-                                key={tab.id}
-                                className={`game-nav-btn ${activeTab === tab.id ? 'active' : ''}`}
-                                onClick={() => setActiveTab(tab.id)}
-                            >
-                                <FontAwesomeIcon icon={tab.icon} className="game-nav-icon" />
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
-                    </footer>
-                </div>
+  return (
+    <>
+      <div className="game-wrapper">
+        <div className="game-container">
+          <header className="game-header">
+            <div className="game-header-left">
+              <span className="game-city-name">Miasto</span>
+              <span className="game-turn-info">Tura 1</span>
             </div>
 
-            {activeTab && createPortal(
-                <div className="panel-overlay" onClick={() => setActiveTab('')}>
-                    <div className="panel-popup" onClick={e => e.stopPropagation()}>
-                        {activeTab === 'build' && <BuildPanel />}
-                        {activeTab === 'plots' && <PlotPanel />}
-                        {activeTab === 'stats' && <StatsPanel />}
-                        {activeTab === 'shop' && <ShopPanel />}
-                        {activeTab === 'players' && <LeaderboardPanel />}
+            <div className="game-money-info">
+              <span className="game-money-symbol">$</span>
+              <p className="game-money" id="game-money">
+                10000
+              </p>
+            </div>
+
+            <div className="game-header-right">
+              <div className="game-happiness">
+                <span className="happiness-label">Zadowolenie</span>
+                <div className="happiness-progress-bar">
+                  <div
+                    className="happiness-fill"
+                    style={{
+                      width: `${gameManager.happiness.level}%`,
+                      background: happinessColor(gameManager.happiness.level),
+                    }}
+                  />
+                </div>
+                <span
+                  className="happiness-percentage"
+                  id="happiness-percentage"
+                  style={{ color: happinessColor(gameManager.happiness.level) }}
+                >
+                  {gameManager.happiness.level}%
+                </span>
+              </div>
+
+              <div
+                className="materials-button"
+                onClick={() => setMaterialsOpen((o) => !o)}
+              >
+                <span>Surowce</span>
+                <span
+                  className={`materials-arrow ${materialsOpen ? "open" : ""}`}
+                >
+                  ▾
+                </span>
+
+                {materialsOpen && (
+                  <div className="materials-dropdown">
+                    <p className="materials-dropdown-title">Magazyn</p>
+                    <div className="materials-grid">
+                      {materials.map((mat) => (
+                        <div key={mat} className="material-item">
+                          <div
+                            className="material-swatch"
+                            style={{ background: getMaterialColor(mat) }}
+                          />
+                          <div className="material-info">
+                            <span className="material-name">
+                              {getMaterialName(mat)}
+                            </span>
+                            <span className="material-value">0</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                </div>,
-                document.body
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+
+          <main className="game-map" style={{ position: "relative" }}>
+            {placingBuilding && (
+              <div className="placing-bar">
+                <span>
+                  Budowanie: <strong>{placingBuilding.name}</strong>
+                </span>
+                <button onClick={() => setPlacingBuilding(null)}>Anuluj</button>
+              </div>
             )}
-        </>
-    )
+            <GameMap
+              onPlotClick={
+                placingBuilding
+                  ? (plotId) => {
+                      console.log("Plot ID:", plotId);
+                    }
+                  : undefined
+              }
+            />
+          </main>
+
+          <footer className="game-footer">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                className={`game-nav-btn ${activeTab === tab.id ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <FontAwesomeIcon icon={tab.icon} className="game-nav-icon" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </footer>
+        </div>
+      </div>
+
+      {activeTab &&
+        createPortal(
+          <div className="panel-overlay" onClick={() => setActiveTab("")}>
+            <div className="panel-popup" onClick={(e) => e.stopPropagation()}>
+              {activeTab === "build" && (
+                <BuildPanel
+                  onSelectBuilding={(b) => {
+                    setPlacingBuilding(b);
+                    setActiveTab("");
+                  }}
+                />
+              )}
+              {activeTab === "plots" && <PlotPanel />}
+              {activeTab === "stats" && <StatsPanel />}
+              {activeTab === "shop" && <ShopPanel />}
+              {activeTab === "players" && <LeaderboardPanel />}
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
 }
