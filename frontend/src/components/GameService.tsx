@@ -70,7 +70,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
   }, [placingBuilding]);
 
   useEffect(() => {
-    ws.socket.on("money_increase", (amount) => {
+    const onMoneyIncrease = (amount: number) => {
       const id = Date.now();
       const x = Math.random() * 60 - 30;
       setMoneyPopups((prev) => [...prev, { id, amount, x, type: "increase" }]);
@@ -78,15 +78,8 @@ export function GameService({ shouldStart }: GameServiceRef) {
         () => setMoneyPopups((prev) => prev.filter((p) => p.id !== id)),
         1000,
       );
-    });
-    ws.socket.on("field_update", (data) => {
-      gameManager.plotManager.syncFromServer(data);
-    })
-    ws.socket.on("happiness_update", (amount) => {
-      gameManager.happiness.level = amount;
-      
-    })
-    ws.socket.on("money_decrease", (amount) => {
+    };
+    const onMoneyDecrease = (amount: number) => {
       const id = Date.now() + 1;
       const x = Math.random() * 60 - 30;
       setMoneyPopups((prev) => [...prev, { id, amount, x, type: "decrease" }]);
@@ -94,20 +87,29 @@ export function GameService({ shouldStart }: GameServiceRef) {
         () => setMoneyPopups((prev) => prev.filter((p) => p.id !== id)),
         1000,
       );
-    });
-    return () => {
-      ws.socket.off("money_increase");
-      ws.socket.off("money_decrease");
     };
-  }, []);
-
-  useEffect(() => {
-    ws.socket.on("money_update", (data) => {
+    const onFieldUpdate = (data: any) =>
+      gameManager.plotManager.syncFromServer(data);
+    const onHappinessUpdate = (amount: number) => {
+      gameManager.happiness.level = amount;
+    };
+    const onMoneyUpdate = (data: number) => {
       gameManager.inventory.money = data;
       forceUpdate((v) => v + 1);
-    });
+    };
+
+    ws.register_handler("money_increase", onMoneyIncrease);
+    ws.register_handler("money_decrease", onMoneyDecrease);
+    ws.register_handler("field_update", onFieldUpdate);
+    ws.register_handler("happiness_update", onHappinessUpdate);
+    ws.register_handler("money_update", onMoneyUpdate);
+
     return () => {
-      ws.socket.off("money_update");
+      ws.unregister_handler("money_increase", onMoneyIncrease);
+      ws.unregister_handler("money_decrease", onMoneyDecrease);
+      ws.unregister_handler("field_update", onFieldUpdate);
+      ws.unregister_handler("happiness_update", onHappinessUpdate);
+      ws.unregister_handler("money_update", onMoneyUpdate);
     };
   }, []);
 
@@ -243,7 +245,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
             </div>
           </header>
 
-          <main className="game-map" >
+          <main className="game-map">
             {placingBuilding && (
               <div className="placing-bar">
                 <span>
@@ -260,8 +262,8 @@ export function GameService({ shouldStart }: GameServiceRef) {
                   ? (plotId) => {
                       const row = Math.floor(plotId / 7);
                       const col = plotId % 7;
-                    console.log(placingBuilding.id.toLowerCase());
-                    console.log(roomManager.roomId);
+                      console.log(placingBuilding.id.toLowerCase());
+                      console.log(roomManager.roomId);
                       ws.socket.emit("create_building", {
                         gameCode: roomManager.roomId,
                         buildingName: placingBuilding.id.toLowerCase(),

@@ -39,33 +39,25 @@ export class RoomManager {
       marketVolatility: 1,
     };
 
-    ws.socket.on("player_joined", (data: { players: string[] }) => {
+    ws.register_handler("player_joined", (data: { players: string[] }) => {
       this.syncPlayers(data.players);
       this.onRoomJoined?.();
     });
 
-    ws.socket.on("player_left", (data: { players: string[] }) => {
+    ws.register_handler("player_left", (data: { players: string[] }) => {
       showError("player left");
       console.log(data.players);
-      this.syncPlayers(data.players);
     });
 
-    ws.socket.on("host_left", () => {
+    ws.register_handler("host_left", () => {
       if (!this.isHost && this.isInRoom) {
         this.isInRoom = false;
-        this.isHost = false;
-        this.roomId = undefined;
-        this.playerList = [];
-        this.onRoomLeft?.();
-        showError("Host wyszedl z pokoju.");
       }
     });
 
-    ws.socket.on("game_start", (data) => {
+    ws.register_handler("game_start", (data) => {
       if (!this.isHost) {
         console.log(data);
-        GameManager.getInstance().startGame(data);
-        this.onGameStart?.();
       }
     });
   }
@@ -87,11 +79,10 @@ export class RoomManager {
       return Err("Niepoprawny username");
     }
 
-    const result = await this.request<{ gameCode: string; players: string[] }>(
-      "create_game",
-      "game_created",
-      { username, playersAmount: playerCount },
-    );
+    const result = await ws.request<
+      {},
+      { gameCode: string; players: string[] }
+    >("create_game", "game_created", { username, playersAmount: playerCount });
 
     if (!result.ok) return Err(result.error);
 
@@ -119,12 +110,11 @@ export class RoomManager {
       return Err("Niepoprawny username");
     }
 
-    const result = await this.request<{
-      host: string;
-      gameCode: string;
-      players: string[];
-    }>("join_game", "joined", { username, gameCode: roomId });
-    console.log(result)
+    const result = await ws.request<
+      {},
+      { host: string; gameCode: string; players: string[] }
+    >("join_game", "joined", { gameCode: roomId, username });
+    console.log(result);
 
     if (!result.ok) return Err(result.error);
 
@@ -144,7 +134,7 @@ export class RoomManager {
       return Err("Nie jestes w pokoju");
     }
 
-    const result = await this.request<void>("leave_game", "left", this.roomId);
+    const result = await ws.request("leave_game", "left", this.roomId);
 
     if (!result.ok) return Err(result.error);
 
@@ -168,8 +158,8 @@ export class RoomManager {
 
     console.log(this.roomSettings.populationPool);
     console.log(this.roomSettings.marketVolatility);
-    
-    const result = await this.request("start_game", "game_start", {
+
+    const result = await ws.request("start_game", "game_start", {
       gameCode: this.roomId,
       populationPool: this.roomSettings.populationPool,
       marketVolatility: this.roomSettings.marketVolatility,
@@ -178,12 +168,11 @@ export class RoomManager {
     if (result.ok) {
       console.log(result.value);
       GameManager.getInstance().startGame(result.value);
-  
+
       return Ok(undefined);
     } else {
-      return Err(result.error)
+      return Err(result.error);
     }
-    
   }
 
   public getPlayers(): Array<Player> {
@@ -209,40 +198,5 @@ export class RoomManager {
       (name) => new Player(name, name === currentHost),
     );
     this.onPlayersChanged();
-  }
-
-  private request<TRes>(
-    event: string,
-    responseEvent: string,
-    data: unknown,
-  ): Promise<Result<TRes>> {
-    return new Promise((resolve) => {
-      if (!ws.isConnected()) ws.connect();
-
-      const cleanup = () => {
-        clearTimeout(timeout);
-        ws.socket.off("error", onError);
-        ws.socket.off(responseEvent, onResponse);
-      };
-
-      const onError = (msg: string) => {
-        cleanup();
-        resolve(Err(msg));
-      };
-
-      const onResponse = (response: TRes) => {
-        cleanup();
-        resolve(Ok(response));
-      };
-
-      const timeout = setTimeout(() => {
-        cleanup();
-        resolve(Err(`Zbyt długie oczekiwanie: ${event}`));
-      }, 5000);
-
-      ws.socket.once("error", onError);
-      ws.socket.once(responseEvent, onResponse);
-      ws.socket.emit(event, data);
-    });
   }
 }
