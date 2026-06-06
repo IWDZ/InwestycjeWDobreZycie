@@ -13,6 +13,7 @@
   * @property {string} REQUIRED_BUILDING
   */
 export const GAMES = new Map();
+export const PLAYERS = new Map();
 export const GAME_CODE_CHARACTERS = "ABCDEFGHIJKLMNOPRSTUWVXYZabcdefghijklmnoprstuwvxyz1234567890";
 export const GAME_CODE_LENGTH = 6;
 export const MIN_PLAYERS = 2;
@@ -509,9 +510,9 @@ function setBuilding(config) {
 
 export const ERRORS = {
     INVALID_DATA: "Invalid data",
-    PLAYER_NOT_IN_GAME: "Player not in the game",
     PLAYER_ALREADY_IN_GAME: "Player already in a game",
     GAME_NOT_FOUND: "Game not found",
+    PLAYER_NOT_FOUND: "Player not found",
     GAME_ALREADY_STARTED: "Game already started",
     GAME_FULL: "The game is full",
     USERNAME_TAKEN: "User with this username is already in this game",
@@ -528,5 +529,7 @@ export const ERRORS = {
     CELL_NOT_A_BUILDING: "Cell is not a building",
     CANNOT_DELETE_TOWN_HALL: "Cannot Delete The Town Hall",
     UNEXPECTED_BUILDING_BOUNDS: "Unexpected building bounds",
-    HOST_FEATURE: "Only the host can do this"
+    HOST_FEATURE: "Only the host can do this",
+    SELF_NUKE: "You can't nuke yourself",
+    TARGET_NOT_FOUND: "Target not found"
 }

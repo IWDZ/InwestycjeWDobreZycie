@@ -10,9 +10,7 @@ export const io = new Server(server, {
     }
 });
 
-io.on("connection", (socket) => {
-    connectionHandler(socket);
-});
+connectionHandler();
 
 server.listen(3000, () => {
     console.log("Running on 3000");

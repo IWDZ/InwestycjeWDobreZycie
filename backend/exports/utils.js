@@ -1,6 +1,10 @@
-import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, POPULATION, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
 import { io } from "../server.js";
 import Building from "./Building.js";
+
+export function setPlayerGame(socketId, gameCode) {
+    PLAYERS.set(socketId, gameCode);
+}
 
 export function throwError(socketId, errorMessage) {
     io.to(socketId).emit("error", errorMessage);
@@ -10,8 +14,16 @@ export function getCurrentBuildingId(game) {
     return game.settings.NEXT_BUILDING_ID++;
 }
 
-export function getGame(gameCode) {
-    return GAMES.get(gameCode);
+export function createGame(gameCode, username, socketId, playersAmount) {
+    GAMES.set(gameCode, createDefaultGameObject(gameCode, username, socketId, playersAmount));
+}
+
+export function getGame(socketId) {
+    return GAMES.get(PLAYERS.get(socketId));
+}
+
+export function hasEnoughPlayers(game) {
+    return game.players.length >= MIN_PLAYERS;
 }
 
 export function isValidData(data) {
@@ -34,9 +46,21 @@ export function getDefaultClientGameDataObject(game, player) {
         field: player.field,
         buildings: BUILDINGS,
         materials: MATERIALS,
-        materialPrices: MATERIAL_PRICES,
+        materialPrices: game.materialPrices,
         playerMaterials: player.materials
     };
+}
+
+export function startGame(game, populationPool, marketVolatility) {
+    game.started = true;
+    game.settings = getDefaultSettings(populationPool, marketVolatility);
+    game.currentTick = {
+        tickNumber: 1,
+        sales: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0])),
+        purchases: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0]))
+    };
+    game.materialPrices = { ...MATERIAL_PRICES};
+    setTimeout(() => game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000), SECONDS_BEFORE_GAME_START * 1000);
 }
 
 export function isHost(game, socketId) {
@@ -57,7 +81,8 @@ export function createField(middle) {
     return field;
 }
 
-export function setUpPlayer(game, player, middle) {
+export function setUpPlayer(game, player) {
+    const middle = getFieldMiddle();
     player.field = createField(middle);
     player.field[middle][middle] = new Building(getCurrentBuildingId(game), BUILDINGS.TOWN_HALL, [middle, middle], false);
     player.nextCellPrice = DEFAULT_CELL_PRICE;
@@ -121,6 +146,11 @@ export function buyCell(player, location) {
     player.field[y][x] = EMPTY_CELL_INDICATOR;
     player.nextCellPrice += CELL_PRICE_INCREASE;
 
+    sendMoneyDecrease(player, player.nextCellPrice - CELL_PRICE_INCREASE);
+    sendFieldUpdate(player);
+    sendMoneyUpdate(player);
+    sendCellPriceUpdate(player);
+
     return true;
 }
 
@@ -152,7 +182,11 @@ export function buyMaterial(game, player, material, amount) {
     }
 
     removeMoney(player, cost);
-    player.materials[material] += amount;
+
+    addMaterials(player, {[material]: amount});
+    sendMoneyDecrease(player, cost);
+    sendMoneyUpdate(player);
+    sendMaterialsUpdate(player);
 
     return true;
 }
@@ -166,13 +200,21 @@ export function sellMaterial(game, player, material, amount) {
     removeMaterials(player, materialCostObject);
     
     const cost = game.materialPrices[material] * amount;
-    player.money += cost;
+    addMoney(cost);
+
+    sendMoneyIncrease(player, cost);
+    sendMoneyUpdate(player);
+    sendMaterialsUpdate(player);
 
     return true;
 }
 
 export function returnMaterials(player, materialsToReturn) {
     Object.entries(materialsToReturn).every(([material, amount]) => player.materials[material] += Math.floor(amount / 2));
+}
+
+export function addMaterials(player, materialsToAdd) {
+    Object.entries(materialsToAdd).forEach(([material, amount]) => player.materials[material] += amount);
 }
 
 export function removeMaterials(player, materialsToRemove) {
@@ -193,15 +235,26 @@ export function removeMoney(player, amount) {
     player.money -= amount;
 }
 
-export function placeBuilding(player, field, rowStart, columnStart, rowEnd, columnEnd, buildingId, building, isVertical) {
+export function placeBuilding(game, player, field, buildingBounds, building, isVertical) {
+    const { rowStart, columnStart, rowEnd, columnEnd } = buildingBounds;
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
-            field[y][x] = new Building(buildingId, building, [rowStart, columnStart], isVertical);
+            field[y][x] = new Building(getCurrentBuildingId(game), building, [rowStart, columnStart], isVertical);
         }
     }
     player.happiness += building.HAPPINESS;
     player.population.maxLivingPopulation += building.APARTMENTS;
     player.population.maxWorkingPopulation += building.JOBS;
+
+    removeMaterials(player, building.MATERIAL_COST);
+    removeMoney(player, building.MONEY_COST);
+
+    sendFieldUpdate(player);
+    sendHappinessUpdate(player);
+    sendMaterialsUpdate(player);
+    sendMoneyDecrease(player, building.MONEY_COST);
+    sendMoneyUpdate(player);
+    sendMaxPopulationUpdate(player);
 }
 
 export function isTownHall(buildingName) {
@@ -224,11 +277,13 @@ export function getBuildingBounds(buildingObject) {
     };
 }
 
-export function isPlacementInBounds(rowEnd, columnEnd) {
+export function isPlacementInBounds(buildingBounds) {
+    const { rowEnd, columnEnd } = buildingBounds;
     return rowEnd <= (MAX_FIELD_SIZE - 1) && columnEnd <= (MAX_FIELD_SIZE - 1)
 }
 
-export function hasPlacementError(buildingName, field, rowStart, columnStart, rowEnd, columnEnd) {
+export function hasPlacementError(buildingName, field, buildingBounds) {
+    const { rowStart, columnStart, rowEnd, columnEnd } = buildingBounds;
     if (buildingName === BUILDINGS.PORT.NAME && columnStart !== 0) {
         return ERRORS.PORT_ERROR;
     }
@@ -245,14 +300,24 @@ export function hasPlacementError(buildingName, field, rowStart, columnStart, ro
     return false;
 }
 
-export function couldDeleteBuilding(game, player, buildingObject) {
-    const field = player.field;
-    const { rowStart, columnStart, rowEnd, columnEnd } = getBuildingBounds(buildingObject);
+export function canDeleteBuilding(field, buildingId, buildingBounds) {
+    const { rowStart, columnStart, rowEnd, columnEnd } = buildingBounds;
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
-            if (field[y][x] !== buildingObject) {
+            const cell = field[y][x];
+            if (!(cell instanceof Building) || cell.id !== buildingId) {
                 return false;
             }
+        }
+    }
+    return true;
+}
+
+export function deleteBuilding(game, player, field, buildingBounds) {
+    const { rowStart, columnStart, rowEnd, columnEnd } = buildingBounds;
+    const buildingObject = field[rowStart][columnStart];
+    for (let y = rowStart; y <= rowEnd; y++) {
+        for (let x = columnStart; x <= columnEnd; x++) {
             field[y][x] = EMPTY_CELL_INDICATOR;
         }
     }
@@ -269,9 +334,18 @@ export function couldDeleteBuilding(game, player, buildingObject) {
         const livingPopulationDifference = population.livingPopulation - population.maxLivingPopulation;
         const workingPopulationDifference = population.workingPopulation - population.maxWorkingPopulation;
         const populationToDecrease = livingPopulationDifference > workingPopulationDifference ? livingPopulationDifference : workingPopulationDifference;
-        if(decreasePopulation(player, populationToDecrease)) game.settings.POPULATION += populationChange;
+        if (decreasePopulation(player, populationToDecrease)) game.settings.POPULATION += populationToDecrease;
     }
-    return true;
+
+    returnMaterials(player, building.MATERIAL_COST);
+    const returningMoney = returnMoney(player, building.MONEY_COST);
+
+    sendMoneyIncrease(player, returningMoney);
+    sendFieldUpdate(player);
+    sendHappinessUpdate(player);
+    sendMaterialsUpdate(player);
+    sendMoneyUpdate(player);
+    sendPopulationUpdate(game);
 }
 
 export function increasePopulation(player, workersToIncrease, residentsToIncrease = workersToIncrease, ignoredIDs = []) {
@@ -369,7 +443,7 @@ export function generateGameCode() {
     return gameCode;
 }
 
-export function getDefaultGameObject(gameCode, username, socketId, playersAmount) {
+export function createDefaultGameObject(gameCode, username, socketId, playersAmount) {
     return {
         host: {
             username: username,
@@ -388,10 +462,7 @@ export function getDefaultGameObject(gameCode, username, socketId, playersAmount
 }
 
 export function isPlayerInGame(socketId) {
-    for (const game of GAMES.values()) {
-        if (game.players.some(player => player.socketId === socketId)) return true;
-    }
-    return false;
+    return PLAYERS.get(socketId);
 }
 
 export function isGameFull(game) {
@@ -406,12 +477,17 @@ export function hasPlayerWithUsername(game, username) {
     return game.players.some(player => player.username.toLowerCase() === username.toLowerCase())
 }
 
-export function hasPlayer(game, socketId) {
-    return game.players.some(player => player.socketId === socketId);
+export function addPlayer(game, username, socketId) {
+    game.players.push({
+        username: username,
+        socketId: socketId
+    });
+    setPlayerGame(socketId, game.gameCode);
 }
 
 export function removePlayer(game, socketId) {
     game.players = game.players.filter(player => player.socketId !== socketId);
+    setPlayerGame(socketId, null);
 }
 
 export function isMaterialPriceAboveMultiplier(newPrice, material, multiplier) {
@@ -528,10 +604,39 @@ export function closeGame(game) {
 export function endGame(game) {
     const leaderboard = sumUpPlayers(game);
     for (const player of game.players) {
-        io.to(player.socketId).emit("game_end", {
+        const socketId = player.socketId;
+        io.to(socketId).emit("game_end", {
             worth: player.worth,
             leaderboard: leaderboard
         });
+        removePlayer(game, socketId);
     }
     closeGame(game);
+}
+
+export function doGameTick(game) {
+    const currentTick = game.currentTick;
+
+    for (const player of game.players) {
+        sendMoneyIncrease(player, generateIncome(player));
+        sendMoneyUpdate(player);
+    }
+
+    if (currentTick.tickNumber >= GAME_DURATION_TICKS) {
+        return endGame(game);
+    }
+
+    if (currentTick.tickNumber % MARKET_UPDATE_TICK_INTERVAL === 0) {
+        updateMarket(game, currentTick);
+        sendMaterialPricesUpdate(game);
+    }
+
+    updatePopulation(game);
+    sendPopulationUpdate(game);
+    for (const player of game.players) {
+        sendFieldUpdate(player);
+        sendTickNumberUpdate(player, currentTick.tickNumber);
+    }
+
+    currentTick.tickNumber++;
 }

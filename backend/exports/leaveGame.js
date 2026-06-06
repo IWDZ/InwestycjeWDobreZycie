@@ -1,31 +1,22 @@
 import { ERRORS, GAMES, MIN_PLAYERS } from "../gameStorage.js";
 import { io } from "../server.js";
-import { endGame, getGame, hasGameStarted, hasPlayer, isHost, removePlayer, throwError } from "./utils.js";
+import { endGame, getGame, hasEnoughPlayers, hasGameStarted, isHost, removePlayer, throwError } from "./utils.js";
 
-export default function leaveGame(socket, gameCode) {
-    if (typeof gameCode !== "string") {
-        return throwError(socket.id, ERRORS.INVALID_DATA);
-    }
+export default function leaveGame(socket, socketId) {
+    const game = getGame(socketId);
+    if (!game) return;
 
-    const game = getGame(gameCode);
-    if (!game) {
-        return throwError(socket.id, ERRORS.GAME_NOT_FOUND);
-    }
-
-    if (!hasPlayer(game, socket.id)) {
-        return throwError(socket.id, ERRORS.PLAYER_NOT_IN_GAME);
-    }
-
-    if (isHost(game, socket.id) && !hasGameStarted(game)) {
+    if (isHost(game, socketId) && !hasGameStarted(game)) {
+        removePlayer(game, socketId);
         socket.emit("left");
         for (const player of game.players) {
             io.to(player.socketId).emit("host_left");
+            removePlayer(game, player.socketId);
         }
-        GAMES.delete(gameCode);
-        return;
+        return endGame(game);
     }
 
-    removePlayer(game, socket.id);
+    removePlayer(game, socketId);
 
     const usernames = game.players.map(player => player.username);
 
@@ -35,5 +26,5 @@ export default function leaveGame(socket, gameCode) {
 
     socket.emit("left");
 
-    if (game.players.length < MIN_PLAYERS) endGame(game);
+    if (!hasEnoughPlayers(game)) endGame(game);
 }
