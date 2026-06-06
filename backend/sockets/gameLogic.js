@@ -65,6 +65,9 @@ function gameLogic(socket) {
         }
 
         const game = getGame(gameCode);
+        if (!game) {
+            return throwError(socket.id, ERRORS.GAME_NOT_FOUND);
+        }
         const player = getPlayer(game, socket.id);
         const field = player.field;
 
@@ -94,8 +97,10 @@ function gameLogic(socket) {
         }
 
         const game = getGame(socket, gameCode);
-        if (!game) return throwError(socket.id, ERRORS.GAME_NOT_FOUND);
-
+        if (!game) {
+            return throwError(socket.id, ERRORS.GAME_NOT_FOUND);
+        }
+        
         const player = getPlayer(game, socket.id);
 
         if (!buyMaterial(game, player, material, amount)) {
