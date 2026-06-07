@@ -1,6 +1,6 @@
 import Building from "../exports/Building.js";
 import { sendCellPriceUpdate, sendFieldUpdate, sendHappinessUpdate, sendMaterialPricesUpdate, sendMaterialsUpdate, sendMaxPopulationUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate, sendTickNumberUpdate } from "../exports/clientUpdates.js";
-import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial, closeGame, sumUpPlayers, decreasePopulation, increasePopulation, updatePopulation, hasAdjacentCell, buyCell, generateIncome, endGame, hasGameStarted, throwError, sellMaterial, hasEnoughPlayers, startGame, deleteBuilding, removePlayer } from "../exports/utils.js";
+import { getDefaultSettings, getGame, isValidData, isHost, getCurrentBuildingId, setUpPlayer, getFieldMiddle, createField, getDefaultClientGameDataObject, getBuildingByName, getPlayer, hasRequiredBuilding, hasRequiredMaterials, hasRequiredMoney, getBuildingBounds, isPlacementInBounds, hasPlacementError, removeMaterials, removeMoney, placeBuilding, isTownHall, returnMaterials, returnMoney, isMaterialPriceAboveMultiplier, updateMarket, buyMaterial, closeGame, sumUpPlayers, decreasePopulation, increasePopulation, updatePopulation, hasAdjacentCell, buyCell, generateIncome, endGame, hasGameStarted, throwError, sellMaterial, hasEnoughPlayers, startGame, deleteBuilding, removePlayer, canDeleteBuilding } from "../exports/utils.js";
 import { CELL_PRICE_INCREASE, ERRORS, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, MIN_PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MONEY, WORK_MULTIPLIER } from "../gameStorage.js";
 import { io } from "../server.js";
 
@@ -29,11 +29,11 @@ function gameLogic(socket, socketId) {
             return throwError(socketId, ERRORS.GAME_ALREADY_STARTED);
         }
 
-        startGame(game, populationPool, marketVolatility);
-
         if (!isHost(game, socketId)) {
             return throwError(socketId, ERRORS.HOST_FEATURE);
         }
+
+        startGame(game, populationPool, marketVolatility);
 
         for (const player of game.players) {
             setUpPlayer(game, player);

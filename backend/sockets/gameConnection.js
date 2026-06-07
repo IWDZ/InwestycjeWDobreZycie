@@ -1,5 +1,5 @@
 import leaveGame from "../exports/leaveGame.js";
-import { createGame, generateGameCode, createDefaultGameObject, getGame, hasGameStarted, hasPlayerWithUsername, isGameFull, isHost, isPlayerInGame, isValidData, throwError, addPlayer } from "../exports/utils.js";
+import { createGame, generateGameCode, getGame, hasGameStarted, hasPlayerWithUsername, isGameFull, isHost, isPlayerInGame, isValidData, throwError, addPlayer, setPlayerGame } from "../exports/utils.js";
 import { ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_PLAYERS, MIN_PLAYERS } from "../gameStorage.js";
 import { io } from "../server.js";
 
@@ -20,6 +20,8 @@ function gameConnection(socket, socketId) {
         const gameCode = generateGameCode();
 
         createGame(gameCode, username, socketId, playersAmount);
+
+        setPlayerGame(socketId, gameCode);
         
         socket.emit("game_created", {
             gameCode: gameCode,
@@ -78,9 +80,7 @@ function gameConnection(socket, socketId) {
         });
     });
 
-    socket.on("leave_game", () => {
-        leaveGame(socket);
-    });
+    socket.on("leave_game", () => leaveGame(socket, socketId));
 }
 
 export default gameConnection;

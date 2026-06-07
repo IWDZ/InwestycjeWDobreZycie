@@ -1,6 +1,7 @@
-import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, MIN_PLAYERS, PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
 import { io } from "../server.js";
 import Building from "./Building.js";
+import { sendCellPriceUpdate, sendFieldUpdate, sendHappinessUpdate, sendMaterialPricesUpdate, sendMaterialsUpdate, sendMaxPopulationUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate, sendTickNumberUpdate } from "./clientUpdates.js";
 
 export function setPlayerGame(socketId, gameCode) {
     PLAYERS.set(socketId, gameCode);
@@ -159,7 +160,7 @@ export function hasRequiredBuilding(building, field) {
     for (let y = 0; y < MAX_FIELD_SIZE; y++) {
         for (let x = 0; x < MAX_FIELD_SIZE; x++) {
             const cell = field[y][x];
-            if (cell?.building?.NAME === building.REQUIRED_BUILDING) {
+            if ((cell instanceof Building) && cell.buildingName === building.REQUIRED_BUILDING) {
                 return true;
             }
         }
@@ -184,7 +185,7 @@ export function buyMaterial(game, player, material, amount) {
     removeMoney(player, cost);
     addMaterials(player, {[material]: amount});
     
-    game.currentTick.purchases += amount;
+    game.currentTick.purchases[material] += amount;
 
     sendMoneyDecrease(player, cost);
     sendMoneyUpdate(player);
@@ -201,9 +202,9 @@ export function sellMaterial(game, player, material, amount) {
 
     removeMaterials(player, materialCostObject);
     const cost = game.materialPrices[material] * amount;
-    addMoney(cost);
+    addMoney(player, cost);
 
-    game.currentTick.sales += amount;
+    game.currentTick.sales[material] += amount;
 
     sendMoneyIncrease(player, cost);
     sendMoneyUpdate(player);
@@ -240,9 +241,10 @@ export function removeMoney(player, amount) {
 
 export function placeBuilding(game, player, field, buildingBounds, building, isVertical) {
     const { rowStart, columnStart, rowEnd, columnEnd } = buildingBounds;
+    const id = getCurrentBuildingId(game);
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
-            field[y][x] = new Building(getCurrentBuildingId(game), building, [rowStart, columnStart], isVertical);
+            field[y][x] = new Building(id, building, [rowStart, columnStart], isVertical);
         }
     }
     player.happiness += building.HAPPINESS;
@@ -632,7 +634,10 @@ export function doGameTick(game) {
     if (currentTick.tickNumber % MARKET_UPDATE_TICK_INTERVAL === 0) {
         updateMarket(game, currentTick);
         sendMaterialPricesUpdate(game);
-        currentTick.sales = currentTick.purchases = 0;
+        for (const material of Object.values(MATERIALS)) {
+            currentTick.purchases[material] = 0;
+            currentTick.sales[material] = 0;
+        }
     }
 
     updatePopulation(game);
