@@ -71,44 +71,21 @@ function scaleChange(base, volatility) {
     return 1 + (base - 1) * volatility;
 }
 
-export function updateMarket(game, currentTick) {
+export function updateMarket(game) {
     const marketVolatility = game.settings.MARKET_VOLATILITY;
     for (const material of Object.values(MATERIALS)) {
-        let net = currentTick.purchases[material] - currentTick.sales[material];
         let newPrice = game.materialPrices[material];
-        if (net === 0) {
-            const changeNumber = Math.floor(Math.random() * 3);
-            if (changeNumber === 1) {
-                if (isMaterialPriceAboveMultiplier(newPrice, material, 1/3))
-                    newPrice *= scaleChange(Math.random() * 0.2 + 0.8, marketVolatility);
-            }else if (changeNumber === 2) {
-                if (!isMaterialPriceAboveMultiplier(newPrice, material, 2.5))
-                    newPrice *= scaleChange(Math.random() * 0.2 + 1, marketVolatility);
-            }
-        }else if (net > 0) {
-            while (net > 0 && !isMaterialPriceAboveMultiplier(newPrice, material, 2.5)) {
-                if (isMaterialPriceAboveMultiplier(newPrice, material, 1.5)) {
-                    newPrice *= scaleChange(1.005, marketVolatility);
-                }else{
-                    newPrice *= scaleChange(1.01, marketVolatility);
-                }
-                net--;
-            }
-        }else{
-            while (net < 0 && !isMaterialPriceAboveMultiplier(newPrice, material, 1/3)) {
-                if (isMaterialPriceAboveMultiplier(newPrice, material, 1.5)) {
-                    newPrice *= scaleChange(0.99, marketVolatility);
-                }else if (isMaterialPriceAboveMultiplier(newPrice, material, 0.5)) {
-                    newPrice *= scaleChange(0.998, marketVolatility);
-                }else{
-                    newPrice *= scaleChange(0.995, marketVolatility);
-                }
-                net++;
-            }
+
+        if (Math.random() < 0.5) {
+            if (isMaterialPriceAboveMultiplier(newPrice, material, 1/3))
+                newPrice *= scaleChange(Math.random() * 0.2 + 0.8, marketVolatility);
+        } else {
+            if (!isMaterialPriceAboveMultiplier(newPrice, material, 2.5))
+                newPrice *= scaleChange(Math.random() * 0.2 + 1, marketVolatility);
         }
 
         if (isMaterialPriceAboveMultiplier(newPrice, material, 2.5)) newPrice = MATERIAL_PRICES[material] * 2.5;
-        if (!isMaterialPriceAboveMultiplier(newPrice, material, 1/3)) newPrice = MATERIAL_PRICES[material] * (1/3)
+        if (!isMaterialPriceAboveMultiplier(newPrice, material, 1/3)) newPrice = MATERIAL_PRICES[material] * (1/3);
         game.materialPrices[material] = Math.round(newPrice);
     }
 }

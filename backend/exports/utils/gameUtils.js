@@ -23,11 +23,7 @@ export function getDefaultGameSettings(populationPool, marketVolatility) {
 export function startGame(game, populationPool, marketVolatility) {
     game.started = true;
     game.settings = getDefaultGameSettings(populationPool, marketVolatility);
-    game.currentTick = {
-        tickNumber: 1,
-        sales: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0])),
-        purchases: Object.fromEntries(Object.values(MATERIALS).map(material => [material, 0]))
-    };
+    game.tickNumber = 1;
     game.materialPrices = { ...MATERIAL_PRICES};
     setTimeout(() => game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000), SECONDS_BEFORE_GAME_START * 1000);
 }
@@ -88,27 +84,22 @@ export function endGame(game) {
 }
 
 export function doGameTick(game) {
-    const currentTick = game.currentTick;
 
     for (const player of game.players) {
         sendMoneyIncrease(player, generateIncome(player));
         sendMoneyUpdate(player);
     }
 
-    if (currentTick.tickNumber >= GAME_DURATION_TICKS) {
+    if (game.tickNumber >= GAME_DURATION_TICKS) {
         return endGame(game);
     }
 
-    if (currentTick.tickNumber % MARKET_UPDATE_TICK_INTERVAL === 0) {
-        updateMarket(game, currentTick);
+    if (game.tickNumber % MARKET_UPDATE_TICK_INTERVAL === 0) {
+        updateMarket(game);
         sendMaterialPricesUpdate(game);
-        for (const material of Object.values(MATERIALS)) {
-            currentTick.purchases[material] = 0;
-            currentTick.sales[material] = 0;
-        }
     }
 
-    if (currentTick.tickNumber % LEADERBOARD_UPDATE_TICK_INTERVAL === 0) {
+    if (game.tickNumber % LEADERBOARD_UPDATE_TICK_INTERVAL === 0) {
         sendLeaderboardUpdate(game);
     }
 
@@ -116,10 +107,10 @@ export function doGameTick(game) {
     sendPopulationUpdate(game);
     for (const player of game.players) {
         sendFieldUpdate(player);
-        sendTickNumberUpdate(player, currentTick.tickNumber);
+        sendTickNumberUpdate(player, game.tickNumber);
     }
 
-    currentTick.tickNumber++;
+    game.tickNumber++;
 }
 
 export function hasGameEnoughPlayers(game) {

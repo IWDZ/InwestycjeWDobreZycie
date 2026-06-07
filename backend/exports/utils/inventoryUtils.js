@@ -16,8 +16,6 @@ export function buyMaterial(game, player, material, amount) {
 
     removeMoney(player, cost);
     addMaterials(player, {[material]: amount});
-    
-    game.currentTick.purchases[material] += amount;
 
     sendMoneyDecrease(player, cost);
     sendMoneyUpdate(player);
@@ -35,8 +33,6 @@ export function sellMaterial(game, player, material, amount) {
     removeMaterials(player, materialCostObject);
     const cost = game.materialPrices[material] * amount;
     addMoney(player, cost);
-
-    game.currentTick.sales[material] += amount;
 
     sendMoneyIncrease(player, cost);
     sendMoneyUpdate(player);
