@@ -1,16 +1,19 @@
-import leaveGame from "../exports/leaveGame.js";
-import { createGame, generateGameCode, getGame, hasGameStarted, hasPlayerWithUsername, isGameFull, isHost, isPlayerInGame, isValidData, throwError, addPlayer, setPlayerGame } from "../exports/utils.js";
-import { ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAMES, MAX_PLAYERS, MIN_PLAYERS } from "../gameStorage.js";
+import { createGame, generateGameCode, getGame, hasGameStarted, isGameFull } from "../exports/utils/gameUtils.js";
+import { isValidData, throwError } from "../exports/utils/generalUtils.js";
+import { addPlayer, getPlayerGame, hasGamePlayerWithUsername, isPlayerInGame, leaveGame, setPlayerGame } from "../exports/utils/playerUtils.js";
+import { ERRORS, MAX_PLAYERS, MIN_PLAYERS } from "../gameStorage.js";
 import { io } from "../server.js";
 
 function gameConnection(socket, socketId) {
     socket.on("create_game", (data) => {
-        if (getGame(socketId)) {
+        if (getGame(getPlayerGame(socketId))) {
             return throwError(socketId, ERRORS.PLAYER_ALREADY_IN_GAME);
         }
+
         if (!isValidData(data)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
+
         const {username, playersAmount} = data;
         if (typeof username !== "string" || !Number.isInteger(playersAmount) ||
             (playersAmount < MIN_PLAYERS || playersAmount > MAX_PLAYERS)) {
@@ -44,7 +47,7 @@ function gameConnection(socket, socketId) {
             return throwError(socketId, ERRORS.PLAYER_ALREADY_IN_GAME);
         }
 
-        const game = GAMES.get(gameCode);
+        const game = getGame(gameCode);
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
         }
@@ -57,7 +60,7 @@ function gameConnection(socket, socketId) {
             return throwError(socketId, ERRORS.GAME_FULL);
         }
 
-        if (hasPlayerWithUsername(game, username)) {
+        if (hasGamePlayerWithUsername(game, username)) {
             return throwError(socketId, ERRORS.USERNAME_TAKEN);
         }
 

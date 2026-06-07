@@ -1,5 +1,8 @@
-import { getGame, getPlayer, hasEnoughPlayers, hasGameStarted, hasRequiredMaterials, hasRequiredMoney, isValidData, removeMaterials, removeMoney, removePlayer, throwError } from "../exports/utils.js";
-import { ERRORS, MIN_PLAYERS, ATOMIC_BOMB } from "../gameStorage.js";
+import { endGame, getGame, hasGameEnoughPlayers, hasGameStarted } from "../exports/utils/gameUtils.js";
+import { throwError } from "../exports/utils/generalUtils.js";
+import { hasRequiredMaterials, hasRequiredMoney, removeMaterials, removeMoney } from "../exports/utils/inventoryUtils.js";
+import { getPlayer, getPlayerGame, removePlayer } from "../exports/utils/playerUtils.js";
+import { ERRORS, PUTIN_ROCKET } from "../gameStorage.js";
 import { io } from "../server.js";
 
 function atomicBomb(socket, socketId) {
@@ -8,7 +11,7 @@ function atomicBomb(socket, socketId) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
 
-        const game = getGame(socketId);
+        const game = getGame(getPlayerGame(socketId));
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
         }
@@ -49,7 +52,7 @@ function atomicBomb(socket, socketId) {
             io.to(player.socketId).emit("player_nuke", target.username);
         }
 
-        if (!hasEnoughPlayers(game)) endGame(game);
+        if (!hasGameEnoughPlayers(game)) endGame(game);
     });
 }
 

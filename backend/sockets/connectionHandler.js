@@ -1,7 +1,4 @@
-import leaveGame from "../exports/leaveGame.js";
-import { isPlayerInGame, setPlayerGame } from "../exports/utils.js";
-
-import { GAMES, PLAYERS } from "../gameStorage.js";
+import { leaveGame, setPlayerGame } from "../exports/utils/playerUtils.js";
 import { io } from "../server.js";
 import gameConnection from "./gameConnection.js";
 import gameLogic from "./gameLogic.js";
