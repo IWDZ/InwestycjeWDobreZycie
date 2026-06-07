@@ -182,8 +182,10 @@ export function buyMaterial(game, player, material, amount) {
     }
 
     removeMoney(player, cost);
-
     addMaterials(player, {[material]: amount});
+    
+    game.currentTick.purchases += amount;
+
     sendMoneyDecrease(player, cost);
     sendMoneyUpdate(player);
     sendMaterialsUpdate(player);
@@ -198,9 +200,10 @@ export function sellMaterial(game, player, material, amount) {
     }
 
     removeMaterials(player, materialCostObject);
-    
     const cost = game.materialPrices[material] * amount;
     addMoney(cost);
+
+    game.currentTick.sales += amount;
 
     sendMoneyIncrease(player, cost);
     sendMoneyUpdate(player);
@@ -629,6 +632,7 @@ export function doGameTick(game) {
     if (currentTick.tickNumber % MARKET_UPDATE_TICK_INTERVAL === 0) {
         updateMarket(game, currentTick);
         sendMaterialPricesUpdate(game);
+        currentTick.sales = currentTick.purchases = 0;
     }
 
     updatePopulation(game);
