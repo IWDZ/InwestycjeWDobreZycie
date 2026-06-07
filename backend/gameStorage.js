@@ -31,6 +31,7 @@ export const WORK_MULTIPLIER = 0.02;
 export const SECONDS_BEFORE_GAME_START = 4;
 export const GAME_TICK_SECONDS = 3;
 export const MARKET_UPDATE_TICK_INTERVAL = 3;
+export const LEADERBOARD_UPDATE_TICK_INTERVAL = 3;
 export const GAME_DURATION_TICKS = 120;
 
 export const BUILDING_TYPES = {

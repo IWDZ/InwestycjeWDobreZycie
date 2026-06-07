@@ -1,5 +1,6 @@
 import { CELL_PRICE_INCREASE } from "../gameStorage.js";
 import { io } from "../server.js";
+import { sumUpPlayers } from "./utils.js";
 
 export function sendFieldUpdate(player) {
     io.to(player.socketId).emit("field_update", player.field);
@@ -55,4 +56,10 @@ export function sendMoneyDecrease(player, amount) {
 
 export function sendTickNumberUpdate(player, tickNumber) {
     io.to(player.socketId).emit("tick_update", tickNumber);
+}
+
+export function sendLeaderboardUpdate(game) {
+    for (const player of game.players) {
+        io.to(player.socketId).emit("leaderboard_update", sumUpPlayers(game));
+    }
 }

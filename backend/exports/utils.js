@@ -1,7 +1,7 @@
-import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, MIN_PLAYERS, PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BUILDINGS, CELL_PRICE_INCREASE, DEFAULT_CELL_PRICE, EMPTY_CELL_INDICATOR, ERRORS, GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, HAPPINESS_MULTIPLIER, LEADERBOARD_UPDATE_TICK_INTERVAL, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MAX_FIELD_SIZE, MIN_PLAYERS, PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START, START_HAPPINESS, START_MATERIALS, START_MONEY, WORK_MULTIPLIER, WORTH_PER_PERSON } from "../gameStorage.js";
 import { io } from "../server.js";
 import Building from "./Building.js";
-import { sendCellPriceUpdate, sendFieldUpdate, sendHappinessUpdate, sendMaterialPricesUpdate, sendMaterialsUpdate, sendMaxPopulationUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate, sendTickNumberUpdate } from "./clientUpdates.js";
+import { sendCellPriceUpdate, sendFieldUpdate, sendHappinessUpdate, sendLeaderboardUpdate, sendMaterialPricesUpdate, sendMaterialsUpdate, sendMaxPopulationUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate, sendTickNumberUpdate } from "./clientUpdates.js";
 
 export function setPlayerGame(socketId, gameCode) {
     PLAYERS.set(socketId, gameCode);
@@ -108,14 +108,14 @@ export function getPlayer(game, socketId) {
 
 export function generateIncome(player) {
     const field = player.field;
-    const ignoredIDs = [];
+    const ignoredIDs = new Set();
     let income = 0;
     for (let y = 0; y < MAX_FIELD_SIZE; y++) {
         for (let x = 0; x < MAX_FIELD_SIZE; x++) {
             const cell = field[y][x];
-            if (!(cell instanceof Building) || ignoredIDs.includes(cell.id)) continue;
+            if (!(cell instanceof Building) || ignoredIDs.has(cell.id)) continue;
             income += cell.building.MONEY_PER_JOB * cell.workers;
-            ignoredIDs.push(cell.id);
+            ignoredIDs.add(cell.id);
         }
     }
     addMoney(player, income);
@@ -353,7 +353,7 @@ export function deleteBuilding(game, player, field, buildingBounds) {
     sendPopulationUpdate(game);
 }
 
-export function increasePopulation(player, workersToIncrease, residentsToIncrease = workersToIncrease, ignoredIDs = []) {
+export function increasePopulation(player, workersToIncrease, residentsToIncrease = workersToIncrease, ignoredIDs = new Set()) {
     if (workersToIncrease <= 0 && residentsToIncrease <= 0) return true;
     const population = player.population;
     if (population.workingPopulation + workersToIncrease > population.maxWorkingPopulation ||
@@ -384,11 +384,11 @@ export function increasePopulation(player, workersToIncrease, residentsToIncreas
         worstBuilding.residents += emptyApartments;
     }
 
-    ignoredIDs.push(worstBuilding.id);
+    ignoredIDs.add(worstBuilding.id);
     return increasePopulation(player, workersToIncrease, residentsToIncrease, ignoredIDs);
 }
 
-export function decreasePopulation(player, workersToDecrease, residentsToDecrease = workersToDecrease, ignoredIDs = []) {
+export function decreasePopulation(player, workersToDecrease, residentsToDecrease = workersToDecrease, ignoredIDs = new Set()) {
     if (workersToDecrease <= 0 && residentsToDecrease <= 0) return true;
     const population = player.population;
     if (population.workingPopulation - workersToDecrease < 2) return false;
@@ -415,7 +415,7 @@ export function decreasePopulation(player, workersToDecrease, residentsToDecreas
         worstBuilding.residents = 0;
     }
 
-    ignoredIDs.push(worstBuilding.id);
+    ignoredIDs.add(worstBuilding.id);
     return decreasePopulation(player, workersToDecrease, residentsToDecrease, ignoredIDs);
 }
 
@@ -426,7 +426,7 @@ export function getWorstBuilding(player, blockedIDs) {
     for (let y = 0; y < MAX_FIELD_SIZE; y++) {
         for (let x = 0; x < MAX_FIELD_SIZE; x++) {
             const cell = player.field[y][x];
-            if (cell instanceof Building && cell.building.MONEY_PER_JOB < minSalary && (cell.building.JOBS - cell.workers > 0 || cell.building.APARTMENTS - cell.residents > 0) && !blockedIDs.includes(cell.id)) {
+            if (cell instanceof Building && cell.building.MONEY_PER_JOB < minSalary && (cell.building.JOBS - cell.workers > 0 || cell.building.APARTMENTS - cell.residents > 0) && !blockedIDs.has(cell.id)) {
                 minSalary = cell.building.MONEY_PER_JOB;
                 worstY = y;
                 worstX = x;
@@ -560,42 +560,45 @@ export function updatePopulation(game) {
 }
 
 export function sumUpPlayers(game) {
+    const playerWorths = [];
     for (const player of game.players) {
         const moneyWorth = player.money;
         let materialWorth = {};
+        let totalWorth = player.money;
         for (const [material, amount] of Object.entries(player.materials)){
-            const moneyBeforeSelling = player.money;
-            sellMaterial(game, player, material, amount);
-            materialWorth = {...materialWorth, [material]: player.money - moneyBeforeSelling};
+            const cost = game.materialPrices[material] * amount;
+            totalWorth += cost;
+            materialWorth = {...materialWorth, [material]: cost};
         }
         const field = player.field;
-        const ignoredIDs = [];
+        const ignoredIDs = new Set();
         let buildingsWorth = 0;
         for (let y = 0; y < MAX_FIELD_SIZE; y++) {
             for (let x = 0; x < MAX_FIELD_SIZE; x++) {
                 const cell = field[y][x];
-                if (!(cell instanceof Building) || ignoredIDs.includes(cell.id)) continue;
+                if (!(cell instanceof Building) || ignoredIDs.has(cell.id)) continue;
                 const worth = cell.building.MONEY_COST;
                 buildingsWorth += worth;
-                player.money += worth;
-                ignoredIDs.push(cell.id);
+                totalWorth += worth;
+                ignoredIDs.add(cell.id);
             }
         }
         const populationWorth = player.population.livingPopulation * WORTH_PER_PERSON;
-        player.money += populationWorth;
-        player.worth = {
-            moneyWorth: moneyWorth,
-            materialWorth: materialWorth,
-            buildingsWorth: buildingsWorth,
-            populationWorth: populationWorth,
-            totalWorth: player.money
-        }
+        totalWorth += populationWorth;
+        playerWorths.push({
+            username: player.username,
+            moneyWorth,
+            materialWorth,
+            buildingsWorth,
+            populationWorth,
+            totalWorth
+        });
     }
 
-    const leaderboard = [...game.players].sort((a, b) => b.worth.totalWorth - a.worth.totalWorth).map(player => (
+    const leaderboard = playerWorths.sort((a, b) => b.totalWorth - a.totalWorth).map(player => (
         {
             username: player.username,
-            worth: player.worth.totalWorth
+            worth: player.totalWorth
         }
     ));
     return leaderboard;
@@ -638,6 +641,10 @@ export function doGameTick(game) {
             currentTick.purchases[material] = 0;
             currentTick.sales[material] = 0;
         }
+    }
+
+    if (currentTick.tickNumber % LEADERBOARD_UPDATE_TICK_INTERVAL === 0) {
+        sendLeaderboardUpdate(game);
     }
 
     updatePopulation(game);
