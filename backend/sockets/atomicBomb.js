@@ -1,4 +1,4 @@
-import { getGame, getPlayer, hasEnoughPlayers, hasRequiredMaterials, hasRequiredMoney, isValidData, removeMaterials, removeMoney, removePlayer, throwError } from "../exports/utils.js";
+import { getGame, getPlayer, hasEnoughPlayers, hasGameStarted, hasRequiredMaterials, hasRequiredMoney, isValidData, removeMaterials, removeMoney, removePlayer, throwError } from "../exports/utils.js";
 import { ERRORS, MIN_PLAYERS, ATOMIC_BOMB } from "../gameStorage.js";
 import { io } from "../server.js";
 
@@ -11,6 +11,10 @@ function atomicBomb(socket, socketId) {
         const game = getGame(socketId);
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
+        }
+
+        if (!hasGameStarted(game)) {
+            return throwError(socketId, ERRORS.GAME_NOT_STARTED);
         }
 
         const player = getPlayer(game, socketId);

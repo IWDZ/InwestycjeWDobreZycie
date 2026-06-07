@@ -531,5 +531,6 @@ export const ERRORS = {
     UNEXPECTED_BUILDING_BOUNDS: "Unexpected building bounds",
     HOST_FEATURE: "Only the host can do this",
     SELF_NUKE: "You can't nuke yourself",
-    TARGET_NOT_FOUND: "Target not found"
+    TARGET_NOT_FOUND: "Target not found",
+    GAME_NOT_STARTED: "Game hasn't started yet"
 }

@@ -52,6 +52,11 @@ function gameLogic(socket, socketId) {
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
         }
+
+        if (!hasGameStarted(game)) {
+            return throwError(socketId, ERRORS.GAME_NOT_STARTED);
+        }
+
         const player = getPlayer(game, socketId);
         if (!player) {
             return throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
@@ -84,6 +89,10 @@ function gameLogic(socket, socketId) {
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
         }
+
+        if (!hasGameStarted(game)) {
+            return throwError(socketId, ERRORS.GAME_NOT_STARTED);
+        }
         
         const player = getPlayer(game, socketId);
         if (!player) {
@@ -110,6 +119,10 @@ function gameLogic(socket, socketId) {
         const game = getGame(socketId);
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
+        }
+
+        if (!hasGameStarted(game)) {
+            return throwError(socketId, ERRORS.GAME_NOT_STARTED);
         }
 
         const player = getPlayer(game, socketId);
@@ -143,6 +156,10 @@ function gameLogic(socket, socketId) {
         const game = getGame(socketId);
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
+        }
+
+        if (!hasGameStarted(game)) {
+            return throwError(socketId, ERRORS.GAME_NOT_STARTED);
         }
 
         const player = getPlayer(game, socketId);
@@ -192,6 +209,10 @@ function gameLogic(socket, socketId) {
         const game = getGame(socketId);
         if (!game) {
             return throwError(socketId, ERRORS.GAME_NOT_FOUND);
+        }
+
+        if (!hasGameStarted(game)) {
+            return throwError(socketId, ERRORS.GAME_NOT_STARTED);
         }
 
         const player = getPlayer(game, socketId);
