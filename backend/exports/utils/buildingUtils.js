@@ -28,9 +28,10 @@ export function hasRequiredBuilding(building, field) {
 export function placeBuilding(game, player, field, buildingBounds, building, isVertical) {
     const { rowStart, columnStart, rowEnd, columnEnd } = buildingBounds;
     const id = getCurrentBuildingId(game);
+    const buildingObject = new Building(id, building, [rowStart, columnStart], isVertical);
     for (let y = rowStart; y <= rowEnd; y++) {
         for (let x = columnStart; x <= columnEnd; x++) {
-            field[y][x] = new Building(id, building, [rowStart, columnStart], isVertical);
+            field[y][x] = buildingObject;
         }
     }
     player.happiness += building.HAPPINESS;
