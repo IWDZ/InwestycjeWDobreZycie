@@ -1,4 +1,4 @@
-import { BUILDINGS, DEFAULT_CELL_PRICE, ERRORS, MATERIALS, MAX_FIELD_SIZE, PLAYERS, START_HAPPINESS, START_MATERIALS, START_MONEY, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BONUS_BUILDINGS, BUILDINGS, DEFAULT_CELL_PRICE, ERRORS, MATERIALS, MAX_FIELD_SIZE, PLAYERS, START_HAPPINESS, START_MATERIALS, START_MONEY, WORTH_PER_PERSON } from "../gameStorage.js";
 import { io } from "../../server.js";
 import Building from "../Building.js";
 import { getCurrentBuildingId } from "./buildingUtils.js";
@@ -75,10 +75,18 @@ export function sumUpPlayers(game) {
         const field = player.field;
         const ignoredIDs = new Set();
         let buildingsWorth = 0;
+        let bonus = 0;
+        const buildingBonuses = {...BONUS_BUILDINGS};
         for (let y = 0; y < MAX_FIELD_SIZE; y++) {
             for (let x = 0; x < MAX_FIELD_SIZE; x++) {
                 const cell = field[y][x];
                 if (!(cell instanceof Building) || ignoredIDs.has(cell.id)) continue;
+                const buildingBonus = buildingBonuses[cell.buildingName];
+                if (buildingBonus > 0) {
+                    bonus += buildingBonus;
+                    totalWorth += buildingBonus;
+                    buildingBonuses[cell.buildingName] = 0;
+                }
                 const worth = cell.building.MONEY_COST;
                 buildingsWorth += worth;
                 totalWorth += worth;
@@ -92,6 +100,7 @@ export function sumUpPlayers(game) {
             moneyWorth,
             materialWorth,
             buildingsWorth,
+            bonus,
             populationWorth,
             totalWorth
         });
