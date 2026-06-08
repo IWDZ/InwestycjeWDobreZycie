@@ -1,5 +1,5 @@
 import { HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, START_HAPPINESS, WORK_MULTIPLIER } from "../../gameStorage.js";
-import { getWorstBuilding } from "./buildingUtils.js";
+import { getWorstAvailableBuilding, getWorstOccupiedBuilding } from "./buildingUtils.js";
 
 export function increasePopulation(player, workersToIncrease, residentsToIncrease = workersToIncrease, ignoredIDs = new Set()) {
     if (workersToIncrease <= 0 && residentsToIncrease <= 0) return true;
@@ -7,7 +7,7 @@ export function increasePopulation(player, workersToIncrease, residentsToIncreas
     if (population.workingPopulation + workersToIncrease > population.maxWorkingPopulation ||
         population.livingPopulation + residentsToIncrease > population.maxLivingPopulation) return false;
     
-    const worstBuilding = getWorstBuilding(player, ignoredIDs);
+    const worstBuilding = getWorstAvailableBuilding(player, ignoredIDs);
 
     const emptyJobs = worstBuilding.building.JOBS - worstBuilding.workers;
     const emptyApartments = worstBuilding.building.APARTMENTS - worstBuilding.residents;
@@ -41,7 +41,7 @@ export function decreasePopulation(player, workersToDecrease, residentsToDecreas
     const population = player.population;
     if (population.workingPopulation - workersToDecrease < 2) return false;
 
-    const worstBuilding = getWorstBuilding(player, ignoredIDs);
+    const worstBuilding = getWorstOccupiedBuilding(player, ignoredIDs);
 
     if (worstBuilding.workers >= workersToDecrease) {
         population.workingPopulation -= workersToDecrease;
@@ -97,9 +97,10 @@ export function updatePopulation(game) {
         const rawChange = (happinessFactor + workFactor) * (Math.random() * 0.6 + 0.7);
         const populationChange = rawChange >= 0 ? Math.ceil(rawChange) : Math.floor(rawChange);
         if (populationChange < 0) {
-            if(decreasePopulation(player, Math.abs(populationChange))) game.settings.POPULATION += populationChange;
+            if(decreasePopulation(player, Math.abs(populationChange))) game.settings.POPULATION += Math.abs(populationChange);
         }else{
-            if(increasePopulation(player, populationChange)) game.settings.POPULATION -= populationChange;
+            if (game.settings.POPULATION >= populationChange)
+                if(increasePopulation(player, populationChange)) game.settings.POPULATION -= populationChange;
         }
     }
 }

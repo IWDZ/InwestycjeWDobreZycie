@@ -117,20 +117,34 @@ export function deleteBuilding(game, player, field, buildingBounds) {
     sendPopulationUpdate(game);
 }
 
-export function getWorstBuilding(player, blockedIDs) {
-    let worstY = 0;
-    let worstX = 0;
+export function getWorstAvailableBuilding(player, blockedIDs) {
+    let worstBuilding = null;
     let minSalary = Infinity;
     for (let y = 0; y < MAX_FIELD_SIZE; y++) {
         for (let x = 0; x < MAX_FIELD_SIZE; x++) {
             const cell = player.field[y][x];
             if (cell instanceof Building && cell.building.MONEY_PER_JOB < minSalary && (cell.building.JOBS - cell.workers > 0 || cell.building.APARTMENTS - cell.residents > 0) && !blockedIDs.has(cell.id)) {
                 minSalary = cell.building.MONEY_PER_JOB;
-                worstY = y;
-                worstX = x;
+                worstBuilding = cell;
             }
         }
     }
 
-    return player.field[worstY][worstX];
+    return worstBuilding;
+}
+
+export function getWorstOccupiedBuilding(player, blockedIDs) {
+    let worstBuilding = null;
+    let minSalary = Infinity;
+    for (let y = 0; y < MAX_FIELD_SIZE; y++) {
+        for (let x = 0; x < MAX_FIELD_SIZE; x++) {
+            const cell = player.field[y][x];
+            if (cell instanceof Building && cell.building.MONEY_PER_JOB < minSalary && (cell.workers > 0 || cell.residents > 0) && !blockedIDs.has(cell.id)) {
+                minSalary = cell.building.MONEY_PER_JOB;
+                worstBuilding = cell;
+            }
+        }
+    }
+
+    return worstBuilding;
 }
