@@ -2,8 +2,9 @@ import { endGame, getGame, hasGameEnoughPlayers, hasGameStarted } from "../expor
 import { throwError } from "../exports/utils/generalUtils.js";
 import { hasRequiredMaterials, hasRequiredMoney, removeMaterials, removeMoney } from "../exports/utils/inventoryUtils.js";
 import { getPlayer, getPlayerGame, removePlayer } from "../exports/utils/playerUtils.js";
-import { ERRORS, PUTIN_ROCKET } from "../exports/gameStorage.js";
+import { ERRORS, ATOMIC_BOMB } from "../exports/gameStorage.js";
 import { io } from "../server.js";
+import { hasRequiredBuilding } from "../exports/utils/buildingUtils.js";
 
 function atomicBomb(socket, socketId) {
     socket.on("send_atomic_bomb", targetName => {
@@ -41,6 +42,10 @@ function atomicBomb(socket, socketId) {
 
         if (!hasRequiredMaterials(ATOMIC_BOMB.MATERIAL_COST, player.materials)) {
             return throwError(socketId, ERRORS.NOT_ENOUGH_MATERIALS);
+        }
+
+        if (!hasRequiredBuilding(ATOMIC_BOMB, player.field)) {
+            return throwError(socketId, ERRORS.NO_REQUIRED_BUILDING);
         }
         
         removeMoney(player, ATOMIC_BOMB.MONEY_COST);

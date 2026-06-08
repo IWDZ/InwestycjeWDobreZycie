@@ -53,15 +53,6 @@ export const MATERIALS = {
     URANIUM: "uranium"
 }
 
-export const ATOMIC_BOMB = {
-    MATERIAL_COST: {
-        [MATERIALS.URANIUM]: 750,
-        [MATERIALS.STEEL]: 350,
-        [MATERIALS.COAL]: 250
-    },
-    MONEY_COST: 50000
-}
-
 export const START_MATERIALS = {
     [MATERIALS.STEEL]: 0,
     [MATERIALS.CONCRETE]: 0,
@@ -70,7 +61,7 @@ export const START_MATERIALS = {
     [MATERIALS.GLASS]: 0,
     [MATERIALS.COAL]: 0,
     [MATERIALS.URANIUM]: 0
-};
+}
 
 export const MATERIAL_PRICES = {
     [MATERIALS.WOOD]: 10,
@@ -398,7 +389,6 @@ export const BUILDINGS = {
         MONEY_COST: 12000,
         MONEY_PER_JOB: 110,
         MATERIAL_COST: {
-            [MATERIALS.URANIUM]: 40,
             [MATERIALS.STEEL]: 300,
             [MATERIALS.CONCRETE]: 200,
             [MATERIALS.URANIUM]: 120
@@ -494,10 +484,20 @@ export const BUILDINGS = {
             [MATERIALS.GLASS]: 50
         }
     }),
-};
+}
 
 BUILDINGS.UNIVERSITY.REQUIRED_BUILDING = BUILDINGS.SCHOOL.NAME;
 BUILDINGS.NUCLEAR_REACTOR.REQUIRED_BUILDING = BUILDINGS.COAL_PLANT.NAME;
+
+export const ATOMIC_BOMB = {
+    MATERIAL_COST: {
+        [MATERIALS.URANIUM]: 750,
+        [MATERIALS.STEEL]: 350,
+        [MATERIALS.COAL]: 250
+    },
+    MONEY_COST: 50000,
+    REQUIRED_BUILDING: BUILDINGS.NUCLEAR_REACTOR
+}
 
  /**
  * @param {BuildingConfig} config
