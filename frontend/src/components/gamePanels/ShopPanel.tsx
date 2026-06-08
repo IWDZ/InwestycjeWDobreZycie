@@ -111,7 +111,7 @@ function PriceBarChart({
 
 export function ShopPanel() {
   const [selected, setSelected] = useState<Materials>(Materials.Wood);
-  const [amount, setAmount] = useState(1);
+  const [amount, setAmount] = useState("0");
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
@@ -130,11 +130,10 @@ export function ShopPanel() {
 
   let inventory = GameManager.getInstance().inventory;
 
-  const totalCost = currentPrice * amount;
+  const totalCost = currentPrice * parseInt(amount, 10);
   const canAfford = inventory.money >= totalCost;
   const ownedAmount = inventory.materialCount[selected] ?? 0;
-  const canSell = ownedAmount >= amount;
-console.log("[Shop] canAfford:", canAfford, "money:", inventory.money, "totalCost:", totalCost, "currentPrice:", currentPrice);
+  const canSell = ownedAmount >= parseInt(amount, 10);
   return (
     <div className="panel shop-panel">
       <p className="panel-title">Market</p>
@@ -155,7 +154,7 @@ console.log("[Shop] canAfford:", canAfford, "money:", inventory.money, "totalCos
               className={`shop-material-tab ${active ? "shop-material-tab--active" : ""}`}
               onClick={() => {
                 setSelected(m);
-                setAmount(1);
+                setAmount("1");
               }}
               style={
                 active
@@ -229,18 +228,18 @@ console.log("[Shop] canAfford:", canAfford, "money:", inventory.money, "totalCos
           <div className="shop-amount-controls">
             <button
               className="shop-amount-btn"
-              onClick={() => setAmount((a) => Math.max(1, a - 1))}
+              onClick={() => setAmount((a) => a)}
             >
               −
             </button>
             <input
               className="shop-amount-input"
               type="number"
-              min={1}
               value={amount}
-              onChange={(e) =>
-                setAmount(Math.max(1, parseInt(e.target.value) || 1))
-              }
+              onChange={(e) => {
+                const val = e.target.value.replace(/^0+(\d)/, '$1'); 
+                setAmount(val === "" ? "0" : val);
+              }}
             />
             <button
               className="shop-amount-btn"
@@ -254,7 +253,7 @@ console.log("[Shop] canAfford:", canAfford, "money:", inventory.money, "totalCos
               <button
                 key={n}
                 className="shop-preset-btn"
-                onClick={() => setAmount(n)}
+                onClick={() => setAmount(`${n}`)}
               >
                 {n}
               </button>
@@ -269,7 +268,7 @@ console.log("[Shop] canAfford:", canAfford, "money:", inventory.money, "totalCos
               onClick={() => {
                   console.log("button clicked");
                   try {
-                      const result = shop.buy(selected, amount);
+                      const result = shop.buy(selected, parseInt(amount, 10));
                       console.log("buy result:", result);
                   } catch (e) {
                       console.error("shop.buy threw:", e);
@@ -283,7 +282,7 @@ console.log("[Shop] canAfford:", canAfford, "money:", inventory.money, "totalCos
               className={`shop-action-btn shop-action-btn--sell ${!canSell ? "shop-action-btn--disabled" : ""}`}
               disabled={!canSell}
               onClick={() => {
-                  shop.sell(selected, amount);
+                  shop.sell(selected, parseInt(amount, 10));
                   forceUpdate((v) => v + 1);
               }}
           >

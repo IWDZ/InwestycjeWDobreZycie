@@ -5,6 +5,8 @@ import { ShopManager } from "./ShopManager";
 import { Happiness } from "./Happiness";
 import { ws } from "../WebsocketManager";
 import { BUILDINGS, parseBuildingsFromServer, setBuildings } from "./statics/BuildingData";
+import { MaterialMarket } from "./MaterialMarket";
+import { MATERIAL_MAP, Materials } from "./statics/Materials";
 
 export class GameManager {
   private static instance: GameManager;
@@ -40,15 +42,28 @@ export class GameManager {
     this.leaderboard = new Leaderboard();
     
     this.shopManager = ShopManager.getInstance();
+
+    const market = MaterialMarket.getInstance();
+    const updates = Object.entries(data.materialPrices)
+      .filter(([, price]) => price != null)
+      .map(([key, price]) => ({
+        mat: MATERIAL_MAP[key.toLowerCase()],
+        value: price,
+      }))
+      .filter((x) => x.mat !== undefined) as { mat: Materials; value: number}[];
+    market.addMaterialPrice(updates);
     
     this.happiness = new Happiness();
     this.happiness.level = data.happiness;
 
     setBuildings(parseBuildingsFromServer(data.buildings));
 
-    ws.socket.onAny((event, data) => {
-      console.log("[GameManager] ws event:", event, data);
-    });
+    ws.socket.offAny(this.logDebug);
+    ws.socket.onAny(this.logDebug);
+  }
+
+  private logDebug(event: unknown, data: unknown) {
+    console.log("[GameManager] ws event:", event, data);
   }
 
   public reset() {

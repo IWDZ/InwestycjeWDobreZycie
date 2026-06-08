@@ -20,6 +20,7 @@ export type RoomSettings = {
 
 export class RoomManager {
   public isInRoom: boolean;
+  public username: string | undefined;
   public isHost: boolean;
   public roomId: string | undefined;
   public playerList: Array<Player>;
@@ -44,20 +45,24 @@ export class RoomManager {
       this.onRoomJoined?.();
     });
 
-    ws.register_handler("player_left", (data: { players: string[] }) => {
-      showError("player left");
-      console.log(data.players);
+    ws.register_handler("player_left", (data) => {
+      console.log(data);
+      this.syncPlayers(data as string[]);
     });
 
     ws.register_handler("host_left", () => {
+      console.log("kys");
       if (!this.isHost && this.isInRoom) {
         this.isInRoom = false;
+        this.onRoomLeft?.();
       }
     });
 
     ws.register_handler("game_start", (data) => {
       if (!this.isHost) {
         console.log(data);
+        GameManager.getInstance().startGame(data);
+        this.onGameStart?.();
       }
     });
   }

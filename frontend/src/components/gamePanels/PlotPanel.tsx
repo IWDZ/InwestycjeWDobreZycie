@@ -1,19 +1,22 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GameManager } from "../../services/game/GameManager";
+import { ws } from "../../services/WebsocketManager";
+import { roomManager } from "../LobbyService";
 
 export function PlotPanel() {
-  const plotManager = GameManager.getInstance().plotManager;
-
+  const manager = GameManager.getInstance();
+  const plotManager = manager.plotManager;
   const [, forceUpdate] = useState(0);
 
   const handleUnlock = useCallback(
     (e: React.MouseEvent, index: number) => {
       e.stopPropagation();
-      // TODO: unlock plot
-      //plotManager.unlockPlot(index);
+      const row = Math.floor(index / plotManager.gridSize);
+      const col = index % plotManager.gridSize;
+      ws.notify("buy_cell", [row, col]);
       forceUpdate(v => v + 1);
     },
-    [plotManager]
+    [plotManager, manager]
   );
 
   const size = plotManager.gridSize;
@@ -22,53 +25,39 @@ export function PlotPanel() {
   return (
     <div className="plot-panel">
       <p className="panel-title">Wybierz działkę</p>
-
       <div
         className="plot-grid"
         style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
       >
         {Array.from({ length: size * size }, (_, i) => {
           const unlocked = unlockedSet.has(i);
-          // TODO: get price
-          //const price = plotManager.getPrice(i);
-          const price = 0;
-          
           const row = Math.floor(i / size);
+
           return (
             <div
               key={i}
               className={`plot-cell ${unlocked ? "plot-cell--unlocked" : "plot-cell--locked"
                 } ${row === 0 ? "plot-cell--first-row" : ""}`}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
+              onClick={(e) => e.stopPropagation()}
             >
-              {(
-                <div className="plot-tooltip">
-                  <span className="plot-tooltip-title">
-                    Działka {i + 1}
-                  </span>
-
-                  {unlocked ? (
-                    <span className="plot-tooltip-unlocked">
-                      Odblokowana
+              <div className="plot-tooltip">
+                <span className="plot-tooltip-title">Działka {i + 1}</span>
+                {unlocked ? (
+                  <span className="plot-tooltip-unlocked">Odblokowana</span>
+                ) : (
+                  <>
+                    <span className="plot-tooltip-price">
+                      Cena: ${plotManager.nextCellPrice?.toLocaleString() ?? "—"}
                     </span>
-                  ) : (
-                    <>
-                      <span className="plot-tooltip-price">
-                        Cena: ${price.toLocaleString()}
-                      </span>
-
-                      <button
-                        className="plot-tooltip-btn"
-                        onClick={(e) => handleUnlock(e, i)}
-                      >
-                        Odblokuj
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
+                    <button
+                      className="plot-tooltip-btn"
+                      onClick={(e) => handleUnlock(e, i)}
+                    >
+                      Odblokuj
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           );
         })}

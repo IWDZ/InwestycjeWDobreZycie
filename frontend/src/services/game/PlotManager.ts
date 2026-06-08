@@ -1,14 +1,24 @@
+import { ws } from "../WebsocketManager";
+
 export class PlotManager {
   public field: (null | undefined | any)[][];
-
+  public nextCellPrice: number = 5000;
+  
   constructor() {
     this.field = [];
+    ws.register_handler("cell_price_update", (data: number) => this.nextCellPrice = data);
   }
 
   public get gridSize(): number {
     return this.field.length;
   }
 
+  public hasBuilding(id: string): boolean {
+    const lower = id.toLowerCase();
+    const result = this.field.some(row => row.some(plot => plot?.buildingName?.toLowerCase() === lower));
+    return result;
+  }
+  
   public syncFromServer(serverField: any[][]) {
     this.field = serverField.map((row) =>
       row.map((cell) => {

@@ -6,6 +6,8 @@ import {
   NAME_MAP,
 } from "../services/game/statics/BuildingData";
 import { createPortal } from "react-dom";
+import { ws } from "../services/WebsocketManager";
+import { roomManager } from "./LobbyService";
 
 interface GameMapFuncs {
   onPlotClick?: (plotId: number) => void;
@@ -150,7 +152,14 @@ export function GameMap({
               <span className="cell-modal-value">{cellModal.cell.residents} / {cellModal.cell.apartments}</span>
             </div>
           </div>
-          <button className="cell-modal-delete" onClick={() => setCellModal(null)}>
+          <button className="cell-modal-delete" onClick={() => {
+            const row = Math.floor(cellModal.plotIndex / gridSize);
+            const col = cellModal.plotIndex % gridSize;
+            ws.notify("delete_building", 
+              [row, col]
+            );
+            setCellModal(null);
+          }}>
             Usuń budynek
           </button>
         </div>,

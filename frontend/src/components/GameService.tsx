@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -25,6 +25,8 @@ import { GameManager } from "../services/game/GameManager";
 import { ws } from "../services/WebsocketManager";
 import { roomManager } from "./LobbyService";
 import { MaterialMarket } from "../services/game/MaterialMarket";
+import { BuyMaterialsMenu } from "./BuyMenu";
+import { NukeMenu } from "./gamePanels/NukeMenu";
 
 const TABS: { id: string; label: string; icon: any }[] = [
   { id: "build", label: "Buduj", icon: faHammer },
@@ -42,9 +44,23 @@ type GamePhase = "idle" | "countdown" | "playing";
 
 export interface GameServiceRef {
   shouldStart: boolean;
+  onGameEnd: () => void;
 }
 
-export function GameService({ shouldStart }: GameServiceRef) {
+interface PendingBuild {
+  buildingName: string;
+  startLocation: [number, number];
+  isVertical: boolean;
+}
+
+interface MissingMaterial {
+  material: Materials;
+  amount: number;
+}
+
+import { showError, subscribeError } from "../services/ErrorToast";
+
+export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   const [gamePhase, setGamePhase] = useState<GamePhase>("idle");
   const [countdown, setCountdown] = useState(3);
   const [activeTab, setActiveTab] = useState("");
@@ -58,7 +74,15 @@ export function GameService({ shouldStart }: GameServiceRef) {
     { id: number; amount: number; x: number; type: "increase" | "decrease" }[]
   >([]);
   const [isVertical, setIsVertical] = useState(false);
+  const [buyMenuMissing, setBuyMenuMissing] = useState<MissingMaterial[] | null>(null);
+  const [pendingBuild, setPendingBuild] = useState<PendingBuild | null>(null);
+  const [nukeOpen, setNukeOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    return subscribeError(setErrorMessage);
+  }, []);
+  
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "r" || e.key === "R") setIsVertical((v) => !v);
@@ -90,8 +114,10 @@ export function GameService({ shouldStart }: GameServiceRef) {
         1000,
       );
     };
-    const onFieldUpdate = (data: any) =>
+    const onFieldUpdate = (data: any) => {
       gameManager.plotManager.syncFromServer(data);
+      forceUpdate((v) => v + 1);
+    };
     const onHappinessUpdate = (amount: number) => {
       gameManager.happiness.level = amount;
     };
@@ -99,14 +125,13 @@ export function GameService({ shouldStart }: GameServiceRef) {
       gameManager.inventory.money = data;
       forceUpdate((v) => v + 1);
     };
-
     const onMaterialsUpdate = (data: Record<string, number>) => {
       gameManager.inventory.syncMaterials(data);
       forceUpdate((v) => v + 1);
     };
 
     ws.register_handler("materials_update", onMaterialsUpdate);
-
+    ws.register_handler("game_end", onGameEnd);
     ws.register_handler(
       "material_prices_update",
       (data: Record<string, number>) => {
@@ -121,7 +146,6 @@ export function GameService({ shouldStart }: GameServiceRef) {
         market.addMaterialPrice(updates);
       },
     );
-
     ws.register_handler("money_increase", onMoneyIncrease);
     ws.register_handler("money_decrease", onMoneyDecrease);
     ws.register_handler("field_update", onFieldUpdate);
@@ -133,6 +157,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
       ws.unregister_handler("money_decrease", onMoneyDecrease);
       ws.unregister_handler("field_update", onFieldUpdate);
       ws.unregister_handler("happiness_update", onHappinessUpdate);
+      ws.unregister_handler("game_end", onGameEnd);
       ws.unregister_handler("money_update", onMoneyUpdate);
       ws.unregister_handler("materials_update", onMaterialsUpdate);
     };
@@ -154,19 +179,46 @@ export function GameService({ shouldStart }: GameServiceRef) {
 
   useEffect(() => {
     if (gamePhase !== "countdown") return;
-
     if (countdown === 0) {
       const t = setTimeout(() => setGamePhase("playing"), 900);
       return () => clearTimeout(t);
     }
-
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [gamePhase, countdown]);
 
-  if (gamePhase === "idle") {
-    return <></>;
+  async function tryCreateBuilding(payload: PendingBuild) {
+    const result = await ws.request<typeof payload, void>(
+      "create_building",
+      "money_decrease",
+      { ...payload },
+    );
+
+    if (!result.ok && result.error === "Not Enough Materials") {
+      const building = Object.values(BUILDINGS).find(
+        (b) => b.id.toLowerCase() === payload.buildingName,
+      );
+      if (building) {
+        const missing: MissingMaterial[] = Object.entries(building.materialCost)
+          .map(([key, required]) => {
+            const mat = Number(key) as Materials;
+            const have = gameManager.inventory.materialCount[mat] ?? 0;
+            return { material: mat, amount: Math.max(0, (required as number) - have) };
+          })
+          .filter(({ amount }) => amount > 0);
+        setPendingBuild(payload);
+        setBuyMenuMissing(missing);
+      }
+    }
   }
+
+  function happinessColor(pct: number): string {
+    if (pct === 50) return "#f5a800";
+    if (pct > 50) return "#1D9E75";
+    return "#e03030";
+  }
+
+  if (gamePhase === "idle") return <></>;
 
   if (gamePhase === "countdown") {
     return (
@@ -178,12 +230,6 @@ export function GameService({ shouldStart }: GameServiceRef) {
         </div>
       </div>
     );
-  }
-
-  function happinessColor(pct: number): string {
-    if (pct === 50) return "#f5a800";
-    if (pct > 50) return "#1D9E75";
-    return "#e03030";
   }
 
   return (
@@ -239,9 +285,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
                 onClick={() => setMaterialsOpen((o) => !o)}
               >
                 <span>Surowce</span>
-                <span
-                  className={`materials-arrow ${materialsOpen ? "open" : ""}`}
-                >
+                <span className={`materials-arrow ${materialsOpen ? "open" : ""}`}>
                   ▾
                 </span>
 
@@ -256,10 +300,10 @@ export function GameService({ shouldStart }: GameServiceRef) {
                             style={{ background: getMaterialColor(mat) }}
                           />
                           <div className="material-info">
-                            <span className="material-name">
-                              {getMaterialName(mat)}
+                            <span className="material-name">{getMaterialName(mat)}</span>
+                            <span className="material-value">
+                              {gameManager.inventory.materialCount[mat]}
                             </span>
-                            <span className="material-value">{gameManager.inventory.materialCount[mat]}</span>
                           </div>
                         </div>
                       ))}
@@ -267,6 +311,16 @@ export function GameService({ shouldStart }: GameServiceRef) {
                   </div>
                 )}
               </div>
+
+              {gameManager.plotManager.hasBuilding("nuclear_reactor") && (
+                <button
+                  className="materials-button"
+                  style={{ borderColor: "#e03030", color: "#e03030" }}
+                  onClick={() => setNukeOpen(true)}
+                >
+                  ☢️
+                </button>
+              )}
             </div>
           </header>
 
@@ -287,10 +341,7 @@ export function GameService({ shouldStart }: GameServiceRef) {
                   ? (plotId) => {
                       const row = Math.floor(plotId / 7);
                       const col = plotId % 7;
-                      console.log(placingBuilding.id.toLowerCase());
-                      console.log(roomManager.roomId);
-                      ws.socket.emit("create_building", {
-                        gameCode: roomManager.roomId,
+                      tryCreateBuilding({
                         buildingName: placingBuilding.id.toLowerCase(),
                         startLocation: [row, col],
                         isVertical,
@@ -315,6 +366,35 @@ export function GameService({ shouldStart }: GameServiceRef) {
           </footer>
         </div>
       </div>
+
+      {nukeOpen && (
+        <NukeMenu
+          roomManager={roomManager}
+          onClose={() => setNukeOpen(false)}
+        />
+      )}
+
+      {errorMessage && (
+        <div className="global-error-message">
+          {errorMessage}
+        </div>
+      )}
+
+      {buyMenuMissing && pendingBuild && (
+        <BuyMaterialsMenu
+          missingMaterials={buyMenuMissing}
+          onCancel={() => {
+            setBuyMenuMissing(null);
+            setPendingBuild(null);
+          }}
+          onConfirm={() => {
+            const build = pendingBuild;
+            setBuyMenuMissing(null);
+            setPendingBuild(null);
+            tryCreateBuilding(build);
+          }}
+        />
+      )}
 
       {activeTab &&
         createPortal(

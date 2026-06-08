@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { Err, Ok, Result } from "./Utilities";
+import { loadingScreen } from "../components/LoadingScreen";
 
 const HOST = "localhost";
 const PORT = 3000;
@@ -24,6 +25,7 @@ export class WebsocketManager {
       this.connected = true;
       this.reconnectAttempts = 0;
       console.log("Connected to websocket successfully.");
+      loadingScreen.current?.hide();
     });
 
     this.socket.on("disconnect", (reason) => {
@@ -41,8 +43,11 @@ export class WebsocketManager {
   }
 
   private scheduleReconnect() {
+    loadingScreen.current?.showLoading();
+
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.error("Websocket connection error: Max attempts reached");
+      loadingScreen.current?.showError();
       return;
     }
     if (this.reconnectTimer) return;
@@ -118,7 +123,7 @@ export class WebsocketManager {
         cleanup();
         console.error("Websocket timeout for event:", event);
         resolve(Err(`Nie można połączyć się z serwerem.`));
-      }, 10000);
+      }, 7600);
       this.socket.once("error", onError);
       this.socket.once(responseEvent, onResponse);
       this.socket.emit(event, data);

@@ -20,12 +20,12 @@ export function LeaderboardPanel() {
 
                 <div className="leaderboard-player-list">
                     {Object.entries(playerList)
-                        .sort(([, a], [, b]) => b!.money - a!.money)
+                        .sort(([, a], [, b]) => b!.worth - a!.worth)
                         .map(([id, player], index) => (
                             <div key={id} className="leaderboard-player">
                                 <span className="leaderboard-place">#{index + 1}</span>
-                                <span className="leaderboard-name">{player!.name}</span>
-                                <span className="leaderboard-money">${player!.money}</span>
+                                <span className="leaderboard-name">{player!.username}</span>
+                                <span className="leaderboard-money">${player!.worth}</span>
                             </div>
                         ))
                     }
