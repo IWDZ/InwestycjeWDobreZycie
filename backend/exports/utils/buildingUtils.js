@@ -1,4 +1,4 @@
-import { BUILDINGS, EMPTY_CELL_INDICATOR, MAX_FIELD_SIZE } from "../../gameStorage.js";
+import { BUILDINGS, EMPTY_CELL_INDICATOR, MAX_FIELD_SIZE } from "../gameStorage.js";
 import Building from "../Building.js";
 import { removeMaterials, removeMoney, returnMaterials, returnMoney } from "./inventoryUtils.js";
 import { sendFieldUpdate, sendHappinessUpdate, sendMaterialsUpdate, sendMaxPopulationUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate } from "../clientUpdates.js"

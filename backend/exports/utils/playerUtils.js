@@ -1,4 +1,4 @@
-import { BUILDINGS, DEFAULT_CELL_PRICE, ERRORS, MATERIALS, MAX_FIELD_SIZE, PLAYERS, START_HAPPINESS, START_MATERIALS, START_MONEY, WORTH_PER_PERSON } from "../../gameStorage.js";
+import { BUILDINGS, DEFAULT_CELL_PRICE, ERRORS, MATERIALS, MAX_FIELD_SIZE, PLAYERS, START_HAPPINESS, START_MATERIALS, START_MONEY, WORTH_PER_PERSON } from "../gameStorage.js";
 import { io } from "../../server.js";
 import Building from "../Building.js";
 import { getCurrentBuildingId } from "./buildingUtils.js";

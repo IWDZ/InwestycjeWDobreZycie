@@ -1,4 +1,4 @@
-import { HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, START_HAPPINESS, WORK_MULTIPLIER } from "../../gameStorage.js";
+import { HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, START_HAPPINESS, WORK_MULTIPLIER } from "../gameStorage.js";
 import { getWorstAvailableBuilding, getWorstOccupiedBuilding } from "./buildingUtils.js";
 
 export function increasePopulation(player, workersToIncrease, residentsToIncrease = workersToIncrease, ignoredIDs = new Set()) {

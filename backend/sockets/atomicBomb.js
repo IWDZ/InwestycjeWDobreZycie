@@ -2,7 +2,7 @@ import { endGame, getGame, hasGameEnoughPlayers, hasGameStarted } from "../expor
 import { throwError } from "../exports/utils/generalUtils.js";
 import { hasRequiredMaterials, hasRequiredMoney, removeMaterials, removeMoney } from "../exports/utils/inventoryUtils.js";
 import { getPlayer, getPlayerGame, removePlayer } from "../exports/utils/playerUtils.js";
-import { ERRORS, PUTIN_ROCKET } from "../gameStorage.js";
+import { ERRORS, PUTIN_ROCKET } from "../exports/gameStorage.js";
 import { io } from "../server.js";
 
 function atomicBomb(socket, socketId) {

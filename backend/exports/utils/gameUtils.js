@@ -1,4 +1,4 @@
-import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, LEADERBOARD_UPDATE_TICK_INTERVAL, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MIN_PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START } from "../../gameStorage.js";
+import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, LEADERBOARD_UPDATE_TICK_INTERVAL, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MIN_PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START } from "../gameStorage.js";
 import { io } from "../../server.js";
 import { sendFieldUpdate, sendLeaderboardUpdate, sendMaterialPricesUpdate, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate, sendTickNumberUpdate } from "../clientUpdates.js";
 import { generateIncome, removePlayer, sumUpPlayers } from "./playerUtils.js";

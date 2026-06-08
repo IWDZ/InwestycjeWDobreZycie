@@ -1,4 +1,4 @@
-import { CELL_PRICE_INCREASE } from "../gameStorage.js";
+import { CELL_PRICE_INCREASE } from "./gameStorage.js";
 import { io } from "../server.js";
 import { sumUpPlayers } from "./utils/playerUtils.js";
 

@@ -5,7 +5,7 @@ import { getGame, hasGameEnoughPlayers, hasGameStarted, startGame } from "../exp
 import { isValidData, throwError } from "../exports/utils/generalUtils.js";
 import { buyMaterial, hasRequiredMaterials, hasRequiredMoney, sellMaterial } from "../exports/utils/inventoryUtils.js";
 import { createDefaultClientGameDataObject, getPlayer, getPlayerGame, isHost, removePlayer, setUpPlayer } from "../exports/utils/playerUtils.js";
-import { ERRORS, MATERIALS, MAX_FIELD_SIZE } from "../gameStorage.js";
+import { ERRORS, MATERIALS, MAX_FIELD_SIZE } from "../exports/gameStorage.js";
 import { io } from "../server.js";
 
 function gameLogic(socket, socketId) {
