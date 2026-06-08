@@ -1,4 +1,5 @@
 import { sendMaterialsUpdate, sendMoneyDecrease, sendMoneyIncrease, sendMoneyUpdate } from "../clientUpdates.js";
+import { MATERIAL_SELL_TAX } from "../gameStorage.js";
 
 export function hasRequiredMaterials(materialCost, materials) {
     return Object.entries(materialCost).every(([material, requiredAmount]) => materials[material] >= requiredAmount);
@@ -31,7 +32,7 @@ export function sellMaterial(game, player, material, amount) {
     }
 
     removeMaterials(player, materialCostObject);
-    const cost = game.materialPrices[material] * amount;
+    const cost = game.materialPrices[material] * amount * (1 - MATERIAL_SELL_TAX);
     addMoney(player, cost);
 
     sendMoneyIncrease(player, cost);
