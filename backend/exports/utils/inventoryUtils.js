@@ -32,7 +32,7 @@ export function sellMaterial(game, player, material, amount) {
     }
 
     removeMaterials(player, materialCostObject);
-    const cost = game.materialPrices[material] * amount * (1 - MATERIAL_SELL_TAX);
+    const cost = Math.floor(game.materialPrices[material] * amount * (1 - MATERIAL_SELL_TAX));
     addMoney(player, cost);
 
     sendMoneyIncrease(player, cost);
