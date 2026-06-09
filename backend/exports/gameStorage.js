@@ -23,7 +23,7 @@ export const EMPTY_CELL_INDICATOR = "empty";
 export const DEFAULT_CELL_PRICE = 5000;
 export const CELL_PRICE_INCREASE = 1000;
 export const POPULATION = 300;
-export const START_MONEY = 5000;
+export const START_MONEY = 7500;
 export const START_HAPPINESS = 50;
 export const WORTH_PER_PERSON = 750;
 export const HAPPINESS_MULTIPLIER = 0.05;
@@ -55,10 +55,10 @@ export const MATERIALS = {
 }
 
 export const START_MATERIALS = {
-    [MATERIALS.STEEL]: 0,
-    [MATERIALS.CONCRETE]: 0,
-    [MATERIALS.WOOD]: 0,
-    [MATERIALS.STONE]: 0,
+    [MATERIALS.STEEL]: 50,
+    [MATERIALS.CONCRETE]: 50,
+    [MATERIALS.WOOD]: 50,
+    [MATERIALS.STONE]: 50,
     [MATERIALS.GLASS]: 0,
     [MATERIALS.COAL]: 0,
     [MATERIALS.URANIUM]: 0
@@ -157,7 +157,7 @@ export const BUILDINGS = {
         MONEY_COST: 0,
         MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.STONE]: 100,
+            [MATERIALS.STONE]: 50,
             [MATERIALS.WOOD]: 40
         }
     }),
@@ -169,11 +169,11 @@ export const BUILDINGS = {
         APARTMENTS: 0,
         JOBS: 4,
         HAPPINESS: 1,
-        MONEY_COST: 5000,
-        MONEY_PER_JOB: 32,
+        MONEY_COST: 2500,
+        MONEY_PER_JOB: 30,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 80,
-            [MATERIALS.CONCRETE]: 30
+            [MATERIALS.STEEL]: 40,
+            [MATERIALS.CONCRETE]: 15
         }
     }),
     HOSPITAL: setBuilding({
@@ -310,9 +310,9 @@ export const BUILDINGS = {
         MONEY_COST: 2000,
         MONEY_PER_JOB: 30,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 120,
-            [MATERIALS.CONCRETE]: 80,
-            [MATERIALS.GLASS]: 40
+            [MATERIALS.STEEL]: 80,
+            [MATERIALS.CONCRETE]: 60,
+            [MATERIALS.GLASS]: 20
         }
     }),
     CORPORATE_OFFICE: setBuilding({
@@ -326,7 +326,7 @@ export const BUILDINGS = {
         MONEY_COST: 3500,
         MONEY_PER_JOB: 45,
         MATERIAL_COST: {
-            [MATERIALS.STEEL]: 120,
+            [MATERIALS.STEEL]: 110,
             [MATERIALS.CONCRETE]: 80,
             [MATERIALS.GLASS]: 40
         }
@@ -340,7 +340,7 @@ export const BUILDINGS = {
         JOBS: 12,
         HAPPINESS: 0,
         MONEY_COST: 5500,
-        MONEY_PER_JOB: 65,
+        MONEY_PER_JOB: 60,
         MATERIAL_COST: {
             [MATERIALS.STEEL]: 180,
             [MATERIALS.CONCRETE]: 80,
@@ -446,11 +446,11 @@ export const BUILDINGS = {
         HEIGHT: 1,
         APARTMENTS: 6,
         JOBS: 0,
-        HAPPINESS: -2,
-        MONEY_COST: 2200,
+        HAPPINESS: -1,
+        MONEY_COST: 1800,
         MONEY_PER_JOB: 0,
         MATERIAL_COST: {
-            [MATERIALS.CONCRETE]: 80,
+            [MATERIALS.CONCRETE]: 50,
             [MATERIALS.STEEL]: 25
         }
     }),
