@@ -142,6 +142,10 @@ export function setBuildings(buildings: Building[]) {
   BUILDINGS = buildings;
 }
 
+export function getBuildingById(id: string) {
+  return BUILDINGS.find(b => b.id.toLowerCase() === id);
+}
+
 export function parseBuildingsFromServer(
   buildings: Record<string, any>,
 ): Building[] {

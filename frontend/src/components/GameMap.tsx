@@ -1,8 +1,9 @@
 import { GameManager } from "../services/game/GameManager";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Building,
   BUILDING_ICONS,
+  getBuildingById,
   NAME_MAP,
 } from "../services/game/statics/BuildingData";
 import { createPortal } from "react-dom";
@@ -31,6 +32,53 @@ export function GameMap({
   const [selectedPlot, setSelectedPlot] = useState<number | null>(null);
   const [hoveredPlot, setHoveredPlot] = useState<number | null>(null);
   const [cellModal, setCellModal] = useState<CellModal | null>(null);
+
+  useEffect(() => {
+    const onFieldUpdate = () => {
+      if (!cellModal) return;
+
+      const row = Math.floor(cellModal.plotIndex / gridSize);
+      const col = cellModal.plotIndex % gridSize;
+
+      const updatedCell = plotManager.field?.[row]?.[col];
+
+      if (!updatedCell) {
+        setCellModal(null);
+        return;
+      }
+
+      setCellModal((prev) =>
+        prev
+          ? {
+              ...prev,
+              cell: updatedCell,
+            }
+          : prev,
+      );
+    };
+
+    ws.register_handler("field_update", onFieldUpdate);
+
+    return () => {
+      ws.unregister_handler("field_update", onFieldUpdate);
+    };
+  }, [cellModal, gridSize]);
+
+  useEffect(() => {
+    if (!cellModal) return;
+  
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setCellModal(null);
+      }
+    };
+  
+    window.addEventListener("keydown", onKeyDown);
+  
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [cellModal]);
 
   const getOccupiedIndices = (anchorIndex: number): number[] => {
     if (!placingBuilding) return [];
@@ -127,44 +175,58 @@ export function GameMap({
         })}
       </div>
 
-      {cellModal && createPortal(
-        <div
-          className="cell-modal"
-          style={{
-            position: "fixed",
-            left: cellModal.anchorRect.left + cellModal.anchorRect.width / 2,
-            top: cellModal.anchorRect.top - 8,
-            transform: "translate(-50%, -100%)",
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button className="cell-modal-close" onClick={() => setCellModal(null)}>✕</button>
-          <h2 className="cell-modal-title">
-            {NAME_MAP[cellModal.cell.buildingName] ?? cellModal.cell.buildingName}
-          </h2>
-          <div className="cell-modal-stats">
-            <div className="cell-modal-stat">
-              <span className="cell-modal-label">Miejsca pracy</span>
-              <span className="cell-modal-value">{cellModal.cell.workers} / {cellModal.cell.jobs}</span>
+      {cellModal &&
+        createPortal(
+          <div
+            className="cell-modal"
+            style={{
+              position: "fixed",
+              left: cellModal.anchorRect.left + cellModal.anchorRect.width / 2,
+              top: cellModal.anchorRect.top - 8,
+              transform: "translate(-50%, -100%)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="cell-modal-close"
+              onClick={() => setCellModal(null)}
+            >
+              ✕
+            </button>
+            <h2 className="cell-modal-title">
+              {NAME_MAP[cellModal.cell.buildingName] ??
+                cellModal.cell.buildingName}
+            </h2>
+            <div className="cell-modal-stats">
+              <div className="cell-modal-stat">
+                <span className="cell-modal-label">Miejsca pracy</span>
+                <span className="cell-modal-value">
+                  {cellModal.cell.workers} /{" "}
+                  {getBuildingById(cellModal.cell.buildingName)?.jobs}
+                </span>
+              </div>
+              <div className="cell-modal-stat">
+                <span className="cell-modal-label">Mieszkania</span>
+                <span className="cell-modal-value">
+                  {cellModal.cell.residents} /{" "}
+                  {getBuildingById(cellModal.cell.buildingName)?.apartments}
+                </span>
+              </div>
             </div>
-            <div className="cell-modal-stat">
-              <span className="cell-modal-label">Mieszkania</span>
-              <span className="cell-modal-value">{cellModal.cell.residents} / {cellModal.cell.apartments}</span>
-            </div>
-          </div>
-          <button className="cell-modal-delete" onClick={() => {
-            const row = Math.floor(cellModal.plotIndex / gridSize);
-            const col = cellModal.plotIndex % gridSize;
-            ws.notify("delete_building", 
-              [row, col]
-            );
-            setCellModal(null);
-          }}>
-            Usuń budynek
-          </button>
-        </div>,
-        document.body
-      )}
+            <button
+              className="cell-modal-delete"
+              onClick={() => {
+                const row = Math.floor(cellModal.plotIndex / gridSize);
+                const col = cellModal.plotIndex % gridSize;
+                ws.notify("delete_building", [row, col]);
+                setCellModal(null);
+              }}
+            >
+              Usuń budynek
+            </button>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
