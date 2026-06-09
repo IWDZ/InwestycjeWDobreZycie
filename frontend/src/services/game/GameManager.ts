@@ -38,6 +38,7 @@ export class GameManager {
     
     this.inventory = Inventory.getInstance();
     this.inventory.money = data.money;
+    this.inventory.syncMaterials(data.playerMaterials)
     
     this.leaderboard = new Leaderboard();
     

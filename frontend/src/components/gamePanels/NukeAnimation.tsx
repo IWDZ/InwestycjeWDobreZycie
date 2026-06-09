@@ -15,12 +15,8 @@ export function NukeLaunchAnimation({ target, onDone }: Props) {
     const W = canvas.width,
       H = canvas.height;
 
-    let state: "rising" = "rising";
-    let t = 0,
-      screenFlash = 0,
-      deathTimer = 0;
-    let particles: any[] = [],
-      shockwaves: any[] = [];
+    let t = 0;
+    let particles: any[] = [];
     let raf: number;
 
     const launchX = W * 0.5,

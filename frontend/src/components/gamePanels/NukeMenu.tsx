@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { RoomManager } from "../../services/RoomManager";
 import { getMaterialColor, getMaterialName, Materials } from "../../services/game/statics/Materials";
 import { ws } from "../../services/WebsocketManager";

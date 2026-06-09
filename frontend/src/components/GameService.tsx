@@ -20,7 +20,7 @@ import { StatsPanel } from "./gamePanels/StatsPanel";
 import { ShopPanel } from "./gamePanels/ShopPanel";
 import { LeaderboardPanel } from "./gamePanels/LeaderboardPanel";
 import { GameMap } from "./GameMap";
-import { BUILDINGS } from "../services/game/statics/BuildingData";
+import { BUILDINGS, getBuildingById } from "../services/game/statics/BuildingData";
 import { GameManager } from "../services/game/GameManager";
 import { ws } from "../services/WebsocketManager";
 import { roomManager } from "./LobbyService";
@@ -74,18 +74,30 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
     { id: number; amount: number; x: number; type: "increase" | "decrease" }[]
   >([]);
   const [isVertical, setIsVertical] = useState(false);
-  const [buyMenuMissing, setBuyMenuMissing] = useState<MissingMaterial[] | null>(null);
+  const [buyMenuMissing, setBuyMenuMissing] = useState<
+    MissingMaterial[] | null
+  >(null);
   const [pendingBuild, setPendingBuild] = useState<PendingBuild | null>(null);
   const [nukeOpen, setNukeOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [tick, setTick] = useState(1);
+
+  
 
   useEffect(() => {
     return subscribeError(setErrorMessage);
   }, []);
-  
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "r" || e.key === "R") setIsVertical((v) => !v);
+      if (e.key === "Escape") {
+        setPlacingBuilding(null);
+        setActiveTab("");
+        setBuyMenuMissing(null);
+        setPendingBuild(null);
+        setNukeOpen(false);
+      }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -129,7 +141,12 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       gameManager.inventory.syncMaterials(data);
       forceUpdate((v) => v + 1);
     };
-
+    
+    const onTickUpdate = (data: number) => {
+      setTick(data+1);
+    };
+    
+    ws.register_handler("tick_update", onTickUpdate);
     ws.register_handler("materials_update", onMaterialsUpdate);
     ws.register_handler("game_end", onGameEnd);
     ws.register_handler(
@@ -153,6 +170,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
     ws.register_handler("money_update", onMoneyUpdate);
 
     return () => {
+      ws.unregister_handler("tick_update", onTickUpdate);
       ws.unregister_handler("money_increase", onMoneyIncrease);
       ws.unregister_handler("money_decrease", onMoneyDecrease);
       ws.unregister_handler("field_update", onFieldUpdate);
@@ -190,7 +208,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   async function tryCreateBuilding(payload: PendingBuild) {
     const result = await ws.request<typeof payload, void>(
       "create_building",
-      "money_decrease",
+      "max_population_update",
       { ...payload },
     );
 
@@ -203,12 +221,17 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
           .map(([key, required]) => {
             const mat = Number(key) as Materials;
             const have = gameManager.inventory.materialCount[mat] ?? 0;
-            return { material: mat, amount: Math.max(0, (required as number) - have) };
+            return {
+              material: mat,
+              amount: Math.max(0, (required as number) - have),
+            };
           })
           .filter(({ amount }) => amount > 0);
         setPendingBuild(payload);
         setBuyMenuMissing(missing);
       }
+    } else if (!result.ok) {
+      showError(result.error)
     }
   }
 
@@ -239,7 +262,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
           <header className="game-header">
             <div className="game-header-left">
               <span className="game-city-name">Miasto</span>
-              <span className="game-turn-info">Tick 1</span>
+              <span className="game-turn-info">Tick {tick}</span>
             </div>
 
             <div className="game-money-info" style={{ position: "relative" }}>
@@ -285,7 +308,9 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
                 onClick={() => setMaterialsOpen((o) => !o)}
               >
                 <span>Surowce</span>
-                <span className={`materials-arrow ${materialsOpen ? "open" : ""}`}>
+                <span
+                  className={`materials-arrow ${materialsOpen ? "open" : ""}`}
+                >
                   ▾
                 </span>
 
@@ -300,7 +325,9 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
                             style={{ background: getMaterialColor(mat) }}
                           />
                           <div className="material-info">
-                            <span className="material-name">{getMaterialName(mat)}</span>
+                            <span className="material-name">
+                              {getMaterialName(mat)}
+                            </span>
                             <span className="material-value">
                               {gameManager.inventory.materialCount[mat]}
                             </span>
@@ -375,9 +402,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       )}
 
       {errorMessage && (
-        <div className="global-error-message">
-          {errorMessage}
-        </div>
+        <div className="global-error-message">{errorMessage}</div>
       )}
 
       {buyMenuMissing && pendingBuild && (
@@ -387,6 +412,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
             setBuyMenuMissing(null);
             setPendingBuild(null);
           }}
+          buildingCost={getBuildingById(pendingBuild.buildingName)?.moneyCost ?? 0}
           onConfirm={() => {
             const build = pendingBuild;
             setBuyMenuMissing(null);
