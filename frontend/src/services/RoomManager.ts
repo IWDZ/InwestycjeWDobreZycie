@@ -1,4 +1,3 @@
-import { showError } from "../components/LobbyService";
 import { GameManager } from "./game/GameManager";
 import { Err, Ok, Result } from "./Utilities";
 import { ws } from "./WebsocketManager";
@@ -14,8 +13,9 @@ export class Player {
 }
 
 export type RoomSettings = {
-  populationPool: number;
-  marketVolatility: number;
+  populationPoolPercent: number;
+  marketVolatilityPercent: number;
+  gameDurationTicks: number;
 };
 
 export class RoomManager {
@@ -36,8 +36,9 @@ export class RoomManager {
     this.isHost = false;
     this.playerList = [];
     this.roomSettings = {
-      populationPool: 60,
-      marketVolatility: 1,
+      populationPoolPercent: 60,
+      marketVolatilityPercent: 1,
+      gameDurationTicks: 240
     };
 
     ws.register_handler("player_joined", (data: { players: string[] }) => {
@@ -161,14 +162,21 @@ export class RoomManager {
       return Err("Nie jestes hostem");
     }
 
-    console.log(this.roomSettings.populationPool);
-    console.log(this.roomSettings.marketVolatility);
-
-    const result = await ws.request("start_game", "game_start", {
+    let result = await ws.request("start_game", "game_start", {
       gameCode: this.roomId,
-      populationPool: this.roomSettings.populationPool,
-      marketVolatility: this.roomSettings.marketVolatility,
-    });
+      populationPoolPercent: this.roomSettings.populationPoolPercent,
+      marketVolatilityPercent: this.roomSettings.marketVolatilityPercent,
+      gameDurationTicks: this.roomSettings.gameDurationTicks
+    }, false);
+
+    if (!result.ok) {
+      result = await ws.request("start_game", "game_start", {
+        gameCode: this.roomId,
+        populationPool: this.roomSettings.populationPoolPercent,
+        marketVolatility: this.roomSettings.marketVolatilityPercent,
+        gameDurationTicks: this.roomSettings.gameDurationTicks
+      });
+    }
 
     if (result.ok) {
       console.log(result.value);

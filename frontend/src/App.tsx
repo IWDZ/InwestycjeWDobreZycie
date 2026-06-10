@@ -9,6 +9,7 @@ import { ErrorNotif, ErrorNotifRef } from "./components/ErrorNotif";
 import { GameService } from './components/GameService.tsx';
 import { loadingScreen, LoadingScreen, LoadingScreenRef } from './components/LoadingScreen.tsx';
 import { GameEnd } from './components/GameEnd.tsx';
+import { subscribeError } from './services/ErrorToast.ts'
 
 export const errorNotif = { current: null as ErrorNotifRef | null };
 
@@ -39,8 +40,17 @@ export default function App() {
     setAppState("lobby");
   }
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    return subscribeError(setErrorMessage);
+  }, []);
+
   return (
     <>
+      {errorMessage && (
+        <div className="global-error-message">{errorMessage}</div>
+      )}
       <ErrorNotif ref={ref} />
       {appState === "lobby" && (
         <LobbyService ref={lobbyRef} onStart={onStart} onFinish={onBackToLobby} />

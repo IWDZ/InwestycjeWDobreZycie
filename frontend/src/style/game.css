@@ -388,7 +388,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    z-index: 999;
+    z-index: 72;
     padding-bottom: 150px;
 }
 
@@ -719,7 +719,7 @@
     flex-direction: column;
     gap: 10px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+    z-index: 71;
     color: #222;
     font-size: 0.85rem;
     border: 1.5px solid #d4e8c0;
@@ -1310,164 +1310,166 @@
 }
 
 .gameend-screen {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  padding: 32px;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 32px;
 }
 
 .gameend-card {
-  background: #f0f4ee;
-  border-radius: 16px;
-  padding: 32px 28px;
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    background: #f0f4ee;
+    border-radius: 16px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
 .gameend-header {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
 
 .gameend-trophy {
-  font-size: 2.8rem;
-  line-height: 1;
+    font-size: 2.8rem;
+    line-height: 1;
 }
 
 .gameend-title {
-  font-size: 1.8rem;
-  font-weight: 900;
-  color: #222;
-  margin: 0;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #222;
+    margin: 0;
 }
 
 .gameend-back-btn {
-  padding: 12px;
-  background: #ff2500;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
+    padding: 12px;
+    background: #ff2500;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
 }
 
 .gameend-back-btn:hover {
-  background: #d41f00;
-  transform: translateY(-1px);
+    background: #d41f00;
+    transform: translateY(-1px);
 }
 
 .loading-screen {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  background: rgba(0, 0, 0, 0.75);
-  align-items: center;
-  justify-content: center;
-  z-index: 9999999;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    background: rgba(0, 0, 0, 0.75);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999999;
 }
 
 .loading-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 48px 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  min-width: 280px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  text-align: center;
+    background: #fff;
+    border-radius: 16px;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    min-width: 280px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    text-align: center;
 }
 
 .loading-spinner {
-  position: relative;
-  width: 52px;
-  height: 52px;
+    position: relative;
+    width: 52px;
+    height: 52px;
 }
 
 .loading-spinner-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 3px solid transparent;
-  border-top-color: #ff2500;
-  animation: spin 0.9s linear infinite;
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: #ff2500;
+    animation: spin 0.9s linear infinite;
 }
 
 .loading-spinner-ring--2 {
-  inset: 8px;
-  border-top-color: #ffb300;
-  animation-duration: 0.6s;
-  animation-direction: reverse;
+    inset: 8px;
+    border-top-color: #ffb300;
+    animation-duration: 0.6s;
+    animation-direction: reverse;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .loading-message {
-  font-size: 0.95rem;
-  color: #555;
-  font-weight: 500;
-  min-height: 1.4em;
+    font-size: 0.95rem;
+    color: #555;
+    font-weight: 500;
+    min-height: 1.4em;
 }
 
 .loading-dots {
-  display: inline-block;
-  width: 1.5ch;
-  text-align: left;
+    display: inline-block;
+    width: 1.5ch;
+    text-align: left;
 }
 
 .loading-error-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #fdf3f2;
-  border: 2px solid #f5c5c0;
-  color: #d64545;
-  font-size: 1.4rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #fdf3f2;
+    border: 2px solid #f5c5c0;
+    color: #d64545;
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .loading-error-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #222;
-  margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
 }
 
 .loading-back-btn {
-  margin-top: 4px;
-  padding: 10px 28px;
-  background: #ff2500;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
+    margin-top: 4px;
+    padding: 10px 28px;
+    background: #ff2500;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
 }
 
 .loading-back-btn:hover {
-  background: #d41f00;
-  transform: translateY(-1px);
+    background: #d41f00;
+    transform: translateY(-1px);
 }
 
 .global-error-message {
@@ -1482,7 +1484,7 @@
     font-size: 0.85rem;
     font-weight: 700;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    z-index: 100;
+    z-index: 10000;
     pointer-events: none;
     animation: error-popup-in 0.2s ease;
 }
@@ -1500,6 +1502,6 @@
 }
 
 .shop-action-btn--buy:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }

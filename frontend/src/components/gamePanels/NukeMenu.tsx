@@ -3,7 +3,6 @@ import { RoomManager } from "../../services/RoomManager";
 import { getMaterialColor, getMaterialName, Materials } from "../../services/game/statics/Materials";
 import { ws } from "../../services/WebsocketManager";
 import { NukeExplosionAnimation, NukeLaunchAnimation } from "./NukeAnimation"
-import { showError } from "../../services/ErrorToast";
 
 const NUKE_COST_MATERIALS: Partial<Record<Materials, number>> = {
     [Materials.Uranium]: 750,
@@ -29,12 +28,11 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
         ws.request("send_atomic_bomb", "player_nuke", 
            selected
         );
-        showError("kys");
         setLaunching(true);
     }
 
     if (launching) {
-      return <NukeExplosionAnimation target={selected!} onDone={onClose} />;
+      return <NukeLaunchAnimation target={selected!} onDone={onClose} />;
     }
   
     return (

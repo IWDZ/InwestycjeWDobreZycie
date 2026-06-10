@@ -1,4 +1,5 @@
 import { useState, useImperativeHandle, forwardRef } from "react";
+import { soundManager } from "../services/SoundManager";
 
 export interface ErrorNotifRef {
     show: (message: string) => void;
@@ -8,7 +9,10 @@ export const ErrorNotif = forwardRef<ErrorNotifRef>((_, ref) => {
     const [message, setMessage] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => ({
-        show: (msg: string) => setMessage(msg),
+      show: (msg: string) => {
+        soundManager.play('warning')
+        setMessage(msg)
+      },
     }));
 
     if (!message) return null;
