@@ -67,7 +67,7 @@ export function sumUpPlayers(game) {
         const moneyWorth = player.money;
         let materialWorth = {};
         let totalWorth = player.money;
-        for (const [material, amount] of Object.entries(player.materials)){
+        for (const [material, amount] of Object.entries(player.materials)) {
             const cost = game.materialPrices[material] * amount;
             totalWorth += cost;
             materialWorth = {...materialWorth, [material]: cost};
@@ -87,7 +87,10 @@ export function sumUpPlayers(game) {
                     totalWorth += buildingBonus;
                     buildingBonuses[cell.buildingName] = 0;
                 }
-                const worth = cell.building.MONEY_COST;
+                let worth = cell.building.MONEY_COST;
+                for (const [material, amount] of Object.entries(cell.building.MATERIAL_COST)) {
+                    worth += Math.floor(game.materialPrices[material] * amount / 2);
+                }
                 buildingsWorth += worth;
                 totalWorth += worth;
                 ignoredIDs.add(cell.id);
