@@ -2,13 +2,10 @@ import { forwardRef, useImperativeHandle, useState } from "react";
 import { RoomService } from "./RoomService";
 import { RoomManager } from "../services/RoomManager";
 
-import { errorNotif } from "../App";
+import { soundManager } from "../services/SoundManager";
+import { showError } from "../services/ErrorToast";
 
 export const roomManager = new RoomManager();
-
-export function showError(message: string) {
-  errorNotif.current?.show(message);
-}
 
 interface LobbyServiceProps {
   onStart: () => void;
@@ -53,6 +50,7 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
       const result = await roomManager.createRoom(username, maxPlayers);
       if (result.ok) {
         setRoomStatusOpen(true);
+        soundManager.play('joinroom')
         setCreateOpen(false);
         setModalOpen(false);
         roomManager.username = username;
@@ -60,7 +58,7 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
         console.error(
           "Wystąpił błąd w tworzeniu pokoju: " + result.error + "\n",
         );
-        //showError(result.error)
+        showError(result.error)
         setCreateRoomButtonActive(true);
       }
     }
@@ -77,7 +75,7 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
         console.error(
           "Wystąpił błąd w dołączaniu do pokoju: " + result.error + "\n",
         );
-        //showError(result.error)
+        showError(result.error)
         setJoinRoomButtonActive(true);
       }
     }

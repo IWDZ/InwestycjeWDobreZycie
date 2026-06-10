@@ -1,6 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { Err, Ok, Result } from "./Utilities";
 import { loadingScreen } from "../components/LoadingScreen";
+import { showError } from "./ErrorToast";
 
 const HOST = "localhost";
 const PORT = 3000;
@@ -103,6 +104,7 @@ export class WebsocketManager {
     event: string,
     responseEvent: string,
     data: TReq,
+    printError: boolean = true
   ): Promise<Result<TRes>> {
     if (!this.connected) this.connect();
     return new Promise((resolve) => {
@@ -113,6 +115,9 @@ export class WebsocketManager {
       };
       const onError = (msg: string) => {
         cleanup();
+        if (printError) {
+          showError(msg);
+        }
         resolve(Err(msg));
       };
       const onResponse = (response: TRes) => {

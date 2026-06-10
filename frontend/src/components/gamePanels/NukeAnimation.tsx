@@ -238,7 +238,13 @@ export function NukeLaunchAnimation({ target, onDone }: Props) {
       raf = requestAnimationFrame(loop);
     }
 
-    raf = requestAnimationFrame(loop);
+    const run = async () => {
+      soundManager.play('nukelaunch')
+      await sleep(500)
+      raf = requestAnimationFrame(loop);
+
+    }
+    run()
     return () => cancelAnimationFrame(raf);
   }, []);
 
@@ -264,17 +270,23 @@ export function NukeLaunchAnimation({ target, onDone }: Props) {
     </div>
   );
 }
+import { soundManager } from "../../services/SoundManager";
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export function NukeExplosionAnimation({ target, onDone }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const started = useRef(false);
 
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
     const W = canvas.width,
       H = canvas.height;
 
-    let state: "falling" | "explosion" = "falling";
+    let state: "idle" | "falling" | "explosion" = "idle";
     let t = 0;
     let explosionTimer = 0;
     const explosionDuration = 460;
@@ -438,7 +450,7 @@ export function NukeExplosionAnimation({ target, onDone }: Props) {
       ctx.restore();
     }
 
-    function updateAndDrawExplosion() {
+    function updateExplosion() {
       explosionTimer++;
 
       if (explosionTimer < 95 && explosionTimer % 4 === 0) {
@@ -508,28 +520,40 @@ export function NukeExplosionAnimation({ target, onDone }: Props) {
         if (progress >= 1) {
           state = "explosion";
         }
-      } else if (state === "explosion") {
-        updateAndDrawExplosion();
+      }
+
+      if (state === "explosion") {
+        updateExplosion();
 
         if (explosionTimer >= explosionDuration) {
-          state = "falling";
-          t = 0;
-          explosionTimer = 0;
-          particles = [];
+          console.log(explosionDuration + " timer:" + explosionTimer)
           onDone();
+          return;
         }
       }
 
       raf = requestAnimationFrame(loop);
     }
 
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    const run = async () => {
+      soundManager.play("nukearrival");
+
+      await sleep(11500);
+
+      state = "falling";
+      raf = requestAnimationFrame(loop);
+    };
+
+    run();
+
+    return () => {
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
-  const mapElement = document.querySelector('.game-map');
+  const mapElement = document.querySelector(".game-map");
   if (!mapElement) return null;
-  
+
   return createPortal(
     <div
       style={{

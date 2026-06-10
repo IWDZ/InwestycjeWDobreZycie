@@ -1,3 +1,5 @@
+import { soundManager } from "./SoundManager";
+
 type Listener = (message: string | null) => void;
 
 let currentMessage: string | null = null;
@@ -11,6 +13,7 @@ function emit() {
 
 export function showError(message: string) {
   currentMessage = message;
+  soundManager.play('warning')
   emit();
 
   if (timeout) clearTimeout(timeout);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { GameManager } from "../../services/game/GameManager";
 import { ws } from "../../services/WebsocketManager";
-import { roomManager } from "../LobbyService";
+import { showError } from "../../services/ErrorToast";
 
 export function PlotPanel() {
   const manager = GameManager.getInstance();
@@ -9,11 +9,14 @@ export function PlotPanel() {
   const [, forceUpdate] = useState(0);
 
   const handleUnlock = useCallback(
-    (e: React.MouseEvent, index: number) => {
+    async (e: React.MouseEvent, index: number) => {
       e.stopPropagation();
       const row = Math.floor(index / plotManager.gridSize);
       const col = index % plotManager.gridSize;
-      ws.notify("buy_cell", [row, col]);
+      const result = await ws.request("buy_cell", "money_decrease", [row, col]);
+      if (!result.ok) {
+        showError(result.error)
+      }
       forceUpdate(v => v + 1);
     },
     [plotManager, manager]

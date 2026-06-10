@@ -58,8 +58,6 @@ interface MissingMaterial {
   amount: number;
 }
 
-import { showError, subscribeError } from "../services/ErrorToast";
-
 export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   const [gamePhase, setGamePhase] = useState<GamePhase>("idle");
   const [countdown, setCountdown] = useState(3);
@@ -79,14 +77,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   >(null);
   const [pendingBuild, setPendingBuild] = useState<PendingBuild | null>(null);
   const [nukeOpen, setNukeOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [tick, setTick] = useState(1);
-
-  
-
-  useEffect(() => {
-    return subscribeError(setErrorMessage);
-  }, []);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -94,6 +85,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       if (e.key === "Escape") {
         setPlacingBuilding(null);
         setActiveTab("");
+        setMaterialsOpen(false);
         setBuyMenuMissing(null);
         setPendingBuild(null);
         setNukeOpen(false);
@@ -230,8 +222,6 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
         setPendingBuild(payload);
         setBuyMenuMissing(missing);
       }
-    } else if (!result.ok) {
-      showError(result.error)
     }
   }
 
@@ -400,11 +390,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
           onClose={() => setNukeOpen(false)}
         />
       )}
-
-      {errorMessage && (
-        <div className="global-error-message">{errorMessage}</div>
-      )}
-
+      
       {buyMenuMissing && pendingBuild && (
         <BuyMaterialsMenu
           missingMaterials={buyMenuMissing}
