@@ -35,6 +35,18 @@ export const LEADERBOARD_UPDATE_TICK_INTERVAL = 3;
 export const GAME_DURATION_TICKS = 240;
 export const MATERIAL_SELL_TAX = 0.15;
 
+export const POPULATION_POOL_PERCENT_MIN = 50;
+export const POPULATION_POOL_PERCENT_MAX = 100;
+export const POPULATION_POOL_PERCENT_DEFAULT = 100;
+
+export const MARKET_VOLATILITY_MIN = 0.5;
+export const MARKET_VOLATILITY_MAX = 5;
+export const MARKET_VOLATILITY_DEFAULT = 1;
+
+export const GAME_DURATION_TICKS_MIN = 120;
+export const GAME_DURATION_TICKS_MAX = 600;
+export const GAME_DURATION_TICKS_DEFAULT = 240;
+
 export const BUILDING_TYPES = {
     SPECIAL: "Special",
     RECREATIONAL: "Recreational",

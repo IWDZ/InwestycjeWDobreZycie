@@ -12,17 +12,18 @@ export function getGame(gameCode) {
     return GAMES.get(gameCode);
 }
 
-export function getDefaultGameSettings(populationPool, marketVolatility) {
+export function getDefaultGameSettings(settings) {
     return {
-        POPULATION: ((populationPool / 100) * POPULATION),
-        MARKET_VOLATILITY: marketVolatility,
+        POPULATION: ((settings.populationPoolPercent / 100) * POPULATION),
+        MARKET_VOLATILITY: settings.marketVolatility,
+        GAME_DURATION_TICKS: settings.gameDurationTicks,
         NEXT_BUILDING_ID: 1
     };
 }
 
-export function startGame(game, populationPool, marketVolatility) {
+export function startGame(game, settings) {
     game.started = true;
-    game.settings = getDefaultGameSettings(populationPool, marketVolatility);
+    game.settings = getDefaultGameSettings(settings);
     game.tickNumber = 1;
     game.materialPrices = { ...MATERIAL_PRICES};
     setTimeout(() => game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000), SECONDS_BEFORE_GAME_START * 1000);
@@ -90,7 +91,7 @@ export function doGameTick(game) {
         sendMoneyUpdate(player);
     }
 
-    if (game.tickNumber >= GAME_DURATION_TICKS) {
+    if (game.tickNumber >= game.settings.GAME_DURATION_TICKS) {
         return endGame(game);
     }
 

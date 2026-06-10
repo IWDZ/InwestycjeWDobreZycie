@@ -5,7 +5,7 @@ import { getGame, hasGameEnoughPlayers, hasGameStarted, startGame } from "../exp
 import { isValidData, throwError } from "../exports/utils/generalUtils.js";
 import { buyMaterial, hasRequiredMaterials, hasRequiredMoney, sellMaterial } from "../exports/utils/inventoryUtils.js";
 import { createDefaultClientGameDataObject, getPlayer, getPlayerGame, isHost, removePlayer, setUpPlayer } from "../exports/utils/playerUtils.js";
-import { ERRORS, MATERIALS, MAX_FIELD_SIZE } from "../exports/gameStorage.js";
+import { ERRORS, MARKET_VOLATILITY_MIN, MARKET_VOLATILITY_MAX, MATERIALS, MAX_FIELD_SIZE, POPULATION_POOL_PERCENT_MAX, POPULATION_POOL_PERCENT_MIN, POPULATION_POOL_PERCENT_DEFAULT, MARKET_VOLATILITY_DEFAULT, GAME_DURATION_TICKS_MIN, GAME_DURATION_TICKS_MAX, GAME_DURATION_TICKS_DEFAULT } from "../exports/gameStorage.js";
 import { io } from "../server.js";
 
 function gameLogic(socket, socketId) {
@@ -13,11 +13,23 @@ function gameLogic(socket, socketId) {
         if (!isValidData(settings)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
-        const {populationPool, marketVolatility} = settings;
+        let { populationPoolPercent, marketVolatility, gameDurationTicks } = settings;
 
-        if (!Number.isInteger(populationPool) || populationPool < 50 || populationPool > 100 ||
-            typeof marketVolatility !== "number" || marketVolatility < 0.5 || marketVolatility > 5) {
+        if (!Number.isInteger(populationPoolPercent) ||
+            typeof marketVolatility !== "number" ||
+            typeof gameDurationTicks !== "number") {
                 return throwError(socketId, ERRORS.INVALID_DATA);
+        }
+
+        if (populationPoolPercent < POPULATION_POOL_PERCENT_MIN ||
+            populationPoolPercent > POPULATION_POOL_PERCENT_MAX ||
+            marketVolatility < MARKET_VOLATILITY_MIN ||
+            marketVolatility > MARKET_VOLATILITY_MAX ||
+            gameDurationTicks < GAME_DURATION_TICKS_MIN ||
+            gameDurationTicks > GAME_DURATION_TICKS_MAX) {
+                settings.populationPoolPercent = POPULATION_POOL_PERCENT_DEFAULT;
+                settings.marketVolatility = MARKET_VOLATILITY_DEFAULT;
+                settings.gameDurationTicks = GAME_DURATION_TICKS_DEFAULT;
         }
 
         const game = getGame(getPlayerGame(socketId));
@@ -37,7 +49,7 @@ function gameLogic(socket, socketId) {
             return throwError(socketId, ERRORS.HOST_FEATURE);
         }
 
-        startGame(game, populationPool, marketVolatility);
+        startGame(game, settings);
 
         for (const player of game.players) {
             setUpPlayer(game, player);
