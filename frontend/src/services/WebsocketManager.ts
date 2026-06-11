@@ -3,7 +3,7 @@ import { Err, Ok, Result } from "./Utilities";
 import { loadingScreen } from "../components/LoadingScreen";
 import { showError } from "./ErrorToast";
 
-const HOST = "localhost";
+const HOST = window.location.hostname;
 const PORT = 3000;
 
 type Handler<T = any> = (data: T) => void;
