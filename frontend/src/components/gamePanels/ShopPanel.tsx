@@ -124,6 +124,10 @@ export function ShopPanel() {
   const shop = ShopManager.getInstance();
   const priceHistory = market.getPriceHistory(selected);
   const currentPrice = market.getCurrentPrice(selected);
+  
+  const chartPrices = priceHistory[priceHistory.length - 1] === currentPrice
+    ? priceHistory
+    : [...priceHistory, currentPrice];
   const prevPrice = priceHistory[priceHistory.length - 2] ?? currentPrice;
   const priceUp = currentPrice >= prevPrice;
   const priceDelta = (currentPrice - prevPrice).toFixed(2);
@@ -192,7 +196,7 @@ export function ShopPanel() {
         </div>
 
         <div className="shop-chart-svg-wrapper">
-          <PriceBarChart prices={priceHistory} width={420} height={110} />
+          <PriceBarChart prices={chartPrices} width={420} height={110} />
         </div>
 
         <div className="shop-chart-turn-row">

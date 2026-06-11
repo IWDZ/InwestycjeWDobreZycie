@@ -133,6 +133,19 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       gameManager.inventory.syncMaterials(data);
       forceUpdate((v) => v + 1);
     };
+
+    const onPricesUpdate = (data: Record<string, number>) => {
+      const market = MaterialMarket.getInstance();
+      const updates = Object.entries(data)
+        .filter(([, price]) => price != null)
+        .map(([key, price]) => ({
+          mat: MATERIAL_MAP[key.toLowerCase()],
+          value: price,
+        }))
+        .filter((x) => x.mat !== undefined);
+      market.addMaterialPrice(updates);
+    };
+
     
     const onTickUpdate = (data: number) => {
       setTick(data+1);
@@ -141,20 +154,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
     ws.register_handler("tick_update", onTickUpdate);
     ws.register_handler("materials_update", onMaterialsUpdate);
     ws.register_handler("game_end", onGameEnd);
-    ws.register_handler(
-      "material_prices_update",
-      (data: Record<string, number>) => {
-        const market = MaterialMarket.getInstance();
-        const updates = Object.entries(data)
-          .filter(([, price]) => price != null)
-          .map(([key, price]) => ({
-            mat: MATERIAL_MAP[key.toLowerCase()],
-            value: price,
-          }))
-          .filter((x) => x.mat !== undefined);
-        market.addMaterialPrice(updates);
-      },
-    );
+    ws.register_handler("material_prices_update", onPricesUpdate);
     ws.register_handler("money_increase", onMoneyIncrease);
     ws.register_handler("money_decrease", onMoneyDecrease);
     ws.register_handler("field_update", onFieldUpdate);
@@ -166,6 +166,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       ws.unregister_handler("money_increase", onMoneyIncrease);
       ws.unregister_handler("money_decrease", onMoneyDecrease);
       ws.unregister_handler("field_update", onFieldUpdate);
+      ws.unregister_handler("material_prices_update", onPricesUpdate);
       ws.unregister_handler("happiness_update", onHappinessUpdate);
       ws.unregister_handler("game_end", onGameEnd);
       ws.unregister_handler("money_update", onMoneyUpdate);

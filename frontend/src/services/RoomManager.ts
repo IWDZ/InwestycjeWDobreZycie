@@ -163,20 +163,10 @@ export class RoomManager {
     }
 
     let result = await ws.request("start_game", "game_start", {
-      gameCode: this.roomId,
       populationPoolPercent: this.roomSettings.populationPoolPercent,
-      marketVolatilityPercent: this.roomSettings.marketVolatilityPercent,
+      marketVolatility: this.roomSettings.marketVolatilityPercent,
       gameDurationTicks: this.roomSettings.gameDurationTicks
     }, false);
-
-    if (!result.ok) {
-      result = await ws.request("start_game", "game_start", {
-        gameCode: this.roomId,
-        populationPool: this.roomSettings.populationPoolPercent,
-        marketVolatility: this.roomSettings.marketVolatilityPercent,
-        gameDurationTicks: this.roomSettings.gameDurationTicks
-      });
-    }
 
     if (result.ok) {
       console.log(result.value);
