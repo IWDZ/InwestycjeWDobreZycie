@@ -22,13 +22,15 @@ function gameLogic(socket, socketId) {
         }
 
         if (populationPoolPercent < POPULATION_POOL_PERCENT_MIN ||
-            populationPoolPercent > POPULATION_POOL_PERCENT_MAX ||
-            marketVolatility < MARKET_VOLATILITY_MIN ||
-            marketVolatility > MARKET_VOLATILITY_MAX ||
-            gameDurationTicks < GAME_DURATION_TICKS_MIN ||
-            gameDurationTicks > GAME_DURATION_TICKS_MAX) {
+            populationPoolPercent > POPULATION_POOL_PERCENT_MAX) {
                 settings.populationPoolPercent = POPULATION_POOL_PERCENT_DEFAULT;
+        }
+        if (marketVolatility < MARKET_VOLATILITY_MIN ||
+            marketVolatility > MARKET_VOLATILITY_MAX) {
                 settings.marketVolatility = MARKET_VOLATILITY_DEFAULT;
+        }
+        if (gameDurationTicks < GAME_DURATION_TICKS_MIN ||
+            gameDurationTicks > GAME_DURATION_TICKS_MAX) {
                 settings.gameDurationTicks = GAME_DURATION_TICKS_DEFAULT;
         }
 
