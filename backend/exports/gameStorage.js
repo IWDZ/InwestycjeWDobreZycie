@@ -547,6 +547,7 @@ export const ERRORS = {
     CELL_OCCUPIED: "Cell Occupied",
     CELL_NOT_OWNED: "Cell Not Owned",
     CELL_NOT_A_BUILDING: "Cell is not a building",
+    CANNOT_PLACE_TOWN_HALL: "Cannot Place The Town Hall",
     CANNOT_DELETE_TOWN_HALL: "Cannot Delete The Town Hall",
     UNEXPECTED_BUILDING_BOUNDS: "Unexpected building bounds",
     HOST_FEATURE: "Only the host can do this",

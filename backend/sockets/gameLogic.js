@@ -186,6 +186,10 @@ function gameLogic(socket, socketId) {
 
         const field = player.field;
 
+        if (isTownHall(buildingName)) {
+            return throwError(socketId, ERRORS.CANNOT_PLACE_TOWN_HALL);
+        }
+
         if (!hasRequiredBuilding(building, field)) {
             return throwError(socketId, ERRORS.NO_REQUIRED_BUILDING);
         }
