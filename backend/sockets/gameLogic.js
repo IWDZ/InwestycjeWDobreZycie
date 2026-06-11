@@ -75,8 +75,8 @@ function gameLogic(socket, socketId) {
 
         const player = getPlayer(game, socketId);
         if (!player) {
-            return throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
-            removePlayer(game, socketId);
+            throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
+            return removePlayer(game, socketId);
         }
 
         const field = player.field;
@@ -112,8 +112,8 @@ function gameLogic(socket, socketId) {
         
         const player = getPlayer(game, socketId);
         if (!player) {
-            return throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
-            removePlayer(game, socketId);
+            throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
+            return removePlayer(game, socketId);
         }
 
         if (!buyMaterial(game, player, material, amount)) {
@@ -143,8 +143,8 @@ function gameLogic(socket, socketId) {
 
         const player = getPlayer(game, socketId);
         if (!player) {
-            return throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
-            removePlayer(game, socketId);
+            throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
+            return removePlayer(game, socketId);
         }
 
         if (!sellMaterial(game, player, material, amount)) {
@@ -180,8 +180,8 @@ function gameLogic(socket, socketId) {
 
         const player = getPlayer(game, socketId);
         if (!player) {
-            return throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
-            removePlayer(game, socketId);
+            throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
+            return removePlayer(game, socketId);
         }
 
         const field = player.field;
@@ -233,8 +233,8 @@ function gameLogic(socket, socketId) {
 
         const player = getPlayer(game, socketId);
         if (!player) {
-            return throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
-            removePlayer(game, socketId);
+            throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
+            return removePlayer(game, socketId);
         }
 
         const field = player.field;
