@@ -27,6 +27,7 @@ import { roomManager } from "./LobbyService";
 import { MaterialMarket } from "../services/game/MaterialMarket";
 import { BuyMaterialsMenu } from "./BuyMenu";
 import { NukeMenu } from "./gamePanels/NukeMenu";
+import { NukeExplosionAnimation } from "./gamePanels/NukeAnimation";
 
 const TABS: { id: string; label: string; icon: any }[] = [
   { id: "build", label: "Buduj", icon: faHammer },
@@ -78,6 +79,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   const [pendingBuild, setPendingBuild] = useState<PendingBuild | null>(null);
   const [nukeOpen, setNukeOpen] = useState(false);
   const [tick, setTick] = useState(1);
+  const [nuked, setNuked] = useState(false);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -145,12 +147,17 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
         .filter((x) => x.mat !== undefined);
       market.addMaterialPrice(updates);
     };
-
     
     const onTickUpdate = (data: number) => {
       setTick(data+1);
     };
-    
+
+    const onNuked = () => {
+      console.log("i got nuked")
+      setNuked(true);
+    }
+
+    ws.register_handler("nuked", onNuked);
     ws.register_handler("tick_update", onTickUpdate);
     ws.register_handler("materials_update", onMaterialsUpdate);
     ws.register_handler("game_end", onGameEnd);
@@ -162,6 +169,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
     ws.register_handler("money_update", onMoneyUpdate);
 
     return () => {
+      ws.unregister_handler("nuked", onNuked);
       ws.unregister_handler("tick_update", onTickUpdate);
       ws.unregister_handler("money_increase", onMoneyIncrease);
       ws.unregister_handler("money_decrease", onMoneyDecrease);
@@ -173,6 +181,12 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       ws.unregister_handler("materials_update", onMaterialsUpdate);
     };
   }, []);
+
+  useEffect(() => {
+    if (!nuked) return;
+    const t = setTimeout(onGameEnd, 20000);
+    return () => clearTimeout(t);
+  }, [nuked]);
 
   function stopGame() {
     setGamePhase("idle");
@@ -384,6 +398,8 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
           </footer>
         </div>
       </div>
+
+      {nuked && <NukeExplosionAnimation />}
 
       {nukeOpen && (
         <NukeMenu

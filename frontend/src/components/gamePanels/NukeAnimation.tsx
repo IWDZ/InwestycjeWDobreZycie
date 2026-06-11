@@ -274,7 +274,7 @@ import { soundManager } from "../../services/SoundManager";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export function NukeExplosionAnimation({ target, onDone }: Props) {
+export function NukeExplosionAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const started = useRef(false);
 
@@ -527,7 +527,6 @@ export function NukeExplosionAnimation({ target, onDone }: Props) {
 
         if (explosionTimer >= explosionDuration) {
           console.log(explosionDuration + " timer:" + explosionTimer)
-          onDone();
           return;
         }
       }

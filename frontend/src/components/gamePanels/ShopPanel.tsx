@@ -125,9 +125,11 @@ export function ShopPanel() {
   const priceHistory = market.getPriceHistory(selected);
   const currentPrice = market.getCurrentPrice(selected);
   
-  const chartPrices = priceHistory[priceHistory.length - 1] === currentPrice
-    ? priceHistory
-    : [...priceHistory, currentPrice];
+  const chartPrices = (
+    priceHistory[priceHistory.length - 1] === currentPrice
+      ? priceHistory
+      : [...priceHistory, currentPrice]
+  ).slice(-15);
   const prevPrice = priceHistory[priceHistory.length - 2] ?? currentPrice;
   const priceUp = currentPrice >= prevPrice;
   const priceDelta = (currentPrice - prevPrice).toFixed(2);
@@ -202,7 +204,7 @@ export function ShopPanel() {
         <div className="shop-chart-turn-row">
           <span className="shop-chart-turn-label">Tura {priceHistory.length}</span>
           <span className="shop-chart-turn-range">
-            Ostatnie {Math.min(priceHistory.length, 10)} tur
+            Ostatnie {Math.min(chartPrices.length, 15)} tur
           </span>
         </div>
       </div>
