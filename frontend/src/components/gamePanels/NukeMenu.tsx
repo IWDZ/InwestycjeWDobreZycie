@@ -25,10 +25,12 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
 
     function handleNuke() {
         if (!selected) return;
-        ws.request("send_atomic_bomb", "player_nuke", 
+        let result = ws.request("send_atomic_bomb", "player_nuke", 
            selected
         );
-        setLaunching(true);
+        if (result.ok) {
+          setLaunching(true); 
+        }
     }
 
     if (launching) {

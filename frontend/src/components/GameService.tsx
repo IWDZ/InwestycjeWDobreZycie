@@ -20,7 +20,10 @@ import { StatsPanel } from "./gamePanels/StatsPanel";
 import { ShopPanel } from "./gamePanels/ShopPanel";
 import { LeaderboardPanel } from "./gamePanels/LeaderboardPanel";
 import { GameMap } from "./GameMap";
-import { BUILDINGS, getBuildingById } from "../services/game/statics/BuildingData";
+import {
+  BUILDINGS,
+  getBuildingById,
+} from "../services/game/statics/BuildingData";
 import { GameManager } from "../services/game/GameManager";
 import { ws } from "../services/WebsocketManager";
 import { roomManager } from "./LobbyService";
@@ -136,6 +139,10 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       forceUpdate((v) => v + 1);
     };
 
+    const onSomeoneNukedUpdate = (data: string) => {
+      showError(data + " got nuked.");
+    };
+
     const onPricesUpdate = (data: Record<string, number>) => {
       const market = MaterialMarket.getInstance();
       const updates = Object.entries(data)
@@ -147,17 +154,18 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
         .filter((x) => x.mat !== undefined);
       market.addMaterialPrice(updates);
     };
-    
+
     const onTickUpdate = (data: number) => {
-      setTick(data+1);
+      setTick(data + 1);
     };
 
     const onNuked = () => {
-      console.log("i got nuked")
+      console.log("i got nuked");
       setNuked(true);
-    }
+    };
 
     ws.register_handler("nuked", onNuked);
+    ws.register_handler("player_nuke", onSomeoneNukedUpdate);
     ws.register_handler("tick_update", onTickUpdate);
     ws.register_handler("materials_update", onMaterialsUpdate);
     ws.register_handler("game_end", onGameEnd);
@@ -170,6 +178,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
 
     return () => {
       ws.unregister_handler("nuked", onNuked);
+      ws.unregister_handler("player_nuke", onSomeoneNukedUpdate);
       ws.unregister_handler("tick_update", onTickUpdate);
       ws.unregister_handler("money_increase", onMoneyIncrease);
       ws.unregister_handler("money_decrease", onMoneyDecrease);
@@ -407,7 +416,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
           onClose={() => setNukeOpen(false)}
         />
       )}
-      
+
       {buyMenuMissing && pendingBuild && (
         <BuyMaterialsMenu
           missingMaterials={buyMenuMissing}
@@ -415,7 +424,9 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
             setBuyMenuMissing(null);
             setPendingBuild(null);
           }}
-          buildingCost={getBuildingById(pendingBuild.buildingName)?.moneyCost ?? 0}
+          buildingCost={
+            getBuildingById(pendingBuild.buildingName)?.moneyCost ?? 0
+          }
           onConfirm={() => {
             const build = pendingBuild;
             setBuyMenuMissing(null);
