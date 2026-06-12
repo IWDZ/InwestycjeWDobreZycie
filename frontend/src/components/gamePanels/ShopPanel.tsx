@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   getMaterialColor,
   getMaterialName,
@@ -109,6 +109,8 @@ function PriceBarChart({
   );
 }
 
+const savedShopScrollPos = { value: 0 };
+
 export function ShopPanel() {
   const [selected, setSelected] = useState<Materials>(Materials.Wood);
   const [amount, setAmount] = useState("0");
@@ -140,6 +142,26 @@ export function ShopPanel() {
   const canAfford = inventory.money >= totalCost;
   const ownedAmount = inventory.materialCount[selected] ?? 0;
   const canSell = ownedAmount >= parseInt(amount, 10);
+
+  useEffect(() => {
+    const scrollable = document.querySelector(".panel-popup") as HTMLElement;
+    if (!scrollable) return;
+  
+    const frame = requestAnimationFrame(() => {
+      scrollable.scrollTop = savedShopScrollPos.value;
+    });
+  
+    const handleScroll = () => {
+      savedShopScrollPos.value = scrollable.scrollTop;
+    };
+  
+    scrollable.addEventListener("scroll", handleScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      scrollable.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+  
   return (
     <div className="panel shop-panel">
       <p className="panel-title">Market</p>
