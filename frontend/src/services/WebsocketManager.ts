@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { Err, Ok, Result } from "./Utilities";
 import { loadingScreen } from "../components/LoadingScreen";
-import { showError } from "./ErrorToast";
+import { showError } from "./ErrorManager";
 
 const HOST = window.location.hostname;
 const PORT = 3000;

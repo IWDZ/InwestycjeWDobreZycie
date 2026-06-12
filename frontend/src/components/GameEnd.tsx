@@ -20,7 +20,7 @@ export function GameEnd({ onBackToLobby, isNuked }: GameEndProps) {
         </div>
 
         <div className="leaderboard-player-list">
-          {isNuked && <p className="panel-title">Wyniki teraźniejsze</p>}
+          {isNuked && <p className="panel-title">Wyniki</p>}
           {!isNuked && <p className="panel-title">Wyniki końcowe</p>}
           {sorted.map(([id, player], index) => (
             <div key={id} className="leaderboard-player">

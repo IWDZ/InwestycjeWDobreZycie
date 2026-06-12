@@ -45,7 +45,6 @@
   letter-spacing: 0.1em;
 }
 
-/* Player grid */
 .player-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -124,7 +123,6 @@
   letter-spacing: 0.04em;
 }
 
-/* Settings section */
 .settings-section {
   border: 1px solid #eee;
   border-radius: 10px;
@@ -251,7 +249,6 @@
   display: block;
 }
 
-/* Setting row input/select (standalone, not inside label-group) */
 .setting-row input,
 .setting-row select {
   width: 140px;
@@ -287,7 +284,6 @@
   box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
 }
 
-/* Actions */
 .room-actions {
   display: flex;
   gap: 12px;
