@@ -162,6 +162,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
 
     const onNuked = () => {
       console.log("i got nuked");
+      showError("Atomic bomb incoming...");
       setNuked(true);
     };
 

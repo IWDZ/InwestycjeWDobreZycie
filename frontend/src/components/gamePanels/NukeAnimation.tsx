@@ -552,34 +552,42 @@ export function NukeExplosionAnimation() {
 
   const mapElement = document.querySelector(".game-map");
   if (!mapElement) return null;
-
-  return createPortal(
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 45,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "transparent",
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-      }}
-    >
-      <canvas
-        ref={canvasRef}
-        width={2400}
-        height={2400}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-        }}
-      />
-    </div>,
-    mapElement
+  
+  return (
+    <>
+      {createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 100000, pointerEvents: "all" }} />,
+        document.body
+      )}
+      {createPortal(
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 45,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "transparent",
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            width={2400}
+            height={2400}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        </div>,
+        mapElement
+      )}
+    </>
   );
 }
