@@ -82,6 +82,8 @@ export type Building = {
   jobs: number;
   happiness: number;
 
+  moneyEarn: number;
+
   materialCost: Partial<Record<Materials, number>>;
   moneyCost: number;
 
@@ -107,6 +109,7 @@ export const createBuilding = (
   materialCost: Partial<Record<Materials, number>>,
 
   requiredBuilding: string | null = null,
+  moneyEarn: number,
   locked: boolean = false,
 ): Building => ({
   locked,
@@ -126,6 +129,7 @@ export const createBuilding = (
   materialCost,
 
   requiredBuilding,
+  moneyEarn
 });
 const TYPE_MAP: Record<string, BuildingType> = {
   Residential: BuildingType.RESIDENTIAL,
@@ -162,6 +166,7 @@ export function parseBuildingsFromServer(
       b.MONEY_COST,
       b.MATERIAL_COST ? parseMaterialCost(b.MATERIAL_COST) : {},
       b.REQUIRED_BUILDING,
+      b.MONEY_PER_JOB
     ),
   );
 }

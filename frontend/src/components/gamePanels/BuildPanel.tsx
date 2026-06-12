@@ -61,6 +61,8 @@ export function BuildPanel({onSelectBuilding}: BuildPanelProps) {
                     </span>
                   )}
 
+                  <span className="badge badge-jobs">{b.moneyEarn} $ za prac.</span>
+
                   {b.happiness !== 0 && (
                     <span
                       className={`badge badge-happiness ${b.happiness < 0

@@ -41,6 +41,7 @@ export default function App() {
   }
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
   useEffect(() => {
     return subscribeError(setErrorMessage);
@@ -51,6 +52,9 @@ export default function App() {
       {errorMessage && (
         <div className="global-error-message">{errorMessage}</div>
       )}
+      {infoMessage && (
+        <div className="global-info-message">{infoMessage}</div>
+      )}
       <ErrorNotif ref={ref} />
       {appState === "lobby" && (
         <LobbyService ref={lobbyRef} onStart={onStart} onFinish={onBackToLobby} />
@@ -59,7 +63,7 @@ export default function App() {
         <GameService shouldStart={true} onGameEnd={onGameEnd} />
       )}
       {appState === "gamend" && (
-        <GameEnd onBackToLobby={onBackToLobby} />
+        <GameEnd onBackToLobby={onBackToLobby} isNuked={false} />
       )}
       <LoadingScreen ref={loadingRef} onClick={onBackToLobby} />
     </>
