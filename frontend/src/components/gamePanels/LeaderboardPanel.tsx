@@ -27,7 +27,7 @@ export function LeaderboardPanel() {
               <div key={id} className="leaderboard-player">
                 <span className="leaderboard-place">#{index + 1}</span>
                 <span className="leaderboard-name">{player!.username}</span>
-                <span className="leaderboard-money">${player!.worth}</span>
+                <span className="leaderboard-money">$ {player!.worth}</span>
               </div>
             ))}
         </div>

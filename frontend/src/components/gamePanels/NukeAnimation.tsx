@@ -2,11 +2,11 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 interface Props {
-  target: string;
-  onDone: () => void;
+  target?: string;
+  onDone?: () => void;
 }
 
-export function NukeLaunchAnimation({ target, onDone }: Props) {
+export function NukeLaunchAnimation({ onDone }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -231,7 +231,7 @@ export function NukeLaunchAnimation({ target, onDone }: Props) {
       drawMissile(pos, progress);
 
       if (progress >= 1) {
-        onDone();
+        onDone?.();
         return;
       }
 
@@ -274,7 +274,8 @@ import { soundManager } from "../../services/SoundManager";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export function NukeExplosionAnimation() {
+export function NukeExplosionAnimation({ target }: Props) {
+  console.log(target);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const started = useRef(false);
 

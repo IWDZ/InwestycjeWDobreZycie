@@ -16,7 +16,6 @@ import {
   Materials,
 } from "../services/game/statics/Materials";
 import { PlotPanel } from "./gamePanels/PlotPanel";
-import { StatsPanel } from "./gamePanels/StatsPanel";
 import { ShopPanel } from "./gamePanels/ShopPanel";
 import { LeaderboardPanel } from "./gamePanels/LeaderboardPanel";
 import { GameMap } from "./GameMap";
@@ -32,13 +31,13 @@ import { BuyMaterialsMenu } from "./BuyMenu";
 import { NukeMenu } from "./gamePanels/NukeMenu";
 import { NukeExplosionAnimation } from "./gamePanels/NukeAnimation";
 import { showInfo, showError } from "../services/ErrorManager";
+import { useLocale } from "../locale/Locale";
 
-const TABS: { id: string; label: string; icon: any }[] = [
-  { id: "build", label: "Buduj", icon: faHammer },
-  { id: "plots", label: "Ploty", icon: faMap },
-  { id: "shop", label: "Sklep", icon: faShop },
-  { id: "stats", label: "Statystyki", icon: faChartBar },
-  { id: "players", label: "Gracze", icon: faUsers },
+const TABS: { id: string; labelKey: string; icon: any }[] = [
+  { id: "build", labelKey: "tab.build", icon: faHammer },
+  { id: "plots", labelKey: "tab.plots", icon: faMap },
+  { id: "shop", labelKey: "tab.shop", icon: faShop },
+  { id: "players", labelKey: "tab.players", icon: faUsers },
 ];
 
 const materials = Object.values(Materials).filter(
@@ -64,6 +63,7 @@ interface MissingMaterial {
 }
 
 export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
+  const l = useLocale();
   const [gamePhase, setGamePhase] = useState<GamePhase>("idle");
   const [countdown, setCountdown] = useState(3);
   const [activeTab, setActiveTab] = useState("");
@@ -83,7 +83,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   const [pendingBuild, setPendingBuild] = useState<PendingBuild | null>(null);
   const [nukeOpen, setNukeOpen] = useState(false);
   const [tick, setTick] = useState(1);
-  const [nuked, setNuked] = useState(false);
+  const [nuked, setNuked] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -160,9 +160,9 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       setTick(data + 1);
     };
 
-    const onNuked = () => {
+    const onNuked = (data: string) => {
       showInfo("Atomic bomb incoming...");
-      setNuked(true);
+      setNuked(data);
     };
 
     ws.register_handler("nuked", onNuked);
@@ -276,8 +276,8 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
         <div className="game-container">
           <header className="game-header">
             <div className="game-header-left">
-              <span className="game-city-name">Miasto</span>
-              <span className="game-turn-info">Tick {tick}</span>
+              <span className="game-city-name">{l.t("game.city")}</span>
+              <span className="game-turn-info">{l.t("game.tick", tick)}</span>
             </div>
 
             <div className="game-money-info" style={{ position: "relative" }}>
@@ -299,7 +299,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
 
             <div className="game-header-right">
               <div className="game-happiness">
-                <span className="happiness-label">Zadowolenie</span>
+                <span className="happiness-label">{l.t("game.happiness")}</span>
                 <div className="happiness-progress-bar">
                   <div
                     className="happiness-fill"
@@ -322,7 +322,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
                 className="materials-button"
                 onClick={() => setMaterialsOpen((o) => !o)}
               >
-                <span>Surowce</span>
+                <span>{l.t("game.materials")}</span>
                 <span
                   className={`materials-arrow ${materialsOpen ? "open" : ""}`}
                 >
@@ -331,7 +331,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
 
                 {materialsOpen && (
                   <div className="materials-dropdown">
-                    <p className="materials-dropdown-title">Magazyn</p>
+                    <p className="materials-dropdown-title">{l.t("game.warehouse")}</p>
                     <div className="materials-grid">
                       {materials.map((mat) => (
                         <div key={mat} className="material-item">
@@ -370,9 +370,9 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
             {placingBuilding && (
               <div className="placing-bar">
                 <span>
-                  Budowanie: <strong>{placingBuilding.name}</strong>
+                  {l.t("game.placing")}<strong>{placingBuilding.name}</strong>
                 </span>
-                <button onClick={() => setPlacingBuilding(null)}>Anuluj</button>
+                <button onClick={() => setPlacingBuilding(null)}>{l.t("ui.cancel")}</button>
               </div>
             )}
             <GameMap
@@ -402,14 +402,14 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
                 onClick={() => setActiveTab(tab.id)}
               >
                 <FontAwesomeIcon icon={tab.icon} className="game-nav-icon" />
-                <span>{tab.label}</span>
+                <span>{l.t(tab.labelKey)}</span>
               </button>
             ))}
           </footer>
         </div>
       </div>
 
-      {nuked && <NukeExplosionAnimation />}
+      {nuked && <NukeExplosionAnimation target={nuked} />}
 
       {nukeOpen && (
         <NukeMenu
@@ -450,7 +450,6 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
                 />
               )}
               {activeTab === "plots" && <PlotPanel />}
-              {activeTab === "stats" && <StatsPanel />}
               {activeTab === "shop" && <ShopPanel />}
               {activeTab === "players" && <LeaderboardPanel />}
             </div>

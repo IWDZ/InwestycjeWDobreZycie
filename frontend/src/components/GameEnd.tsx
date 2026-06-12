@@ -1,3 +1,4 @@
+import { useLocale } from "../locale/Locale";
 import { GameManager } from "../services/game/GameManager";
 
 interface GameEndProps {
@@ -6,6 +7,7 @@ interface GameEndProps {
 }
 
 export function GameEnd({ onBackToLobby, isNuked }: GameEndProps) {
+  const l = useLocale();
   const leaderboard = GameManager.getInstance().leaderboard;
   const sorted = Object.entries(leaderboard.playerList).sort(
     ([, a], [, b]) => b!.worth - a!.worth,
@@ -14,14 +16,14 @@ export function GameEnd({ onBackToLobby, isNuked }: GameEndProps) {
   return (
     <div className="gameend-screen">
       <div className="gameend-card">
-        <div className="gameend-header">
-          {isNuked && <h1 className="gameend-title">Dostałeś atomówką</h1>}
-          {!isNuked && <h1 className="gameend-title">Koniec gry</h1>}
-        </div>
+        <h1 className="gameend-title">
+          {isNuked ? l.t("gameend.nuked") : l.t("gameend.title")}
+        </h1>
 
         <div className="leaderboard-player-list">
-          {isNuked && <p className="panel-title">Wyniki</p>}
-          {!isNuked && <p className="panel-title">Wyniki końcowe</p>}
+          <p className="panel-title">
+            {isNuked ? l.t("gameend.results") : l.t("gameend.finalresults")}
+          </p>
           {sorted.map(([id, player], index) => (
             <div key={id} className="leaderboard-player">
               <span className="leaderboard-place">{`#${index + 1}`}</span>
@@ -34,7 +36,7 @@ export function GameEnd({ onBackToLobby, isNuked }: GameEndProps) {
         </div>
 
         <button className="gameend-back-btn" onClick={onBackToLobby}>
-          Wróć do lobby
+          {l.t("ui.returntolobby")}
         </button>
       </div>
     </div>

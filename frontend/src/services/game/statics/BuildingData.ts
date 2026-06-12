@@ -1,12 +1,30 @@
 import { Materials, parseMaterialCost } from "./Materials";
+import { locale } from "../../../locale/Locale";
 
 export enum BuildingType {
-  RESIDENTIAL = "Mieszkalny",
-  COMMERCIAL = "Komercyjny",
-  OFFICE = "Biurowy",
-  RECREATIONAL = "Rekreacyjny",
-  INDUSTRIAL = "Industrialny",
-  SPECIAL = "Specjalny",
+  RESIDENTIAL,
+  COMMERCIAL,
+  OFFICE,
+  RECREATIONAL,
+  INDUSTRIAL,
+  SPECIAL,
+}
+
+export function getBuildingTypeName(type: BuildingType): string {
+  switch (type) {
+    case BuildingType.RESIDENTIAL:
+      return locale.t("buildingtype.residential");
+    case BuildingType.COMMERCIAL:
+      return locale.t("buildingtype.commercial");
+    case BuildingType.OFFICE:
+      return locale.t("buildingtype.office");
+    case BuildingType.RECREATIONAL:
+      return locale.t("buildingtype.recreational");
+    case BuildingType.INDUSTRIAL:
+      return locale.t("buildingtype.industrial");
+    case BuildingType.SPECIAL:
+      return locale.t("buildingtype.special");
+  }
 }
 
 export const BUILDING_ICONS: Record<string, string> = {
@@ -39,35 +57,9 @@ export const BUILDING_ICONS: Record<string, string> = {
   port: "⚓",
 };
 
-export const NAME_MAP: Record<string, string> = {
-  wooden_house: "Drewniany domek",
-  stone_house: "Kamienny domek",
-  concrete_house: "Betonowy domek",
-  apartment_block: "Blok mieszkalny",
-  soviet_block: "Blok sowiecki",
-  penthouse: "Penthouse",
-  bank: "Bank",
-  grocery_store: "Sklep spożywczy",
-  market: "Targ",
-  shopping_center: "Centrum handlowe",
-  basic_office: "Biuro",
-  corporate_office: "Biuro korporacyjne",
-  skyscraper: "Wieżowiec",
-  factory: "Fabryka",
-  coal_plant: "Elektrownia węglowa",
-  nuclear_reactor: "Reaktor jądrowy",
-  park: "Park",
-  playground: "Plac zabaw",
-  church: "Kościół",
-  hospital: "Szpital",
-  school: "Szkoła",
-  university: "Uniwersytet",
-  stadium: "Stadion",
-  police_station: "Komisariat",
-  town_hall: "Ratusz",
-  airport: "Lotnisko",
-  port: "Port",
-};
+export function getBuildingName(id: string): string {
+  return locale.t(`building.${id}`);
+}
 
 export type Building = {
   id: string;
@@ -129,7 +121,7 @@ export const createBuilding = (
   materialCost,
 
   requiredBuilding,
-  moneyEarn
+  moneyEarn,
 });
 const TYPE_MAP: Record<string, BuildingType> = {
   Residential: BuildingType.RESIDENTIAL,
@@ -147,7 +139,7 @@ export function setBuildings(buildings: Building[]) {
 }
 
 export function getBuildingById(id: string) {
-  return BUILDINGS.find(b => b.id.toLowerCase() === id);
+  return BUILDINGS.find((b) => b.id.toLowerCase() === id);
 }
 
 export function parseBuildingsFromServer(
@@ -156,7 +148,7 @@ export function parseBuildingsFromServer(
   return Object.entries(buildings).map(([key, b]) =>
     createBuilding(
       key,
-      NAME_MAP[b.NAME] ?? b.NAME,
+      getBuildingName(b.NAME),
       TYPE_MAP[b.TYPE],
       b.WIDTH,
       b.HEIGHT,
@@ -166,7 +158,7 @@ export function parseBuildingsFromServer(
       b.MONEY_COST,
       b.MATERIAL_COST ? parseMaterialCost(b.MATERIAL_COST) : {},
       b.REQUIRED_BUILDING,
-      b.MONEY_PER_JOB
+      b.MONEY_PER_JOB,
     ),
   );
 }

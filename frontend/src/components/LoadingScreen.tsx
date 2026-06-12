@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { useLocale } from "../locale/Locale";
 
 export interface LoadingScreenRef {
   showLoading: () => void;
@@ -13,6 +14,7 @@ export interface LoadingScreenProps {
 export const loadingScreen = { current: null as LoadingScreenRef | null };
 
 export const LoadingScreen = forwardRef<LoadingScreenRef, LoadingScreenProps>(({onClick}, ref) => {
+  const l = useLocale();
   const [visible, setVisible] = useState(false);
   const [state, setState] = useState<"loading" | "error">("loading");
   const [message, setMessage] = useState("Łączenie z serwerem...");
@@ -48,18 +50,18 @@ export const LoadingScreen = forwardRef<LoadingScreenRef, LoadingScreenProps>(({
               <div className="loading-spinner-ring" />
               <div className="loading-spinner-ring loading-spinner-ring--2" />
             </div>
-            <p className="loading-message">{message}<span className="loading-dots">{dots}</span></p>
+            <p className="loading-message">{l.t("loading.connecting")}<span className="loading-dots">{dots}</span></p>
           </>
         ) : (
           <>
             <div className="loading-error-icon">✕</div>
-            <h2 className="loading-error-title">Błąd połączenia</h2>
-            <p className="loading-message">Nie udało się połączyć z serwerem.</p>
+            <h2 className="loading-error-title">{l.t("loading.error")}</h2>
+            <p className="loading-message">{l.t("loading.error.desc")}</p>
               <button className="loading-back-btn" onClick={() => {
                 onClick()
                 setVisible(false)
               }}>
-              Wróć do lobby
+                {l.t("ui.returntolobby")}
             </button>
           </>
         )}

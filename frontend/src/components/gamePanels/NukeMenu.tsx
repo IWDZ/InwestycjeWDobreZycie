@@ -10,6 +10,7 @@ import { NukeLaunchAnimation } from "./NukeAnimation";
 import { MaterialMarket } from "../../services/game/MaterialMarket";
 import { ShopManager } from "../../services/game/ShopManager";
 import { GameManager } from "../../services/game/GameManager";
+import { useLocale } from "../../locale/Locale";
 
 const NUKE_COST_MATERIALS: Partial<Record<Materials, number>> = {
   [Materials.Uranium]: 750,
@@ -24,6 +25,7 @@ interface NukeMenuProps {
 }
 
 export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
+  const l = useLocale();
   const [selected, setSelected] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [buyingMaterials, setBuyingMaterials] = useState(false);
@@ -96,9 +98,9 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
           style={{ maxWidth: 360, width: "100%" }}
           onClick={(e) => e.stopPropagation()}
         >
-          <p className="cell-modal-title">Brakuje materiałów</p>
+          <p className="cell-modal-title">{l.t("buymenu.title")}</p>
           <p style={{ fontSize: "0.8rem", color: "#888", margin: 0 }}>
-            Kupić brakujące materiały po cenach rynkowych przed odpaleniem?
+            {l.t("nuke.buying.subtitle")}
           </p>
 
           <div className="cell-modal-stats">
@@ -141,7 +143,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
                 className="cell-modal-label"
                 style={{ fontWeight: 700, color: "#555" }}
               >
-                Łącznie
+                {l.t("buymenu.total")}
               </span>
               <span
                 className="cell-modal-value"
@@ -157,7 +159,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
               className="shop-action-btn shop-action-btn--sell"
               onClick={() => setBuyingMaterials(false)}
             >
-              Wróć
+              {l.t("ui.back")}
             </button>
             <button
               className={`shop-action-btn shop-action-btn--buy ${!canAfford ? "shop-action-btn--disabled" : ""}`}
@@ -165,7 +167,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
               disabled={!canAfford}
               onClick={handleBuyAndNuke}
             >
-              ☢️ Kup i odpal
+              {l.t("nuke.buying.buyandlaunch")}
             </button>
           </div>
         </div>
@@ -181,9 +183,9 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
           style={{ maxWidth: 360, width: "100%" }}
           onClick={(e) => e.stopPropagation()}
         >
-          <p className="cell-modal-title">☢️ Rakieta Atomowa</p>
+          <p className="cell-modal-title">{l.t("nuke.title")}</p>
           <p style={{ fontSize: "0.8rem", color: "#888", margin: 0 }}>
-            Wybierz cel ataku nuklearnego.
+            {l.t("nuke.selecttarget")}
           </p>
 
           <div className="cell-modal-stats">
@@ -213,7 +215,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
                       fontWeight: 700,
                     }}
                   >
-                    Wybrany
+                    {l.t("nuke.selected")}
                   </span>
                 )}
               </div>
@@ -225,7 +227,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
               className="shop-action-btn shop-action-btn--sell"
               onClick={onClose}
             >
-              Anuluj
+              {l.t("ui.cancel")}
             </button>
             <button
               className="shop-action-btn shop-action-btn--buy"
@@ -235,7 +237,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
               }}
               onClick={() => selected && setConfirming(true)}
             >
-              Dalej
+              {l.t("ui.next")}
             </button>
           </div>
         </div>
@@ -250,10 +252,9 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
         style={{ maxWidth: 360, width: "100%" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="cell-modal-title">Na pewno?</p>
+        <p className="cell-modal-title">{l.t("nuke.confirm.title")}</p>
         <p style={{ fontSize: "0.8rem", color: "#888", margin: 0 }}>
-          Atak na <strong style={{ color: "#222" }}>{selected}</strong>{" "}
-          kosztuje:
+          {l.t("nuke.confirm.attack", selected ?? "")}
         </p>
 
         <div className="cell-modal-stats">
@@ -295,7 +296,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
                     ×{required}
                     {isMissing && (
                       <span style={{ fontSize: "0.75rem", marginLeft: 4 }}>
-                        (masz {owned})
+                        {l.t("nuke.confirm.owned", owned)})
                       </span>
                     )}
                   </span>
@@ -311,7 +312,7 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
               className="cell-modal-label"
               style={{ fontWeight: 700, color: "#555" }}
             >
-              Gotówka
+              {l.t("nuke.confirm.cash")}
             </span>
             <span
               className="cell-modal-value"
@@ -327,14 +328,14 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
             className="shop-action-btn shop-action-btn--sell"
             onClick={() => setConfirming(false)}
           >
-            Wróć
+            {l.t("ui.back")}
           </button>
           <button
             className="shop-action-btn shop-action-btn--buy"
             style={{ background: "#e03030" }}
             onClick={handleNuke}
           >
-            ☢️ Odpal
+            {l.t("nuke.confirm.launch")}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { BUILDINGS, BuildingType } from "../../services/game/statics/BuildingData";
+import { BUILDINGS, BuildingType, getBuildingName, getBuildingTypeName } from "../../services/game/statics/BuildingData";
 import { getMaterialColor, getMaterialName, Materials } from "../../services/game/statics/Materials";
+import { useLocale } from "../../locale/Locale";
 
 interface BuildPanelProps {
   onSelectBuilding: (building: typeof BUILDINGS[0]) => void;
@@ -9,6 +10,7 @@ interface BuildPanelProps {
 const savedScrollPos = { value: 0 };
 
 export function BuildPanel({ onSelectBuilding }: BuildPanelProps) {
+  const l = useLocale();
   const [search, setSearch] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -34,30 +36,30 @@ export function BuildPanel({ onSelectBuilding }: BuildPanelProps) {
   }, []);
   const query = search.toLowerCase().trim();
 
-  const groupedBuildings = Object.values(BuildingType).map(type => ({
+  const groupedBuildings = (Object.values(BuildingType) as BuildingType[]).map(type => ({
     type,
     buildings: BUILDINGS.filter(b =>
       b.type === type &&
-      (query === "" || b.name.toLowerCase().includes(query))
+      (query === "" || getBuildingName(b.id).toLowerCase().includes(query))
     )
   })).filter(group => group.buildings.length > 0);
 
   return (
     <div className="panel">
-      <p className="panel-title">Wybierz budynek</p>
+      <p className="panel-title">{l.t("build.selectbuilding")}</p>
 
       <input
         ref={searchRef}
         type="text"
         className="build-search"
-        placeholder="Szukaj budynku..."
+        placeholder={l.t("build.search")}
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
 
       {groupedBuildings.map(group => (
         <div key={group.type} className="build-category">
-          <p className="build-category-title">{group.type}</p>
+          <p className="build-category-title">{getBuildingTypeName(group.type)}</p>
           <div className="build-grid">
             {group.buildings.map(b => (
               <div
@@ -69,7 +71,7 @@ export function BuildPanel({ onSelectBuilding }: BuildPanelProps) {
                 }}
               >
                 {b.locked && (
-                  <div className="build-locked-label">Osiągnięto limit</div>
+                  <div className="build-locked-label">{l.t("build.limitreached")}</div>
                 )}
                 <div className="build-card-top">
                   <span className="build-name">{b.name}</span>
@@ -78,23 +80,22 @@ export function BuildPanel({ onSelectBuilding }: BuildPanelProps) {
                 <div className="build-badges">
                   {b.apartments > 0 && (
                     <span className="badge badge-apartments" title="Mieszkania">
-                      {b.apartments} lokali
+                      {l.t("build.units", b.apartments)}
                     </span>
                   )}
                   {b.jobs > 0 && (
                     <span className="badge badge-jobs" title="Miejsca pracy">
-                      {b.jobs} miejsc pracy
+                      {l.t("build.jobs", b.jobs)}
                     </span>
                   )}
                   {b.moneyEarn > 0 && (
-                    <span className="badge badge-earn">{b.moneyEarn} $ za prac.</span>
+                    <span className="badge badge-earn">{l.t("build.earn", b.moneyEarn)}</span>
                   )}
                   {b.happiness !== 0 && (
                     <span
                       className={`badge badge-happiness ${b.happiness < 0 ? "badge-happiness--neg" : ""}`}
-                      title="Zadowolenie"
                     >
-                      {b.happiness > 0 ? `+${b.happiness}` : b.happiness}{" "}zadowolenie
+                      {b.happiness > 0 ? "+" : ""}{b.happiness} {l.t("build.happiness")}
                     </span>
                   )}
                 </div>
