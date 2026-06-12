@@ -1,20 +1,22 @@
-import leaveGame from "../exports/leaveGame.js";
-import { games } from "../gameStorage.js";
+import { leaveGame, setPlayerGame } from "../exports/utils/playerUtils.js";
+import { io } from "../server.js";
 import gameConnection from "./gameConnection.js";
+import gameLogic from "./gameLogic.js";
+import atomicBomb from "./atomicBomb.js";
 
-function connectionHandler(io, socket) {
-    console.log("User connected: ", socket.id);
+function connectionHandler() {
+    io.on("connection", (socket) => {
+        const socketId = socket.id;
 
-    gameConnection(io, socket);
+        setPlayerGame(socketId, null);
 
-    socket.on("disconnect", () => {
-        console.log("User disconnected: ", socket.id);
-        const inGame = [...games.entries()].find(([_, game]) => game.players.some(player => player.socketId === socket.id));
-        
-        if (inGame) {
-            const {gameCode} = inGame;
-            leaveGame(io, socket, gameCode);
-        }
+        gameConnection(socket, socketId);
+    
+        gameLogic(socket, socketId);
+
+        atomicBomb(socket, socketId)
+
+        socket.on("disconnect", () => leaveGame(socket, socketId));
     });
 }
 

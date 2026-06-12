@@ -1,0 +1,64 @@
+import { endGame, getGame, hasGameEnoughPlayers, hasGameStarted } from "../exports/utils/gameUtils.js";
+import { throwError } from "../exports/utils/generalUtils.js";
+import { hasRequiredMaterials, hasRequiredMoney, removeMaterials, removeMoney } from "../exports/utils/inventoryUtils.js";
+import { getPlayer, getPlayerGame, removePlayer } from "../exports/utils/playerUtils.js";
+import { ERRORS, ATOMIC_BOMB } from "../exports/gameStorage.js";
+import { io } from "../server.js";
+import { hasRequiredBuilding } from "../exports/utils/buildingUtils.js";
+
+function atomicBomb(socket, socketId) {
+    socket.on("send_atomic_bomb", targetName => {
+        if (typeof targetName !== "string") {
+            return throwError(socketId, ERRORS.INVALID_DATA);
+        }
+
+        const game = getGame(getPlayerGame(socketId));
+        if (!game) {
+            return throwError(socketId, ERRORS.GAME_NOT_FOUND);
+        }
+
+        if (!hasGameStarted(game)) {
+            return throwError(socketId, ERRORS.GAME_NOT_STARTED);
+        }
+
+        const player = getPlayer(game, socketId);
+        if (!player) {
+            return throwError(socketId, ERRORS.PLAYER_NOT_FOUND);
+            removePlayer(game, socketId);
+        }
+
+        const target = game.players.find(p => p.username === targetName);
+        if (!target) {
+            return throwError(socketId, ERRORS.TARGET_NOT_FOUND);
+        }
+
+        if (target.socketId === socketId) {
+            return socket.emit("error", ERRORS.SELF_NUKE);
+        }
+
+        if (!hasRequiredMoney(ATOMIC_BOMB.MONEY_COST, player.money)) {
+            return throwError(socketId, ERRORS.NOT_ENOUGH_MONEY);
+        }
+
+        if (!hasRequiredMaterials(ATOMIC_BOMB.MATERIAL_COST, player.materials)) {
+            return throwError(socketId, ERRORS.NOT_ENOUGH_MATERIALS);
+        }
+
+        if (!hasRequiredBuilding(ATOMIC_BOMB, player.field)) {
+            return throwError(socketId, ERRORS.NO_REQUIRED_BUILDING);
+        }
+        
+        removeMoney(player, ATOMIC_BOMB.MONEY_COST);
+        removeMaterials(player, ATOMIC_BOMB.MATERIAL_COST);
+
+        io.to(target.socketId).emit("nuked", player.username);
+        removePlayer(game, target.socketId);
+        for (const player of game.players) {
+            io.to(player.socketId).emit("player_nuke", target.username);
+        }
+
+        if (!hasGameEnoughPlayers(game)) endGame(game);
+    });
+}
+
+export default atomicBomb;
