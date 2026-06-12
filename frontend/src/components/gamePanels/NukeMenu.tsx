@@ -23,9 +23,9 @@ export function NukeMenu({ roomManager, onClose }: NukeMenuProps) {
 
     const players = roomManager.playerList;
 
-    function handleNuke() {
+    async function handleNuke() {
         if (!selected) return;
-        let result = ws.request("send_atomic_bomb", "player_nuke", 
+        let result = await ws.request("send_atomic_bomb", "player_nuke", 
            selected
         );
         if (result.ok) {

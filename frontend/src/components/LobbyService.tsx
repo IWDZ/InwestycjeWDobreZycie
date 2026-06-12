@@ -84,7 +84,7 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
       <>
         {modalOpen && (
           <div className="modal">
-            <h1>IWDŹ</h1>
+            <h1>IWDŻ</h1>
             <p>Dołącz do gry lub stwórz nową rozgrywkę</p>
             <div className="btn-container">
               <button
