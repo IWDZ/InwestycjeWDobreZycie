@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { roomManager } from "./LobbyService";
 import { soundManager } from "../services/SoundManager";
-import { showError } from "../services/ErrorToast";
+import { showError } from "../services/ErrorManager";
 import { RoomSettings } from "../services/RoomManager";
 
 interface RoomServiceProps {

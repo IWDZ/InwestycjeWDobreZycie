@@ -31,7 +31,7 @@ import { MaterialMarket } from "../services/game/MaterialMarket";
 import { BuyMaterialsMenu } from "./BuyMenu";
 import { NukeMenu } from "./gamePanels/NukeMenu";
 import { NukeExplosionAnimation } from "./gamePanels/NukeAnimation";
-import { showError } from "../services/ErrorToast";
+import { showInfo, showError } from "../services/ErrorManager";
 
 const TABS: { id: string; label: string; icon: any }[] = [
   { id: "build", label: "Buduj", icon: faHammer },
@@ -141,7 +141,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
     };
 
     const onSomeoneNukedUpdate = (data: string) => {
-      showError(data + " got nuked.");
+      showInfo(data + " got nuked.");
     };
 
     const onPricesUpdate = (data: Record<string, number>) => {
@@ -161,8 +161,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
     };
 
     const onNuked = () => {
-      console.log("i got nuked");
-      showError("Atomic bomb incoming...");
+      showInfo("Atomic bomb incoming...");
       setNuked(true);
     };
 

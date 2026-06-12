@@ -3,7 +3,7 @@ import { RoomService } from "./RoomService";
 import { RoomManager } from "../services/RoomManager";
 
 import { soundManager } from "../services/SoundManager";
-import { showError } from "../services/ErrorToast";
+import { showError } from "../services/ErrorManager";
 
 export const roomManager = new RoomManager();
 

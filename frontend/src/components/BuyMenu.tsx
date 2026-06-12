@@ -6,7 +6,7 @@ import {
 import { MaterialMarket } from "../services/game/MaterialMarket";
 import { ShopManager } from "../services/game/ShopManager";
 import { GameManager } from "../services/game/GameManager";
-import { showError } from "../services/ErrorToast";
+import { showError } from "../services/ErrorManager";
 
 interface MissingMaterial {
   material: Materials;

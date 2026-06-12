@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { GameManager } from "../../services/game/GameManager";
 import { ws } from "../../services/WebsocketManager";
-import { showError } from "../../services/ErrorToast";
+import { showError } from "../../services/ErrorManager";
 
 export function PlotPanel() {
   const manager = GameManager.getInstance();
