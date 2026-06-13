@@ -7,7 +7,7 @@ export function sendFieldUpdate(player) {
 }
 
 export function sendCellPriceUpdate(player) {
-    io.to(player.socketId).emit("cell_price_update", player.nextCellPrice - CELL_PRICE_INCREASE);
+    io.to(player.socketId).emit("cell_price_update", player.nextCellPrice);
 }
 
 export function sendHappinessUpdate(player) {
