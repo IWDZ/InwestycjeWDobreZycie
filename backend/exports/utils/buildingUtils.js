@@ -90,21 +90,25 @@ export function deleteBuilding(game, player, field, buildingBounds) {
             field[y][x] = EMPTY_CELL_INDICATOR;
         }
     }
+    
+    const workers = buildingObject.workers;
+    const residents = buildingObject.residents;
+    const population = player.population;
+
     const building = buildingObject.building;
     player.happiness -= building.HAPPINESS;
-    const population = player.population;
-    
-    population.workingPopulation -= buildingObject.workers;
-    population.livingPopulation -= buildingObject.residents;
+
+    population.livingPopulation -= residents;
+    population.workingPopulation -= workers;
     population.maxLivingPopulation -= building.APARTMENTS;
     population.maxWorkingPopulation -= building.JOBS;
+    
+    game.settings.POPULATION += workers < residents ? workers : residents;
 
-    if (population.livingPopulation > population.maxLivingPopulation || population.workingPopulation > population.maxWorkingPopulation) {
-        const livingPopulationDifference = population.livingPopulation - population.maxLivingPopulation;
-        const workingPopulationDifference = population.workingPopulation - population.maxWorkingPopulation;
-        const populationToDecrease = livingPopulationDifference > workingPopulationDifference ? livingPopulationDifference : workingPopulationDifference;
-        if (decreasePopulation(player, populationToDecrease)) game.settings.POPULATION += populationToDecrease;
-    }
+    const workersToDecrease = residents - workers >= 0 ? residents - workers : 0;
+    const residentsToDecrease = workers - residents >= 0 ? workers - residents : 0; 
+
+    if (decreasePopulation(player, workersToDecrease, residentsToDecrease)) game.settings.POPULATION += workersToDecrease > residentsToDecrease ? workersToDecrease : residentsToDecrease;
 
     returnMaterials(player, building.MATERIAL_COST);
     const returningMoney = returnMoney(player, building.MONEY_COST);
