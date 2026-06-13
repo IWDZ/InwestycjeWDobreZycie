@@ -4,11 +4,11 @@ import {
   Building,
   BUILDING_ICONS,
   getBuildingById,
-  NAME_MAP,
+  getBuildingName,
 } from "../services/game/statics/BuildingData";
 import { createPortal } from "react-dom";
 import { ws } from "../services/WebsocketManager";
-import { roomManager } from "./LobbyService";
+import { useLocale } from "../locale/Locale";
 
 interface GameMapFuncs {
   onPlotClick?: (plotId: number) => void;
@@ -27,6 +27,7 @@ export function GameMap({
   placingBuilding,
   isVertical = false,
 }: GameMapFuncs) {
+  const l = useLocale();
   const plotManager = GameManager.getInstance().plotManager;
   const { gridSize } = plotManager;
   const [selectedPlot, setSelectedPlot] = useState<number | null>(null);
@@ -194,19 +195,19 @@ export function GameMap({
               ✕
             </button>
             <h2 className="cell-modal-title">
-              {NAME_MAP[cellModal.cell.buildingName] ??
+              {getBuildingName(cellModal.cell.buildingName) ??
                 cellModal.cell.buildingName}
             </h2>
             <div className="cell-modal-stats">
               <div className="cell-modal-stat">
-                <span className="cell-modal-label">Miejsca pracy</span>
+                <span className="cell-modal-label">{l.t("map.jobs")}</span>
                 <span className="cell-modal-value">
                   {cellModal.cell.workers} /{" "}
                   {getBuildingById(cellModal.cell.buildingName)?.jobs}
                 </span>
               </div>
               <div className="cell-modal-stat">
-                <span className="cell-modal-label">Mieszkania</span>
+                <span className="cell-modal-label">{l.t("map.housing")}</span>
                 <span className="cell-modal-value">
                   {cellModal.cell.residents} /{" "}
                   {getBuildingById(cellModal.cell.buildingName)?.apartments}
@@ -222,7 +223,7 @@ export function GameMap({
                 setCellModal(null);
               }}
             >
-              Usuń budynek
+              {l.t("map.deletebuilding")}
             </button>
           </div>,
           document.body,

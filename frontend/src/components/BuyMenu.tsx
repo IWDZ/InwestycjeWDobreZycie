@@ -7,6 +7,7 @@ import { MaterialMarket } from "../services/game/MaterialMarket";
 import { ShopManager } from "../services/game/ShopManager";
 import { GameManager } from "../services/game/GameManager";
 import { showError } from "../services/ErrorManager";
+import { useLocale } from "../locale/Locale";
 
 interface MissingMaterial {
   material: Materials;
@@ -26,6 +27,7 @@ export function BuyMaterialsMenu({
   onConfirm,
   onCancel,
 }: BuyMaterialsMenuProps) {
+  const l = useLocale();
   const market = MaterialMarket.getInstance();
   const shop = ShopManager.getInstance();
   
@@ -40,7 +42,7 @@ export function BuyMaterialsMenu({
 
   function handleConfirm() {
     if (!canAfford) {
-      showError("Brak wystarczających środków");
+      showError(l.t("buymenu.insufficientfunds"));
       return;
     }
     
@@ -57,9 +59,9 @@ export function BuyMaterialsMenu({
         style={{ maxWidth: 340, width: "100%" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="cell-modal-title">Brakuje materiałów</p>
+        <p className="cell-modal-title">{l.t("buymenu.title")}</p>
         <p style={{ fontSize: "0.8rem", color: "#888", margin: 0 }}>
-          Kupić brakujące materiały po obecnych cenach rynkowych?
+          {l.t("buymenu.subtitle")}
         </p>
 
         <div className="cell-modal-stats">
@@ -92,7 +94,7 @@ export function BuyMaterialsMenu({
           })}
 
           <div className="cell-modal-stat">
-            <span className="cell-modal-label">Koszt budowy</span>
+            <span className="cell-modal-label">{l.t("buymenu.buildingcost")}</span>
             <span className="cell-modal-value" style={{ color: "#b35a00" }}>
               ${buildingCost.toLocaleString()}
             </span>
@@ -106,7 +108,7 @@ export function BuyMaterialsMenu({
               className="cell-modal-label"
               style={{ fontWeight: 700, color: "#555" }}
             >
-              Łącznie
+              {l.t("buymenu.total")}
             </span>
             <span
               className="cell-modal-value"
@@ -122,14 +124,14 @@ export function BuyMaterialsMenu({
             className="shop-action-btn shop-action-btn--sell"
             onClick={onCancel}
           >
-            Nie
+            {l.t("ui.no")}
           </button>
           <button
             className={`shop-action-btn shop-action-btn--buy ${!canAfford ? "disabled" : ""}`}
             onClick={handleConfirm}
             disabled={!canAfford}
           >
-            Kup
+            {l.t("ui.buy")}
           </button>
         </div>
       </div>

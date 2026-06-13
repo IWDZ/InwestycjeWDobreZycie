@@ -3,6 +3,7 @@ import { roomManager } from "./LobbyService";
 import { soundManager } from "../services/SoundManager";
 import { showError } from "../services/ErrorManager";
 import { RoomSettings } from "../services/RoomManager";
+import { useLocale } from "../locale/Locale";
 
 interface RoomServiceProps {
   onLeave: () => void;
@@ -10,6 +11,8 @@ interface RoomServiceProps {
 }
 
 export function RoomService({ onLeave, onStart }: RoomServiceProps) {
+  const l = useLocale();
+  
   const [players, setPlayers] = useState<{ name: string; isHost: boolean }[]>(
     [],
   );
@@ -65,7 +68,7 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
       {isInRoom && (
         <div className="room-modal">
           <div className="room-header">
-            <h1 className="room-title">Pokój</h1>
+            <h1 className="room-title">{l.t("room.room")}</h1>
             <div className="room-id-badge">
               <span className="room-id-label">ID</span>
               <span className="room-id-value">{roomManager.roomId}</span>
@@ -88,7 +91,7 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
               ) : (
                 <div key={i} className="player-slot empty">
                   <div className="player-avatar empty-avatar">?</div>
-                  <span className="player-name empty-name">Oczekiwanie...</span>
+                  <span className="player-name empty-name">{l.t("room.awaiting")}</span>
                 </div>
               ),
             )}
@@ -100,7 +103,7 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
                 className="settings-toggle"
                 onClick={() => setSettingsOpen((v) => !v)}
               >
-                <span>Ustawienia gry</span>
+                <span>{l.t("room.settings")}</span>
                 <span
                   className={`settings-arrow${settingsOpen ? " open" : ""}`}
                 >
@@ -112,13 +115,11 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
                 <div className="settings-panel">
                   <div className="setting-row">
                     <div className="setting-label-group">
-                      <label>Procentowa pula ludności</label>
+                      <label>{l.t("room.settings.population")}</label>
                       <div className="tooltip-wrapper">
                         <span className="info-icon">ℹ</span>
                         <div className="tooltip-box">
-                          Określa jaki procent całkowitej populacji bierze
-                          udział w rozgrywce. Niższa wartość = trudniejsza gra.
-                          (50-100)
+                          {l.t("room.settings.population.info")}
                         </div>
                       </div>
                     </div>
@@ -130,19 +131,18 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
                       onChange={(e) =>
                         setSettings((s) => ({
                           ...s,
-                          populationPoolPercent: Number(e.target.value),
+                          populationPoolPercent: parseInt(e.target.value),
                         }))
                       }
                     />
                   </div>
                   <div className="setting-row">
                     <div className="setting-label-group">
-                      <label>Procentowa różnorodność marketu</label>
+                      <label>{l.t("room.settings.market")}</label>
                       <div className="tooltip-wrapper">
                         <span className="info-icon">ℹ</span>
                         <div className="tooltip-box">
-                          Ustala, jak bardzo ceny w markecie będą rosnąć lub maleć.
-                          Im większa liczba, tym większa różnorodność. (0.5-5)
+                          {l.t("room.settings.market.info")}
                         </div>
                       </div>
                     </div>
@@ -154,19 +154,18 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
                       onChange={(e) =>
                         setSettings((s) => ({
                           ...s,
-                          marketVolatilityPercent: Number(e.target.value),
+                          marketVolatilityPercent: parseFloat(e.target.value),
                         }))
                       }
                     />
                   </div>
                   <div className="setting-row">
                     <div className="setting-label-group">
-                      <label>Liczba ticków</label>
+                      <label>{l.t("room.settings.tick")}</label>
                       <div className="tooltip-wrapper">
                         <span className="info-icon">ℹ</span>
                         <div className="tooltip-box">
-                          Określa liczbę ticków podczas rozrywki.
-                          Niższa wartość skraca grę. (120-600)
+                          {l.t("room.settings.tick.info")}
                         </div>
                       </div>
                     </div>
@@ -178,12 +177,12 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
                       onChange={(e) =>
                         setSettings((s) => ({
                           ...s,
-                          gameDurationTicks: Number(e.target.value),
+                          gameDurationTicks: parseInt(e.target.value),
                         }))
                       }
                     />
                   </div>
-                  <button className="btn-update">Zaktualizuj</button>
+                  <button className="btn-update">{l.t("ui.update")}</button>
                 </div>
               )}
             </div>
@@ -195,14 +194,14 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
                 className="btn-start"
                 onClick={async () => await startGame()}
               >
-                Zacznij grę
+                {l.t("room.startgame")}
               </button>
             )}
             <button
               className="btn-leave"
               onClick={async () => await leaveRoom()}
             >
-              Wyjdź
+              {l.t("ui.leave")}
             </button>
           </div>
         </div>

@@ -505,6 +505,22 @@
     flex: 1;
 }
 
+.build-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #000;
+  font-size: 13px;
+  outline: none;
+}
+
+.build-search:focus {
+  border-color: #888;
+}
+
 .build-size {
     font-size: 10px;
     color: #bbb;
@@ -535,6 +551,11 @@
 .badge-apartments {
     background: #e8f4fd;
     color: #1a6fa8;
+}
+
+.badge-earn {
+    background: #edfaf3;
+    color: #1a7a4a;
 }
 
 .badge-jobs {

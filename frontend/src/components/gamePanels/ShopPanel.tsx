@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   getMaterialColor,
   getMaterialName,
@@ -8,6 +8,7 @@ import { ws } from "../../services/WebsocketManager";
 import { GameManager } from "../../services/game/GameManager";
 import { MaterialMarket } from "../../services/game/MaterialMarket";
 import { ShopManager } from "../../services/game/ShopManager";
+import { useLocale } from "../../locale/Locale";
 
 const priceHistories = Object.fromEntries(
   Object.values(Materials)
@@ -109,7 +110,10 @@ function PriceBarChart({
   );
 }
 
+const savedShopScrollPos = { value: 0 };
+
 export function ShopPanel() {
+  const l = useLocale();
   const [selected, setSelected] = useState<Materials>(Materials.Wood);
   const [amount, setAmount] = useState("0");
   const [, forceUpdate] = useState(0);
@@ -140,9 +144,29 @@ export function ShopPanel() {
   const canAfford = inventory.money >= totalCost;
   const ownedAmount = inventory.materialCount[selected] ?? 0;
   const canSell = ownedAmount >= parseInt(amount, 10);
+
+  useEffect(() => {
+    const scrollable = document.querySelector(".panel-popup") as HTMLElement;
+    if (!scrollable) return;
+  
+    const frame = requestAnimationFrame(() => {
+      scrollable.scrollTop = savedShopScrollPos.value;
+    });
+  
+    const handleScroll = () => {
+      savedShopScrollPos.value = scrollable.scrollTop;
+    };
+  
+    scrollable.addEventListener("scroll", handleScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      scrollable.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+  
   return (
     <div className="panel shop-panel">
-      <p className="panel-title">Market</p>
+      <p className="panel-title">{l.t("shop.title")}</p>
 
       <div className="shop-material-tabs">
         {(
@@ -202,9 +226,9 @@ export function ShopPanel() {
         </div>
 
         <div className="shop-chart-turn-row">
-          <span className="shop-chart-turn-label">Tura {priceHistory.length}</span>
+          <span className="shop-chart-turn-label">{l.t("shop.turn", priceHistory.length)}</span>
           <span className="shop-chart-turn-range">
-            Ostatnie {Math.min(chartPrices.length, 15)} tur
+            {l.t("shop.lasturns", Math.min(chartPrices.length, 15))}
           </span>
         </div>
       </div>
@@ -212,17 +236,17 @@ export function ShopPanel() {
       <div className="shop-trade-card">
         <div className="shop-trade-row">
           <div className="shop-trade-info">
-            <span className="shop-trade-label">W ekwipunku</span>
-            <span className="shop-trade-value">{ownedAmount} sztuk</span>
+            <span className="shop-trade-label">{l.t("shop.owned")}</span>
+            <span className="shop-trade-value">{l.t("shop.units", ownedAmount)}</span>
           </div>
           <div className="shop-trade-info">
-            <span className="shop-trade-label">Cena jednego</span>
+            <span className="shop-trade-label">{l.t("shop.unitprice")}</span>
             <span className="shop-trade-value">
               ${Math.round(currentPrice)}
             </span>
           </div>
           <div className="shop-trade-info shop-trade-info--total">
-            <span className="shop-trade-label">Koszt</span>
+            <span className="shop-trade-label">{l.t("shop.cost")}</span>
             <span className="shop-trade-value shop-trade-total">
               ${totalCost.toFixed(2)}
             </span>
@@ -230,7 +254,7 @@ export function ShopPanel() {
         </div>
 
         <div className="shop-amount-row">
-          <span className="shop-amount-label">Ilość</span>
+          <span className="shop-amount-label">{l.t("shop.amount")}</span>
           <div className="shop-amount-controls">
             <button
               className="shop-amount-btn"
@@ -255,7 +279,7 @@ export function ShopPanel() {
             </button>
           </div>
           <div className="shop-amount-presets">
-            {[1, 5, 10, 50].map((n) => (
+            {[1, 5, 10, 50, 100, 200].map((n) => (
               <button
                 key={n}
                 className="shop-preset-btn"
@@ -282,7 +306,7 @@ export function ShopPanel() {
                   forceUpdate((v) => v + 1);
               }}
           >
-              Kup {getMaterialName(selected)}
+            {l.t("shop.buy", getMaterialName(selected))}
           </button>
           <button
               className={`shop-action-btn shop-action-btn--sell ${!canSell ? "shop-action-btn--disabled" : ""}`}
@@ -292,7 +316,7 @@ export function ShopPanel() {
                   forceUpdate((v) => v + 1);
               }}
           >
-              Sprzedaj {getMaterialName(selected)}
+            {l.t("shop.sell", getMaterialName(selected))}
           </button>
         </div>
       </div>

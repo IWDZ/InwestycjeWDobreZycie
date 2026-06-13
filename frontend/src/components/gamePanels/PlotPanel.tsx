@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { GameManager } from "../../services/game/GameManager";
 import { ws } from "../../services/WebsocketManager";
 import { showError } from "../../services/ErrorManager";
+import { useLocale } from "../../locale/Locale";
 
 export function PlotPanel() {
+  const l = useLocale();
   const manager = GameManager.getInstance();
   const plotManager = manager.plotManager;
   const [, forceUpdate] = useState(0);
@@ -27,7 +29,7 @@ export function PlotPanel() {
 
   return (
     <div className="plot-panel">
-      <p className="panel-title">Wybierz działkę</p>
+      <p className="panel-title">{l.t("plot.title")}</p>
       <div
         className="plot-grid"
         style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
@@ -44,19 +46,19 @@ export function PlotPanel() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="plot-tooltip">
-                <span className="plot-tooltip-title">Działka {i + 1}</span>
+                <span className="plot-tooltip-title">{l.t("plot.plot", i + 1)}</span>
                 {unlocked ? (
-                  <span className="plot-tooltip-unlocked">Odblokowana</span>
+                  <span className="plot-tooltip-unlocked">{l.t("plot.unlocked")}</span>
                 ) : (
                   <>
                     <span className="plot-tooltip-price">
-                      Cena: ${plotManager.nextCellPrice?.toLocaleString() ?? "—"}
+                      {l.t("plot.price", plotManager.nextCellPrice?.toLocaleString() ?? "—")}
                     </span>
                     <button
                       className="plot-tooltip-btn"
                       onClick={(e) => handleUnlock(e, i)}
                     >
-                      Odblokuj
+                      {l.t("plot.unlock")}
                     </button>
                   </>
                 )}
