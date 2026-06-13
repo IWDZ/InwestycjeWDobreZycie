@@ -78,7 +78,7 @@ export class RoomManager {
     username: string,
     playerCount: number,
   ): Promise<Result<void>> {
-    if (playerCount > 6 || playerCount < 2) {
+    if (playerCount > 6 || playerCount < 1) {
       return Err("Niepoprawna ilosc graczy");
     }
     if (username.length > 20 || username.length < 3) {

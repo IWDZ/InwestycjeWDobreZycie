@@ -12,11 +12,14 @@
   * @property {Object<string, number>} MATERIAL_COST
   * @property {string} REQUIRED_BUILDING
   */
+
+import { isTestMode } from "./utils/generalUtils.js";
+
 export const GAMES = new Map();
 export const PLAYERS = new Map();
 export const GAME_CODE_CHARACTERS = "ABCDEFGHIJKLMNOPRSTUWVXYZabcdefghijklmnoprstuwvxyz1234567890";
 export const GAME_CODE_LENGTH = 6;
-export const MIN_PLAYERS = 2;
+export const MIN_PLAYERS = isTestMode() ? 1 : 2;
 export const MAX_PLAYERS = 6;
 export const MAX_FIELD_SIZE = 7;
 export const EMPTY_CELL_INDICATOR = "empty";

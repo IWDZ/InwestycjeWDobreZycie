@@ -13,6 +13,7 @@ import {
 } from "./components/LoadingScreen.tsx";
 import { GameEnd } from "./components/GameEnd.tsx";
 import { subscribe, Notification } from "./services/ErrorManager.ts";
+import TestMenu from "./components/TestMenu.tsx";
 
 type AppState = "lobby" | "game" | "gamend";
 
@@ -75,7 +76,10 @@ export default function App() {
         />
       )}
       {appState === "game" && (
-        <GameService shouldStart={true} onGameEnd={onGameEnd} />
+        <>
+          <GameService shouldStart={true} onGameEnd={onGameEnd} />
+          {import.meta.env.VITE_MODE === "test" && <TestMenu/>}
+        </>
       )}
       {appState === "gamend" && (
         <GameEnd onBackToLobby={onBackToLobby} isNuked={false} />

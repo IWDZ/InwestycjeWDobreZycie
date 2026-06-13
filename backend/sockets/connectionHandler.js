@@ -3,6 +3,8 @@ import { io } from "../server.js";
 import gameConnection from "./gameConnection.js";
 import gameLogic from "./gameLogic.js";
 import atomicBomb from "./atomicBomb.js";
+import { isTestMode } from "../exports/utils/generalUtils.js";
+import tests from "./tests.js";
 
 function connectionHandler() {
     io.on("connection", (socket) => {
@@ -14,7 +16,11 @@ function connectionHandler() {
     
         gameLogic(socket, socketId);
 
-        atomicBomb(socket, socketId)
+        atomicBomb(socket, socketId);
+
+        if (isTestMode()) {
+            tests(socket, socketId);
+        }
 
         socket.on("disconnect", () => leaveGame(socket, socketId));
     });

@@ -3,6 +3,7 @@ import { io } from "../../server.js";
 import { sendFieldUpdate, sendLeaderboardUpdate, sendMaterialPricesUpdate, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate, sendTickNumberUpdate } from "../clientUpdates.js";
 import { generateIncome, removePlayer, sumUpPlayers } from "./playerUtils.js";
 import { updateMarket, updatePopulation } from "./updateUtils.js";
+import { isTestMode } from "./generalUtils.js";
 
 export function createGame(gameCode, username, socketId, playersAmount) {
     GAMES.set(gameCode, createDefaultGameObject(gameCode, username, socketId, playersAmount));
@@ -26,7 +27,9 @@ export function startGame(game, settings) {
     game.settings = getDefaultGameSettings(settings);
     game.tickNumber = 1;
     game.materialPrices = { ...MATERIAL_PRICES};
-    setTimeout(() => game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000), SECONDS_BEFORE_GAME_START * 1000);
+    if(!isTestMode()) {
+        setTimeout(() => game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000), SECONDS_BEFORE_GAME_START * 1000);   
+    }
 }
 
 export function generateGameCode() {
