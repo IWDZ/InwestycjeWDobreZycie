@@ -532,30 +532,36 @@ function setBuilding(config) {
     });
 }
 
-export const ERRORS = {
-    INVALID_DATA: "Invalid data",
-    PLAYER_ALREADY_IN_GAME: "Player already in a game",
-    GAME_NOT_FOUND: "Game not found",
-    PLAYER_NOT_FOUND: "Player not found",
-    GAME_ALREADY_STARTED: "Game already started",
-    GAME_FULL: "The game is full",
-    USERNAME_TAKEN: "User with this username is already in this game",
-    NOT_ENOUGH_PLAYERS: "Not enough players",
-    NO_ADJACENT_CELLS_OWNED: "You can only buy cell adjacent to an owned cell",
-    NOT_ENOUGH_MONEY: "Not Enough Money",
-    NOT_ENOUGH_MATERIALS: "Not Enough Materials",
-    BUILDING_NOT_FOUND: "Building not found",
-    NO_REQUIRED_BUILDING: "Required Building Not Found",
-    OUT_OF_BOUNDS: "Out Of Bounds",
-    PORT_ERROR: "A port can only be placed on the far-left cell",
-    CELL_OCCUPIED: "Cell Occupied",
-    CELL_NOT_OWNED: "Cell Not Owned",
-    CELL_NOT_A_BUILDING: "Cell is not a building",
-    CANNOT_PLACE_TOWN_HALL: "Cannot Place The Town Hall",
-    CANNOT_DELETE_TOWN_HALL: "Cannot Delete The Town Hall",
-    UNEXPECTED_BUILDING_BOUNDS: "Unexpected building bounds",
-    HOST_FEATURE: "Only the host can do this",
-    SELF_NUKE: "You can't nuke yourself",
-    TARGET_NOT_FOUND: "Target not found",
-    GAME_NOT_STARTED: "Game hasn't started yet"
-}
+const errorCodes = [
+  "invalid_data",
+  "player_already_in_game",
+  "game_not_found",
+  "player_not_found",
+  "game_already_started",
+  "game_full",
+  "username_taken",
+  "not_enough_players",
+  "no_adjacent_cells_owned",
+  "not_enough_money",
+  "not_enough_materials",
+  "building_not_found",
+  "no_required_building",
+  "out_of_bounds",
+  "port_error",
+  "cell_occupied",
+  "cell_not_owned",
+  "cell_not_a_building",
+  "cannot_place_town_hall",
+  "cannot_delete_town_hall",
+  "unexpected_building_bounds",
+  "host_feature",
+  "self_nuke",
+  "target_not_found",
+  "game_not_started"
+];
+
+export const ERRORS = Object.freeze(
+    Object.fromEntries(
+        errorCodes.map(key => [key.toUpperCase(), key])
+    )
+);
