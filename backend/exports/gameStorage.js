@@ -50,16 +50,16 @@ export const GAME_DURATION_TICKS_MIN = 120;
 export const GAME_DURATION_TICKS_MAX = 600;
 export const GAME_DURATION_TICKS_DEFAULT = 240;
 
-export const BUILDING_TYPES = {
+export const BUILDING_TYPES = Object.freeze({
     SPECIAL: "Special",
     RECREATIONAL: "Recreational",
     COMMERCIAL: "Commercial",
     OFFICE: "Office",
     INDUSTRIAL: "Industrial",
     RESIDENTIAL: "Residential"
-}
+});
 
-export const MATERIALS = {
+export const MATERIALS = Object.freeze({
     STEEL: "steel",
     CONCRETE: "concrete",
     WOOD: "wood",
@@ -67,9 +67,9 @@ export const MATERIALS = {
     GLASS: "glass",
     COAL: "coal",
     URANIUM: "uranium"
-}
+});
 
-export const START_MATERIALS = {
+export const START_MATERIALS = Object.freeze({
     [MATERIALS.STEEL]: 50,
     [MATERIALS.CONCRETE]: 50,
     [MATERIALS.WOOD]: 50,
@@ -77,9 +77,9 @@ export const START_MATERIALS = {
     [MATERIALS.GLASS]: 0,
     [MATERIALS.COAL]: 0,
     [MATERIALS.URANIUM]: 0
-}
+});
 
-export const MATERIAL_PRICES = {
+export const MATERIAL_PRICES = Object.freeze({
     [MATERIALS.WOOD]: 10,
     [MATERIALS.STONE]: 15,
     [MATERIALS.COAL]: 20,
@@ -87,9 +87,9 @@ export const MATERIAL_PRICES = {
     [MATERIALS.STEEL]: 35,
     [MATERIALS.GLASS]: 50,
     [MATERIALS.URANIUM]: 150
-}
+})
 
-export const BUILDINGS = {
+export const BUILDINGS = Object.freeze({
     TOWN_HALL: setBuilding({
         NAME: "town_hall",
         TYPE: BUILDING_TYPES.SPECIAL,
@@ -500,35 +500,36 @@ export const BUILDINGS = {
             [MATERIALS.GLASS]: 50
         }
     }),
-}
+});
 
 BUILDINGS.UNIVERSITY.REQUIRED_BUILDING = BUILDINGS.SCHOOL.NAME;
 BUILDINGS.NUCLEAR_REACTOR.REQUIRED_BUILDING = BUILDINGS.COAL_PLANT.NAME;
 
-export const BONUS_BUILDINGS = {
+export const BONUS_BUILDINGS = Object.freeze({
     [BUILDINGS.AIRPORT]: 10000,
     [BUILDINGS.NUCLEAR_REACTOR]: 10000,
     [BUILDINGS.STADIUM]: 10000
-}
+});
 
-export const ATOMIC_BOMB = {
-    MATERIAL_COST: {
+export const ATOMIC_BOMB = Object.freeze({
+    MATERIAL_COST: Object.freeze({
         [MATERIALS.URANIUM]: 750,
         [MATERIALS.STEEL]: 350,
         [MATERIALS.COAL]: 250
-    },
+    }),
     MONEY_COST: 50000,
     REQUIRED_BUILDING: BUILDINGS.NUCLEAR_REACTOR.NAME
-}
+});
 
  /**
  * @param {BuildingConfig} config
  */
 function setBuilding(config) {
-    return {
+    return Object.freeze({
         REQUIRED_BUILDING: null,
-        ...config
-    };
+        ...config,
+        MATERIAL_COST: Object.freeze(config.MATERIAL_COST)
+    });
 }
 
 export const ERRORS = {
