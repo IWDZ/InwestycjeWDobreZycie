@@ -89,7 +89,7 @@ export const MATERIAL_PRICES = Object.freeze({
     [MATERIALS.URANIUM]: 150
 })
 
-export const BUILDINGS = Object.freeze({
+let buildingsConfigs = {
     TOWN_HALL: setBuilding({
         NAME: "town_hall",
         TYPE: BUILDING_TYPES.SPECIAL,
@@ -500,10 +500,16 @@ export const BUILDINGS = Object.freeze({
             [MATERIALS.GLASS]: 50
         }
     }),
-});
+}
 
-BUILDINGS.UNIVERSITY.REQUIRED_BUILDING = BUILDINGS.SCHOOL.NAME;
-BUILDINGS.NUCLEAR_REACTOR.REQUIRED_BUILDING = BUILDINGS.COAL_PLANT.NAME;
+buildingsConfigs.UNIVERSITY.REQUIRED_BUILDING = buildingsConfigs.SCHOOL.NAME;
+buildingsConfigs.NUCLEAR_REACTOR.REQUIRED_BUILDING = buildingsConfigs.COAL_PLANT.NAME;
+
+for (const [buildingName, buildingObject] of Object.entries(buildingsConfigs)) {
+    buildingsConfigs[buildingName] = Object.freeze(buildingObject);
+}
+
+export const BUILDINGS = Object.freeze(buildingsConfigs);
 
 export const BONUS_BUILDINGS = Object.freeze({
     [BUILDINGS.AIRPORT]: 10000,
@@ -525,11 +531,11 @@ export const ATOMIC_BOMB = Object.freeze({
  * @param {BuildingConfig} config
  */
 function setBuilding(config) {
-    return Object.freeze({
+    return {
         REQUIRED_BUILDING: null,
         ...config,
         MATERIAL_COST: Object.freeze(config.MATERIAL_COST)
-    });
+    }
 }
 
 export const ERRORS = {
