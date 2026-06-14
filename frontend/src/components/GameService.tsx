@@ -203,6 +203,11 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   }
 
   function startGame() {
+    if (import.meta.env.VITE_MODE === "test") {
+      setGamePhase("playing");
+      setCountdown(0);
+      return;
+    }
     setGamePhase("countdown");
     setCountdown(3);
   }
