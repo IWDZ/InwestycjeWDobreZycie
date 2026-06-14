@@ -32,8 +32,8 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
     const [joinRoomButtonActive, setJoinRoomButtonActive] = useState(true);
     const [joinOpen, setJoinOpen] = useState(false);
     const [roomStatusOpen, setRoomStatusOpen] = useState(false);
-    const [username, setUsername] = useState("");
-    const [maxPlayers, setMaxPlayers] = useState(2);
+    const [username, setUsername] = useState(import.meta.env.VITE_MODE === "test" ? "test" : "");
+    const [maxPlayers, setMaxPlayers] = useState(import.meta.env.VITE_MODE === "test" ? 1 : 2);
     const [joinCode, setJoinCode] = useState("");
     const [modalOpen, setModalOpen] = useState(true);
     
