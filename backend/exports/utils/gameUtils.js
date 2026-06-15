@@ -23,12 +23,16 @@ export function getDefaultGameSettings(settings) {
 }
 
 export function startGame(game, settings) {
-    game.started = true;
     game.settings = getDefaultGameSettings(settings);
     game.tickNumber = 1;
     game.materialPrices = { ...MATERIAL_PRICES};
     if(!isTestMode()) {
-        setTimeout(() => game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000), SECONDS_BEFORE_GAME_START * 1000);   
+        setTimeout(() => {
+            game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000);
+            game.started = true;
+        }, SECONDS_BEFORE_GAME_START * 1000);   
+    }else{
+        game.started = true;
     }
 }
 
