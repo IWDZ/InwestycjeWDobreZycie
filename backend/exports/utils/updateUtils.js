@@ -1,5 +1,6 @@
 import { HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, START_HAPPINESS, WORK_MULTIPLIER } from "../gameStorage.js";
 import { getWorstAvailableBuilding, getWorstOccupiedBuilding } from "./buildingUtils.js";
+import { getHappiness } from "./playerUtils.js";
 
 export function increasePopulation(player, workersToIncrease, residentsToIncrease = workersToIncrease, ignoredIDs = new Set()) {
     if (workersToIncrease <= 0 && residentsToIncrease <= 0) return true;
@@ -92,7 +93,7 @@ export function updateMarket(game) {
 
 export function updatePopulation(game) {
     for (const player of game.players) {
-        const happinessFactor = (player.happiness - START_HAPPINESS) * HAPPINESS_MULTIPLIER;
+        const happinessFactor = (getHappiness(player) - START_HAPPINESS) * HAPPINESS_MULTIPLIER;
         const workFactor = (player.population.maxWorkingPopulation - player.population.workingPopulation) * WORK_MULTIPLIER;
         const rawChange = (happinessFactor + workFactor) * (Math.random() * 0.6 + 0.7);
         const populationChange = rawChange >= 0 ? Math.ceil(rawChange) : Math.floor(rawChange);
