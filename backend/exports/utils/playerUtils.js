@@ -61,6 +61,17 @@ export function removePlayer(game, socketId) {
     setPlayerGame(socketId, null);
 }
 
+export function getHappiness(player) {
+    const happiness = player.happiness;
+    if (happiness > 100) {
+        return 100;
+    }
+    if (happiness < 0) {
+        return 0;
+    }
+    return happiness;
+}
+
 export function sumUpPlayers(game) {
     const playerWorths = [];
     for (const player of game.players) {

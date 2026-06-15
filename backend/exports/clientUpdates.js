@@ -1,6 +1,6 @@
 import { CELL_PRICE_INCREASE } from "./gameStorage.js";
 import { io } from "../server.js";
-import { sumUpPlayers } from "./utils/playerUtils.js";
+import { getHappiness, sumUpPlayers } from "./utils/playerUtils.js";
 
 export function sendFieldUpdate(player) {
     io.to(player.socketId).emit("field_update", player.field);
@@ -11,7 +11,7 @@ export function sendCellPriceUpdate(player) {
 }
 
 export function sendHappinessUpdate(player) {
-    io.to(player.socketId).emit("happiness_update", player.happiness);
+    io.to(player.socketId).emit("happiness_update", getHappiness(player));
 }
 
 export function sendMaterialsUpdate(player) {
