@@ -127,7 +127,7 @@ export class WebsocketManager {
       const timeout = setTimeout(() => {
         cleanup();
         console.error("Websocket timeout for event:", event);
-        resolve(Err(`Nie można połączyć się z serwerem.`));
+        resolve(Err(`server_connection_error`));
       }, 7600);
       this.socket.once("error", onError);
       this.socket.once(responseEvent, onResponse);

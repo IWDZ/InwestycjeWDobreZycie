@@ -3,7 +3,6 @@ import "./style/lobby.css";
 import "./style/error.css";
 import "./style/room.css";
 import "./style/game.css";
-import { LobbyService, LobbyServiceRef } from "./components/LobbyService.tsx";
 import { useRef } from "react";
 import { GameService } from "./components/GameService.tsx";
 import {
@@ -14,6 +13,7 @@ import {
 import { GameEnd } from "./components/GameEnd.tsx";
 import { subscribe, Notification } from "./services/ErrorManager.ts";
 import TestMenu from "./components/TestMenu.tsx";
+import { MainMenuService, MainMenuServiceRef } from "./components/MainMenuService.tsx";
 
 type AppState = "lobby" | "game" | "gamend";
 
@@ -21,7 +21,7 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>("lobby");
 
   const loadingRef = useRef<LoadingScreenRef>(null);
-  const lobbyRef = useRef<LobbyServiceRef>(null);
+  const lobbyRef = useRef<MainMenuServiceRef>(null);
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -38,7 +38,6 @@ export default function App() {
   }
 
   function handleNotifs(notifs: Notification[]) {
-    console.log("handleNotifs()")
     setNotifications(notifs);
   }
 
@@ -69,7 +68,7 @@ export default function App() {
       </div>
 
       {appState === "lobby" && (
-        <LobbyService
+        <MainMenuService
           ref={lobbyRef}
           onStart={onStart}
           onFinish={onBackToLobby}

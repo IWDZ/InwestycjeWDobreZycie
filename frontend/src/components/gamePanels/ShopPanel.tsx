@@ -296,10 +296,8 @@ export function ShopPanel() {
               className={`shop-action-btn shop-action-btn--buy ${!canAfford ? "shop-action-btn--disabled" : ""}`}
               disabled={!canAfford}
               onClick={() => {
-                  console.log("button clicked");
                   try {
-                      const result = shop.buy(selected, parseInt(amount, 10));
-                      console.log("buy result:", result);
+                      shop.buy(selected, parseInt(amount, 10));
                   } catch (e) {
                       console.error("shop.buy threw:", e);
                   }

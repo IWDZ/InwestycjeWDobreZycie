@@ -79,7 +79,8 @@ function gameConnection(socket, socketId) {
         socket.emit("joined", {
             host: game.host,
             gameCode: gameCode,
-            players: usernames
+            players: usernames,
+            maxPlayers: game.maxPlayers
         });
     });
 
