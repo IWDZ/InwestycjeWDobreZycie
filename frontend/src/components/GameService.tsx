@@ -268,7 +268,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       <div className="game-wrapper">
         <div className="game-container game-countdown-screen">
           <span key={countdown} className="game-countdown-number">
-            {countdown === 0 ? "START!" : countdown}
+            {countdown === 0 ? l.t("countdown.start") : countdown}
           </span>
         </div>
       </div>
