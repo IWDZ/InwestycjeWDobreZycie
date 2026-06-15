@@ -19,6 +19,7 @@ export const en: Record<string, string> = {
   "room.settings.market.info": "Determines how much the prices will rise or fall. The higher the value, the greater the randomless. (0.5-5)",
   "room.settings.tick": "Tick Count",
   "room.settings.tick.info": "Sets the amount of ticks in the game. A lower value makes the game last shorter. (120-600)",
+  "countdown.start": "START!",
   "game.city": "City",
   "game.tick": "Tick {0}",
   "game.happiness": "Happiness",

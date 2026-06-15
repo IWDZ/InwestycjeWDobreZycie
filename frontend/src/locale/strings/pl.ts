@@ -19,6 +19,7 @@ export const pl: Record<string, string> = {
   "room.settings.market.info": "Ustala, jak bardzo ceny w markecie będą rosnąć lub maleć. Im większa liczba, tym większa różnorodność. (0.5-5)",
   "room.settings.tick": "Liczba ticków",
   "room.settings.tick.info": "Ustawia liczbę ticków w grze. Niższa wartość skraca czas gry. (120-600)",
+  "countdown.start": "START!",
   "game.city": "Miasto",
   "game.tick": "Tick {0}",
   "game.happiness": "Zadowolenie",
