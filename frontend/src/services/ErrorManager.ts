@@ -1,4 +1,5 @@
 import { soundManager } from "./SoundManager";
+import { locale } from "../locale/Locale"
 
 type NotifType = "error" | "info";
 type Listener = (list: Notification[]) => void;
@@ -22,8 +23,9 @@ export function showInfo(message: string) {
   show(message, "info");
 }
 
-export function showError(message: string) {
-  show(message, "error")
+export function showError(code: string) {
+  const msg = locale.t(`error.${code}`) ?? code;
+  show(msg, "error")
 }
 
 function show(message: string, type: NotifType) {
