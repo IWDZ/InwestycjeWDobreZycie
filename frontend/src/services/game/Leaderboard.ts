@@ -12,11 +12,9 @@ export class Leaderboard {
   public constructor() {
     this.playerList = {};
     ws.register_handler("leaderboard_update", (data: unknown) => {
-      console.log(data)
       this.updateLeaderboard(data as Record<number, PlayerLeaderboard>)
     })
     ws.register_handler("game_end", (data: any) => {
-      console.log(data)
       this.updateLeaderboard(data.leaderboard as Record<number, PlayerLeaderboard>)
     })
   }

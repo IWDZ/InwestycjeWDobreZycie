@@ -64,7 +64,9 @@ export class GameManager {
   }
 
   private logDebug(event: unknown, data: unknown) {
-    console.log("[GameManager] ws event:", event, data);
+    if (import.meta.env.VITE_MODE === "test") {
+      console.log("received ws:", event, data);
+    }
   }
 
   public reset() {

@@ -25,6 +25,7 @@ export class RoomManager {
   public roomId: string | undefined;
   public playerList: Array<Player>;
   public roomSettings: RoomSettings;
+  public maxPlayerCount: number = 6;
 
   onRoomJoined?: () => void;
   onRoomLeft?: () => void;
@@ -47,12 +48,10 @@ export class RoomManager {
     });
 
     ws.register_handler("player_left", (data) => {
-      console.log(data);
       this.syncPlayers(data as string[]);
     });
 
     ws.register_handler("host_left", () => {
-      console.log("kys");
       if (!this.isHost && this.isInRoom) {
         this.isInRoom = false;
         this.onRoomLeft?.();
@@ -61,7 +60,6 @@ export class RoomManager {
 
     ws.register_handler("game_start", (data) => {
       if (!this.isHost) {
-        console.log(data);
         GameManager.getInstance().startGame(data);
         this.onGameStart?.();
       }
@@ -79,10 +77,10 @@ export class RoomManager {
     playerCount: number,
   ): Promise<Result<void>> {
     if (playerCount > 6 || playerCount < 1) {
-      return Err("Niepoprawna ilosc graczy");
+      return Err("not_enough_players");
     }
     if (username.length > 20 || username.length < 3) {
-      return Err("Niepoprawny username");
+      return Err("invalid_username");
     }
 
     const result = await ws.request<
@@ -96,6 +94,7 @@ export class RoomManager {
 
     this.roomId = gameCode;
     this.isHost = true;
+    this.maxPlayerCount = playerCount;
     this.isInRoom = true;
     this.playerList = players.map(
       (name) => new Player(name, name === username),
@@ -110,17 +109,16 @@ export class RoomManager {
     roomId: string,
   ): Promise<Result<void>> {
     if (roomId.length === 0) {
-      return Err("Zly kod pokoju");
+      return Err("game_not_found");
     }
     if (username.length > 20 || username.length < 3) {
-      return Err("Niepoprawny username");
+      return Err("invalid_username");
     }
 
     const result = await ws.request<
       {},
-      { host: string; gameCode: string; players: string[] }
+      { host: string; gameCode: string; players: string[], maxPlayers: number }
     >("join_game", "joined", { gameCode: roomId, username });
-    console.log(result);
 
     if (!result.ok) return Err(result.error);
 
@@ -129,6 +127,7 @@ export class RoomManager {
     this.roomId = gameCode;
     this.isInRoom = true;
     this.isHost = false;
+    this.maxPlayerCount = result.value.maxPlayers;
     this.playerList = players.map((name) => new Player(name, name === host));
     this.onRoomJoined?.();
 
@@ -137,7 +136,8 @@ export class RoomManager {
 
   public async leaveRoom(): Promise<Result<void>> {
     if (!this.roomId || !this.isInRoom) {
-      return Err("Nie jestes w pokoju");
+      this.onRoomLeft?.();
+      return Err("game_not_found");
     }
 
     const result = await ws.request("leave_game", "left", this.roomId);
@@ -155,11 +155,12 @@ export class RoomManager {
 
   public async startGame(): Promise<Result<void>> {
     if (!this.roomId || !this.isInRoom) {
-      return Err("Nie jestes w pokoju");
+      this.onRoomLeft?.();
+      return Err("game_not_found");
     }
 
     if (!this.isHost) {
-      return Err("Nie jestes hostem");
+      return Err("host_feature");
     }
 
     let result = await ws.request("start_game", "game_start", {
@@ -169,7 +170,6 @@ export class RoomManager {
     }, false);
 
     if (result.ok) {
-      console.log(result.value);
       GameManager.getInstance().startGame(result.value);
 
       return Ok(undefined);
@@ -189,7 +189,6 @@ export class RoomManager {
   public removePlayer(playerName: string): void {
     const exists = this.playerList.find((p) => p.name === playerName);
     if (!exists) {
-      console.warn(`Gracz o nazwie ${playerName} nie istnieje`);
       return;
     }
     this.playerList = this.playerList.filter((p) => p.name !== playerName);

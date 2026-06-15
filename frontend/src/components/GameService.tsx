@@ -25,7 +25,7 @@ import {
 } from "../services/game/statics/BuildingData";
 import { GameManager } from "../services/game/GameManager";
 import { ws } from "../services/WebsocketManager";
-import { roomManager } from "./LobbyService";
+import { roomManager } from "./MainMenuService";
 import { MaterialMarket } from "../services/game/MaterialMarket";
 import { BuyMaterialsMenu } from "./BuyMenu";
 import { NukeMenu } from "./gamePanels/NukeMenu";
@@ -234,7 +234,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
       { ...payload },
     );
 
-    if (!result.ok && result.error === "Not Enough Materials") {
+    if (!result.ok && result.error === "not_enough_materials") {
       const building = Object.values(BUILDINGS).find(
         (b) => b.id.toLowerCase() === payload.buildingName,
       );

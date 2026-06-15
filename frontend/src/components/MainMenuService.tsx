@@ -11,19 +11,19 @@ import { jp } from "../locale/strings/jp";
 
 export const roomManager = new RoomManager();
 
-interface LobbyServiceProps {
+interface MainMenuServiceProps {
   onStart: () => void;
   onFinish: () => void;
 }
 
-export interface LobbyServiceRef {
+export interface MainMenuServiceRef {
   reset: () => void;
 }
 
 const LOCALES: LocaleName[] = ["en", "pl", "jp"];
 const LABELS: Record<LocaleName, string> = { en: "EN", pl: "PL", jp: "JP" };
 
-export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
+export const MainMenuService = forwardRef<MainMenuServiceRef, MainMenuServiceProps>(
   ({ onStart, onFinish }, ref) => {
     const l = useLocale();
 
@@ -67,9 +67,6 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
         setModalOpen(false);
         roomManager.username = username;
       } else {
-        console.error(
-          "Wystąpił błąd w tworzeniu pokoju: " + result.error + "\n",
-        );
         showError(result.error);
         setCreateRoomButtonActive(true);
       }
@@ -84,9 +81,6 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
         setModalOpen(false);
         roomManager.username = username;
       } else {
-        console.error(
-          "Wystąpił błąd w dołączaniu do pokoju: " + result.error + "\n",
-        );
         showError(result.error);
         setJoinRoomButtonActive(true);
       }
@@ -97,16 +91,16 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
         {modalOpen && (
           <div className="modal">
             <h1>IWDŻ</h1>
-            <p>{l.t("lobby.subtitle")}</p>
+            <p>{l.t("mainmenu.subtitle")}</p>
             <div className="btn-container">
               <button
                 className="btn-create"
                 onClick={() => setCreateOpen(true)}
               >
-                {l.t("lobby.creategame")}
+                {l.t("mainmenu.creategame")}
               </button>
               <button className="btn-join" onClick={() => setJoinOpen(true)}>
-                {l.t("lobby.joingame")}
+                {l.t("mainmenu.joingame")}
               </button>
             </div>
             <div style={{ position: "relative", left: -24, bottom: -24}}>
@@ -152,17 +146,17 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
         {createOpen && (
           <div className="dialog-overlay active">
             <div className="dialog-box">
-              <h2>{l.t("lobby.creategame")}</h2>
+              <h2>{l.t("mainmenu.creategame")}</h2>
               <input
                 type="text"
-                placeholder={l.t("lobby.playername")}
+                placeholder={l.t("mainmenu.playername")}
                 maxLength={20}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
               <input
                 type="number"
-                placeholder={l.t("lobby.playercount")}
+                placeholder={l.t("mainmenu.playercount")}
                 min={2}
                 max={6}
                 value={maxPlayers}
@@ -176,8 +170,8 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
                 >
                   {" "}
                   {createRoomButtonActive
-                    ? l.t("lobby.create")
-                    : l.t("lobby.creating")}
+                    ? l.t("mainmenu.create")
+                    : l.t("mainmenu.creating")}
                 </button>
                 <button
                   className="btn-cancel"
@@ -197,17 +191,17 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
         {joinOpen && (
           <div className="dialog-overlay active">
             <div className="dialog-box">
-              <h2>{l.t("lobby.joingame")}</h2>
+              <h2>{l.t("mainmenu.joingame")}</h2>
               <input
                 type="text"
-                placeholder={l.t("lobby.playername")}
+                placeholder={l.t("mainmenu.playername")}
                 maxLength={20}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
               <input
                 type="text"
-                placeholder={l.t("lobby.gamecode")}
+                placeholder={l.t("mainmenu.gamecode")}
                 maxLength={10}
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value)}
@@ -219,8 +213,8 @@ export const LobbyService = forwardRef<LobbyServiceRef, LobbyServiceProps>(
                   onClick={async () => await joinRoom()}
                 >
                   {joinRoomButtonActive
-                    ? l.t("lobby.join")
-                    : l.t("lobby.joining")}
+                    ? l.t("mainmenu.join")
+                    : l.t("mainmenu.joining")}
                 </button>
                 <button
                   className="btn-cancel"

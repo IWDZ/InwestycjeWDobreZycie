@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { roomManager } from "./LobbyService";
+import { roomManager } from "./MainMenuService";
 import { soundManager } from "../services/SoundManager";
 import { showError } from "../services/ErrorManager";
 import { RoomSettings } from "../services/RoomManager";
@@ -61,7 +61,7 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
     roomManager.onGameStart = () => onStart();
   }, []);
 
-  const playerSlots = Array.from({ length: 6 }, (_, i) => players[i] ?? null);
+  const playerSlots = Array.from({ length: roomManager.maxPlayerCount }, (_, i) => players[i] ?? null);
 
   return (
     <>
