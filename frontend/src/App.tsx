@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./style/main.css";
 import "./style/lobby.css";
 import "./style/error.css";
 import "./style/room.css";

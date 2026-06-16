@@ -1,0 +1,19 @@
+* {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+textarea {
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+#root,
+body,
+.modal,
+.dialog-overlay,
+.dialog-box {
+  -webkit-user-drag: none;
+}
