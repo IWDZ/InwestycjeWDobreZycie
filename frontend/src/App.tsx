@@ -3,6 +3,7 @@ import "./style/lobby.css";
 import "./style/error.css";
 import "./style/room.css";
 import "./style/game.css";
+import "./style/clientsettings.css";
 import { useRef } from "react";
 import { GameService } from "./components/GameService.tsx";
 import {

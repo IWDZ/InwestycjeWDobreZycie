@@ -1,0 +1,199 @@
+.client-settings-popup {
+    --cs-bg: #ffffff;
+    --cs-bg-elevated: #f7f9fc;
+    --cs-border: #d7dde6;
+    --cs-text: #1f2937;
+    --cs-text-dim: #6b7280;
+    --cs-accent: #f59e0b;
+
+    display: flex;
+    position: fixed;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    z-index: 30;
+}
+
+.client-settings-modal {
+    pointer-events: all;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 380px;
+    max-width: 92vw;
+    background: var(--cs-bg);
+    border: 1px solid var(--cs-border);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+    padding: 24px 26px;
+    gap: 18px;
+    color: var(--cs-text);
+}
+
+.client-settings-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: var(--cs-text-dim);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.client-settings-header {
+    width: 100%;
+    text-align: left;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--cs-border);
+}
+
+.client-settings-title {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cs-text);
+}
+
+.client-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.client-settings-label-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.client-settings-label-group .client-settings-title {
+    font-size: 0.9rem;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 500;
+    color: var(--cs-text-dim);
+}
+
+.tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--cs-text-dim);
+    color: var(--cs-text-dim);
+    font-size: 0.7rem;
+    cursor: help;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.tooltip-wrapper:hover .info-icon {
+    border-color: var(--cs-accent);
+    color: var(--cs-accent);
+}
+
+.tooltip-box {
+    position: absolute;
+    bottom: 140%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--cs-bg-elevated);
+    border: 1px solid var(--cs-border);
+    color: var(--cs-text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    white-space: normal;
+    width: 210px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.tooltip-wrapper:hover .tooltip-box {
+    opacity: 1;
+    visibility: visible;
+}
+
+.client-settings-select {
+    background: var(--cs-bg-elevated);
+    color: var(--cs-text);
+    border: 1px solid var(--cs-border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.client-settings-select:hover,
+.client-settings-select:focus {
+    border-color: var(--cs-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.client-settings-toolbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.client-settings-toolbox-icon {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--cs-text-dim);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: var(--cs-text-dim);
+    cursor: help;
+}
+
+.client-settings-toolbox-content {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    padding: 8px 10px;
+    background: var(--cs-bg-elevated);
+    border: 1px solid var(--cs-border);
+    border-radius: 6px;
+    color: var(--cs-text);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s;
+    z-index: 10;
+}
+
+.client-settings-toolbox:hover .client-settings-toolbox-content {
+    opacity: 1;
+    visibility: visible;
+}

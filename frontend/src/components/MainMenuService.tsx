@@ -1,13 +1,17 @@
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { RoomService } from "./RoomService";
 import { RoomManager } from "../services/RoomManager";
 
 import { soundManager } from "../services/SoundManager";
 import { showError } from "../services/ErrorManager";
-import { locale, LocaleName, useLocale } from "../locale/Locale";
+import { locale, useLocale } from "../locale/Locale";
 import { en } from "../locale/strings/en";
 import { pl } from "../locale/strings/pl";
 import { jp } from "../locale/strings/jp";
+
+import { faGear } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ClientSettings } from "./ClientSettings";
 
 export const roomManager = new RoomManager();
 
@@ -19,9 +23,6 @@ interface MainMenuServiceProps {
 export interface MainMenuServiceRef {
   reset: () => void;
 }
-
-const LOCALES: LocaleName[] = ["en", "pl", "jp"];
-const LABELS: Record<LocaleName, string> = { en: "EN", pl: "PL", jp: "JP" };
 
 export const MainMenuService = forwardRef<MainMenuServiceRef, MainMenuServiceProps>(
   ({ onStart, onFinish }, ref) => {
@@ -37,12 +38,22 @@ export const MainMenuService = forwardRef<MainMenuServiceRef, MainMenuServicePro
     const [joinCode, setJoinCode] = useState("");
     const [modalOpen, setModalOpen] = useState(true);
     
-    const [open, setOpen] = useState(false);
-    const current = LOCALES.find(loc => locale.strings === ({ en, pl, jp } as any)[loc]) ?? "en";
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     useImperativeHandle(ref, () => ({
       reset,
     }));
+
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          closeTopModal();
+        }
+      };
+    
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [settingsOpen, createOpen, joinOpen, roomStatusOpen]);
 
     function reset() {
       setCreateOpen(false);
@@ -55,6 +66,12 @@ export const MainMenuService = forwardRef<MainMenuServiceRef, MainMenuServicePro
       setRoomStatusOpen(false);
       setJoinRoomButtonActive(true);
       setCreateRoomButtonActive(true);
+    }
+
+    function closeTopModal() {
+      if (settingsOpen) return setSettingsOpen(false);
+      if (createOpen) return setCreateOpen(false);
+      if (joinOpen) return setJoinOpen(false);
     }
 
     async function createRoom() {
@@ -103,42 +120,8 @@ export const MainMenuService = forwardRef<MainMenuServiceRef, MainMenuServicePro
                 {l.t("mainmenu.joingame")}
               </button>
             </div>
-            <div style={{ position: "relative", left: -24, bottom: -24}}>
-              <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                <button
-                  onClick={() => setOpen(o => !o)}
-                  style={{
-                    padding: "3px 8px",
-                    fontSize: "0.7rem",
-                    border: "1px solid #ddd",
-                    borderRadius: 4,
-                    background: "#fff",
-                    color: "#333",
-                    cursor: "pointer",
-                  }}
-                >
-                  🌐 {current.toUpperCase()}
-                </button>
-                {open && LOCALES.map(loc => (
-                  <button
-                    key={loc}
-                    onClick={() => { locale.setLocale(loc); setOpen(false); }}
-                    style={{
-                      padding: "3px 7px",
-                      fontSize: "0.7rem",
-                      fontWeight: current === loc ? 700 : 400,
-                      opacity: current === loc ? 1 : 0.4,
-                      border: "1px solid #ddd",
-                      borderRadius: 4,
-                      background: "#fff",
-                      color: "#333",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {LABELS[loc]}
-                  </button>
-                ))}
-              </div>
+            <div className="client-settings-button-modal">
+              <p className="client-settings-button" onClick={() => setSettingsOpen(true)}><FontAwesomeIcon icon={faGear}/></p>
             </div>
           </div>
         )}
@@ -186,6 +169,10 @@ export const MainMenuService = forwardRef<MainMenuServiceRef, MainMenuServicePro
 
         {roomStatusOpen && (
           <RoomService onLeave={leaveRoom} onStart={onStart}></RoomService>
+        )}
+
+        {settingsOpen && (
+          <ClientSettings onClose={() => setSettingsOpen(false)}/>
         )}
 
         {joinOpen && (

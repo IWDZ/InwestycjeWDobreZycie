@@ -153,4 +153,7 @@ export const pl: Record<string, string> = {
   "error.target_not_found": "Nie znaleziono celu",
   "error.game_not_started": "Gra jeszcze się nie rozpoczęła",
   "error.server_connection_error": "Nie można połączyć się z serwerem",
+  "clientsettings.title": "Ustawienia",
+  "clientsettings.locale.title": "Język",
+  "clientsettings.locale.description": "Wybierz język używany przez klienta.",
 }
