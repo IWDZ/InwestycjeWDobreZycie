@@ -14,10 +14,16 @@ body {
     color: #fff;
 }
 
+#root {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
 .modal {
     background: #fff;
     border-radius: 12px;
-    padding: 40px;
+    padding: 40px 40px 20px 40px;
     width: 90%;
     max-width: 500px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -138,6 +144,7 @@ button {
 .dialog-buttons {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .dialog-buttons button {
@@ -162,3 +169,25 @@ button {
     background: #bbb;
 }
 
+.client-settings-button-modal {
+    position: relative;
+    left: -24px;
+    bottom: -24px;
+    width: 100%;
+    justify-content: left;
+    padding: 0;
+    display: flex;
+}
+
+.client-settings-button {
+    font-size: 0.8rem;
+    padding: 8px 18px;
+    background: #fff;
+    transition: 0.2s;
+    border-radius: 15px;
+}
+
+.client-settings-button:hover {
+    background: #ddd;
+    cursor: pointer
+}
