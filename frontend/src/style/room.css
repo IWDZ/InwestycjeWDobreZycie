@@ -43,6 +43,21 @@
   font-weight: bold;
   color: #ff2500;
   letter-spacing: 0.1em;
+  user-select: text;
+}
+
+.room-id-copy {
+  background: transparent;
+  cursor: pointer;
+  padding: 0px;
+  display: flex;
+  color: #666;
+  font-size: 0.8rem;
+  transition: 0.15s ease;
+}
+
+.room-id-copy:hover {
+  color: #ff2500;
 }
 
 .player-grid {

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { roomManager } from "./MainMenuService";
 import { soundManager } from "../services/SoundManager";
-import { showError } from "../services/ErrorManager";
+import { showError, showInfo } from "../services/ErrorManager";
 import { RoomSettings } from "../services/RoomManager";
 import { useLocale } from "../locale/Locale";
+import { faClipboard } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface RoomServiceProps {
   onLeave: () => void;
@@ -23,6 +25,17 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
     marketVolatilityPercent: 1,
     gameDurationTicks: 240,
   });
+
+  const copyRoomId = async () => {
+    try {
+      if (roomManager.roomId) {
+        await navigator.clipboard.writeText(roomManager.roomId);
+        showInfo("Copied ID to clipboard.")
+      }
+    } catch {
+      showError("Failed to copy room code");
+    }
+  };
 
   async function startGame() {
     roomManager.updateSettings(settings)
@@ -72,6 +85,14 @@ export function RoomService({ onLeave, onStart }: RoomServiceProps) {
             <div className="room-id-badge">
               <span className="room-id-label">ID</span>
               <span className="room-id-value">{roomManager.roomId}</span>
+              <button
+                  className="room-id-copy"
+                  onClick={copyRoomId}
+                  type="button"
+                  aria-label="Copy room code"
+                >
+                  <FontAwesomeIcon icon={faClipboard} />
+                </button>
             </div>
           </div>
 
