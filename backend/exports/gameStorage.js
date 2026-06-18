@@ -25,7 +25,8 @@ export const MAX_FIELD_SIZE = 7;
 export const EMPTY_CELL_INDICATOR = "empty";
 export const DEFAULT_CELL_PRICE = 5000;
 export const CELL_PRICE_INCREASE = 1000;
-export const POPULATION = 300;
+export const POPULATION_POOL = 300;
+export const START_TOWN_HALL_POPULATION = 3;
 export const START_MONEY = 7500;
 export const START_HAPPINESS = 50;
 export const WORTH_PER_PERSON = 750;
@@ -539,36 +540,34 @@ function setBuilding(config) {
     }
 }
 
-const errorCodes = [
-  "invalid_data",
-  "player_already_in_game",
-  "game_not_found",
-  "player_not_found",
-  "game_already_started",
-  "game_full",
-  "username_taken",
-  "not_enough_players",
-  "no_adjacent_cells_owned",
-  "not_enough_money",
-  "not_enough_materials",
-  "building_not_found",
-  "no_required_building",
-  "out_of_bounds",
-  "port_error",
-  "cell_occupied",
-  "cell_not_owned",
-  "cell_not_a_building",
-  "cannot_place_town_hall",
-  "cannot_delete_town_hall",
-  "unexpected_building_bounds",
-  "host_feature",
-  "self_nuke",
-  "target_not_found",
-  "game_not_started"
-];
-
 export const ERRORS = Object.freeze(
-    Object.fromEntries(
-        errorCodes.map(key => [key.toUpperCase(), key])
-    )
+  Object.fromEntries(
+    [
+      "invalid_data",
+      "player_already_in_game",
+      "game_not_found",
+      "player_not_found",
+      "game_already_started",
+      "game_full",
+      "username_taken",
+      "not_enough_players",
+      "no_adjacent_cells_owned",
+      "not_enough_money",
+      "not_enough_materials",
+      "building_not_found",
+      "no_required_building",
+      "out_of_bounds",
+      "port_error",
+      "cell_occupied",
+      "cell_not_owned",
+      "cell_not_a_building",
+      "cannot_place_town_hall",
+      "cannot_delete_town_hall",
+      "unexpected_building_bounds",
+      "host_feature",
+      "self_nuke",
+      "target_not_found",
+      "game_not_started"
+    ].map(key => [key.toUpperCase(), key])
+  )
 );

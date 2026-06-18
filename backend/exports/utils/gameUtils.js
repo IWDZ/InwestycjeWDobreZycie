@@ -1,4 +1,4 @@
-import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, LEADERBOARD_UPDATE_TICK_INTERVAL, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MIN_PLAYERS, POPULATION, SECONDS_BEFORE_GAME_START } from "../gameStorage.js";
+import { GAME_CODE_CHARACTERS, GAME_CODE_LENGTH, GAME_DURATION_TICKS, GAME_TICK_SECONDS, GAMES, LEADERBOARD_UPDATE_TICK_INTERVAL, MARKET_UPDATE_TICK_INTERVAL, MATERIAL_PRICES, MATERIALS, MIN_PLAYERS, POPULATION_POOL, SECONDS_BEFORE_GAME_START } from "../gameStorage.js";
 import { io } from "../../server.js";
 import { sendFieldUpdate, sendLeaderboardUpdate, sendMaterialPricesUpdate, sendMoneyIncrease, sendMoneyUpdate, sendPopulationUpdate, sendTickNumberUpdate } from "../clientUpdates.js";
 import { generateIncome, removePlayer, sumUpPlayers } from "./playerUtils.js";
@@ -15,7 +15,6 @@ export function getGame(gameCode) {
 
 export function getDefaultGameSettings(settings) {
     return {
-        POPULATION: ((settings.populationPoolPercent / 100) * POPULATION),
         MARKET_VOLATILITY: settings.marketVolatility,
         GAME_DURATION_TICKS: settings.gameDurationTicks,
         NEXT_BUILDING_ID: 1
@@ -26,6 +25,7 @@ export function startGame(game, settings) {
     game.settings = getDefaultGameSettings(settings);
     game.tickNumber = 1;
     game.materialPrices = { ...MATERIAL_PRICES};
+    game.populationPool = (settings.populationPoolPercent / 100) * POPULATION_POOL;
     if(!isTestMode()) {
         setTimeout(() => {
             game.gameTickInterval = setInterval(() => doGameTick(game), GAME_TICK_SECONDS * 1000);
@@ -92,7 +92,6 @@ export function endGame(game) {
 }
 
 export function doGameTick(game) {
-
     for (const player of game.players) {
         sendMoneyIncrease(player, generateIncome(player));
         sendMoneyUpdate(player);
@@ -117,7 +116,6 @@ export function doGameTick(game) {
         sendFieldUpdate(player);
         sendTickNumberUpdate(player, game.tickNumber);
     }
-
     game.tickNumber++;
 }
 

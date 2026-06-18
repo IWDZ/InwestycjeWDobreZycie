@@ -53,7 +53,7 @@ export interface GameServiceRef {
 
 interface PendingBuild {
   buildingName: string;
-  startLocation: [number, number];
+  startLocation: { y: number, x: number };
   isVertical: boolean;
 }
 
@@ -230,7 +230,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
   async function tryCreateBuilding(payload: PendingBuild) {
     const result = await ws.request<typeof payload, void>(
       "create_building",
-      "max_population_update",
+      "capacity_update",
       { ...payload },
     );
 
@@ -390,7 +390,7 @@ export function GameService({ shouldStart, onGameEnd }: GameServiceRef) {
                       const col = plotId % 7;
                       tryCreateBuilding({
                         buildingName: placingBuilding.id.toLowerCase(),
-                        startLocation: [row, col],
+                        startLocation: { y: row, x: col},
                         isVertical,
                       });
                     }

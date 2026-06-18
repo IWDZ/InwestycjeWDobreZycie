@@ -1,70 +1,124 @@
+import Person from "../classes/Person.js";
 import { HAPPINESS_MULTIPLIER, MATERIAL_PRICES, MATERIALS, MIN_POPULATION, START_HAPPINESS, WORK_MULTIPLIER } from "../gameStorage.js";
-import { getWorstAvailableBuilding, getWorstOccupiedBuilding } from "./buildingUtils.js";
+import { getNextRandomAvailableJobBuilding, getNextRandomAvailableApartmentBuilding, getEmptyApartments, getEmptyJobs, getNextRandomOccupiedJobBuilding } from "./buildingUtils.js";
 import { getHappiness } from "./playerUtils.js";
 
-export function increasePopulation(player, workersToIncrease, residentsToIncrease = workersToIncrease, ignoredIDs = new Set()) {
-    if (workersToIncrease <= 0 && residentsToIncrease <= 0) return true;
+export function increasePopulation(game, player, populationToAdd) {
+    const pool = game.populationPool;
     const population = player.population;
-    if (population.workingPopulation + workersToIncrease > population.maxWorkingPopulation ||
-        population.livingPopulation + residentsToIncrease > population.maxLivingPopulation) return false;
-    
-    const worstBuilding = getWorstAvailableBuilding(player, ignoredIDs);
+    const jobSpaces = player.jobSpaces;
+    const apartmentSpaces = player.apartmentSpaces;
 
-    const emptyJobs = worstBuilding.building.JOBS - worstBuilding.workers;
-    const emptyApartments = worstBuilding.building.APARTMENTS - worstBuilding.residents;
-
-    if (emptyJobs >= workersToIncrease) {
-        population.workingPopulation += workersToIncrease;
-        worstBuilding.workers += workersToIncrease;
-        workersToIncrease = 0;
-    }else{
-        population.workingPopulation += emptyJobs;
-        workersToIncrease -= emptyJobs;
-        worstBuilding.workers += emptyJobs;
+    if (population + populationToAdd > jobSpaces){
+        populationToAdd = jobSpaces - population;
     }
-
-    if (emptyApartments >= residentsToIncrease) {
-        population.livingPopulation += residentsToIncrease;
-        worstBuilding.residents += residentsToIncrease;
-        residentsToIncrease = 0;
-    }else{
-        population.livingPopulation += emptyApartments;
-        residentsToIncrease -= emptyApartments;
-        worstBuilding.residents += emptyApartments;
+    if (population + populationToAdd > apartmentSpaces) {
+        populationToAdd = apartmentSpaces - population;
     }
+    if (pool < populationToAdd) populationToAdd = pool;
+    if (populationToAdd === 0) return;
 
-    ignoredIDs.add(worstBuilding.id);
-    return increasePopulation(player, workersToIncrease, residentsToIncrease, ignoredIDs);
+    assignPopulation(player, populationToAdd);
+
+    player.population += populationToAdd;
+    game.populationPool -= populationToAdd;
 }
 
-export function decreasePopulation(player, workersToDecrease, residentsToDecrease = workersToDecrease, ignoredIDs = new Set()) {
-    if (workersToDecrease <= 0 && residentsToDecrease <= 0) return;
+export function assignPopulation(player, populationToAssign) {
+    const ignoredJobBuildingIDs = new Set();
+    const ignoredApartmentBuildingIDs = new Set();
+    let jobBuilding = getNextRandomAvailableJobBuilding(player, ignoredJobBuildingIDs);
+    let apartmentBuilding = getNextRandomAvailableApartmentBuilding(player, ignoredApartmentBuildingIDs);
+
+    while (populationToAssign > 0) {
+        ({ jobBuilding, apartmentBuilding } = verifyBuildingAvailability(player, jobBuilding, apartmentBuilding, ignoredJobBuildingIDs, ignoredApartmentBuildingIDs))
+
+        populationToAssign = populateBatch(player, jobBuilding, apartmentBuilding, populationToAssign);
+    }
+}
+
+export function verifyBuildingAvailability(player, jobBuilding, apartmentBuilding, ignoredJobBuildingIDs, ignoredApartmentBuildingIDs) {
+    let emptyJobs = getEmptyJobs(jobBuilding);
+    let emptyApartments = getEmptyApartments(apartmentBuilding);
     
+    if (emptyJobs === 0) {
+        jobBuilding = getNextRandomAvailableJobBuilding(player, ignoredJobBuildingIDs);
+    }
+    if (emptyApartments === 0) {
+        apartmentBuilding = getNextRandomAvailableApartmentBuilding(player, ignoredApartmentBuildingIDs);
+    }
+
+    return { jobBuilding, apartmentBuilding };
+}
+
+export function populateBatch(player, jobBuilding, apartmentBuilding, populationToAdd) {
+    let emptyJobs = getEmptyJobs(jobBuilding);
+    let emptyApartments = getEmptyApartments(apartmentBuilding);
+
+    const count = Math.min(emptyJobs, emptyApartments, populationToAdd);
+    
+    for (let i = 0; i < count; i ++) {
+        const person = new Person(jobBuilding.startLocation, apartmentBuilding.startLocation);
+
+        jobBuilding.addWorker(person)
+        player.income += jobBuilding.building.MONEY_PER_JOB;
+        apartmentBuilding.addResident(person);
+    }
+
+    return populationToAdd - count;
+}
+
+export function decreasePopulation(game, player, populationToRemove) {
     const population = player.population;
-    const worstBuilding = getWorstOccupiedBuilding(player, ignoredIDs);
+    
+    if (population - populationToRemove < MIN_POPULATION) populationToRemove = population - MIN_POPULATION;
+    if (populationToRemove === 0) return;
 
-    if (worstBuilding.workers >= workersToDecrease) {
-        population.workingPopulation -= workersToDecrease;
-        worstBuilding.workers -= workersToDecrease;
-        workersToDecrease = 0;
-    }else{
-        population.workingPopulation -= worstBuilding.workers;
-        workersToDecrease -= worstBuilding.workers;
-        worstBuilding.workers = 0;
+    removePopulation(player, removePopulation);
+
+    player.population -= populationToRemove;
+    game.populationPool += populationToRemove;
+}
+
+export function removePopulation(player, populationToRemove) {
+    const ignoredIDs = new Set();
+    let jobBuilding = getNextRandomOccupiedJobBuilding(player, ignoredIDs);
+
+    while (populationToRemove > 0) {
+        jobBuilding = verifyBuildingOccupancy(player, jobBuilding, ignoredIDs)
+
+        populationToRemove = removeBatch(player, jobBuilding, populationToRemove);
+    }
+}
+
+export function verifyBuildingOccupancy(player, jobBuilding, ignoredIDs) {
+    if (jobBuilding.workersCount === 0) {
+        jobBuilding = getNextRandomOccupiedJobBuilding(player, ignoredIDs);
     }
 
-    if (worstBuilding.residents >= residentsToDecrease) {
-        population.livingPopulation -= residentsToDecrease;
-        worstBuilding.residents -= residentsToDecrease;
-        residentsToDecrease = 0;
-    }else{
-        population.livingPopulation -= worstBuilding.residents;
-        residentsToDecrease -= worstBuilding.residents;
-        worstBuilding.residents = 0;
+    return jobBuilding;
+}
+
+export function removeBatch(player, jobBuilding, populationToRemove) {
+    const workers = jobBuilding.workers;
+    const field = player.field;
+    let index = 0;
+    while (jobBuilding.workersCount > 0 && populationToRemove > 0) {
+        removePerson(field, jobBuilding, workers[index]);
+        player.income -= jobBuilding.building.MONEY_PER_JOB;
+        index++;
+        populationToRemove--;
     }
 
-    ignoredIDs.add(worstBuilding.id);
-    return decreasePopulation(player, workersToDecrease, residentsToDecrease, ignoredIDs);
+    return populationToRemove;
+}
+
+export function removePerson(field, jobBuilding, personToRemove) {
+    const { y, x } = person.apartmentLocation;
+    const apartmentBuilding = field[y][x];
+
+    jobBuilding.removeWorker(personToRemove);
+    apartmentBuilding.removeResident(personToRemove);
 }
 
 function scaleChange(base, volatility) {
@@ -92,24 +146,19 @@ export function updateMarket(game) {
 
 export function updatePopulation(game) {
     for (const player of game.players) {
+        const population = player.population;
+        const jobSpaces = player.jobSpaces;
+
         const happinessFactor = (getHappiness(player) - START_HAPPINESS) * HAPPINESS_MULTIPLIER;
-        const workFactor = (player.population.maxWorkingPopulation - player.population.workingPopulation) * WORK_MULTIPLIER;
+        const workFactor = (jobSpaces - population) * WORK_MULTIPLIER;
+
         const rawChange = (happinessFactor + workFactor) * (Math.random() * 0.6 + 0.7);
         let populationChange = rawChange >= 0 ? Math.ceil(rawChange) : Math.floor(rawChange);
-        const population = player.population;
+        
         if (populationChange < 0) {
-            if (population.workingPopulation - populationChange < MIN_POPULATION) populationChange = population.workingPopulation - MIN_POPULATION;
-            decreasePopulation(player, Math.abs(populationChange));
-            game.settings.POPULATION += Math.abs(populationChange);
+            decreasePopulation(game, player, Math.abs(populationChange));
         }else{
-            if (population.workingPopulation + populationChange > population.maxWorkingPopulation){
-                populationChange = population.maxWorkingPopulation - population.workingPopulation;
-            }
-            if (population.livingPopulation + populationChange > population.maxLivingPopulation) {
-                populationChange = population.maxLivingPopulation - population.livingPopulation;
-            }
-            if (game.settings.POPULATION < populationChange) populationChange = game.settings.POPULATION;
-            if(increasePopulation(player, populationChange)) game.settings.POPULATION -= populationChange;
+            increasePopulation(game, player, populationChange);
         }
     }
 }

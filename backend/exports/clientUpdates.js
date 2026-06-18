@@ -31,18 +31,18 @@ export function sendMaterialPricesUpdate(game) {
 export function sendPopulationUpdate(game) {
     for (const player of game.players) {
         io.to(player.socketId).emit("population_update", {
-            jobs: player.maxWorkingPopulation,
-            residences: player.maxLivingPopulation,
-            population: player.workingPopulation,
-            populationPool: game.settings.POPULATION
+            jobSpaces: player.jobSpaces,
+            apartmentSpaces: player.apartmentSpaces,
+            population: player.population,
+            populationPool: game.populationPool
         });
     }
 }
 
-export function sendMaxPopulationUpdate(player) {
-    io.to(player.socketId).emit("max_population_update", {
-        jobs: player.maxWorkingPopulation,
-        residences: player.maxLivingPopulation
+export function sendCapacityUpdate(player) {
+    io.to(player.socketId).emit("capacity_update", {
+        jobSpaces: player.jobSpaces,
+        apartmentSpaces: player.apartmentSpaces
     });
 }
 

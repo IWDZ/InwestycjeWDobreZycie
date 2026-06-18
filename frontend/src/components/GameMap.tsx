@@ -202,14 +202,14 @@ export function GameMap({
               <div className="cell-modal-stat">
                 <span className="cell-modal-label">{l.t("map.jobs")}</span>
                 <span className="cell-modal-value">
-                  {cellModal.cell.workers} /{" "}
+                  {cellModal.cell.workersCount} /{" "}
                   {getBuildingById(cellModal.cell.buildingName)?.jobs}
                 </span>
               </div>
               <div className="cell-modal-stat">
                 <span className="cell-modal-label">{l.t("map.housing")}</span>
                 <span className="cell-modal-value">
-                  {cellModal.cell.residents} /{" "}
+                  {cellModal.cell.residentsCount} /{" "}
                   {getBuildingById(cellModal.cell.buildingName)?.apartments}
                 </span>
               </div>
@@ -219,7 +219,7 @@ export function GameMap({
               onClick={() => {
                 const row = Math.floor(cellModal.plotIndex / gridSize);
                 const col = cellModal.plotIndex % gridSize;
-                ws.notify("delete_building", [row, col]);
+                ws.notify("delete_building", { y: row, x: col });
                 setCellModal(null);
               }}
             >

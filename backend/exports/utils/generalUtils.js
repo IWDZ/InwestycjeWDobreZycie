@@ -10,8 +10,8 @@ export function throwError(socketId, errorMessage) {
     io.to(socketId).emit("error", errorMessage);
 }
 
-export function isValidData(data) {
-    return typeof data === "object" && data !== null && !Array.isArray(data);
+export function isValidObject(object) {
+    return typeof object === "object" && object !== null && !Array.isArray(object);
 }
 
 export function isTestMode() {
