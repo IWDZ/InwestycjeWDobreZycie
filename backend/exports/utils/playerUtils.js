@@ -1,6 +1,6 @@
-import { BONUS_BUILDINGS, BUILDINGS, DEFAULT_CELL_PRICE, ERRORS, MATERIALS, MAX_FIELD_SIZE, PLAYERS, START_HAPPINESS, START_MATERIALS, START_MONEY, WORTH_PER_PERSON } from "../gameStorage.js";
+import { BONUS_BUILDINGS, BUILDINGS, DEFAULT_CELL_PRICE, ERRORS, MATERIALS, MAX_FIELD_SIZE, PLAYERS, START_HAPPINESS, START_MATERIALS, START_MONEY, START_TOWN_HALL_POPULATION, WORTH_PER_PERSON } from "../gameStorage.js";
 import { io } from "../../server.js";
-import Building from "../Building.js";
+import Building from "../classes/Building.js";
 import { getCurrentBuildingId } from "./buildingUtils.js";
 import { createField, getFieldMiddle } from "./fieldUtils.js";
 import { closeGame, endGame, getGame, hasGameEnoughPlayers, hasGameStarted } from "./gameUtils.js";
@@ -9,7 +9,7 @@ import { addMoney } from "./inventoryUtils.js";
 
 export function createDefaultClientGameDataObject(game, player) {
     return {
-        population: game.settings.POPULATION,
+        populationPool: game.populationPool,
         money: player.money,
         happiness: player.happiness,
         field: player.field,
@@ -23,17 +23,16 @@ export function createDefaultClientGameDataObject(game, player) {
 export function setUpPlayer(game, player) {
     const middle = getFieldMiddle();
     player.field = createField(middle);
-    player.field[middle][middle] = new Building(getCurrentBuildingId(game), BUILDINGS.TOWN_HALL, [middle, middle], false);
+    player.field[middle][middle] = new Building(getCurrentBuildingId(game), BUILDINGS.TOWN_HALL, { y: middle, x: middle }, false);
     player.nextCellPrice = DEFAULT_CELL_PRICE;
     player.happiness = START_HAPPINESS;
     player.materials = { ...START_MATERIALS };
     player.money = START_MONEY;
-    player.population = {
-        livingPopulation: 3,
-        workingPopulation: 3,
-        maxLivingPopulation: 5,
-        maxWorkingPopulation: 5
-    }
+    player.buildingCount = 1;
+    player.income = BUILDINGS.TOWN_HALL.MONEY_PER_JOB * START_TOWN_HALL_POPULATION;
+    player.population = START_TOWN_HALL_POPULATION;
+    player.jobSpaces = BUILDINGS.TOWN_HALL.JOBS;
+    player.apartmentSpaces = BUILDINGS.TOWN_HALL.APARTMENTS;
 }
 
 export function getPlayer(game, socketId) {
@@ -107,7 +106,7 @@ export function sumUpPlayers(game) {
                 ignoredIDs.add(cell.id);
             }
         }
-        const populationWorth = player.population.livingPopulation * WORTH_PER_PERSON;
+        const populationWorth = player.population * WORTH_PER_PERSON;
         totalWorth += populationWorth;
         playerWorths.push({
             username: player.username,
@@ -149,7 +148,7 @@ export function generateIncome(player) {
         for (let x = 0; x < MAX_FIELD_SIZE; x++) {
             const cell = field[y][x];
             if (!(cell instanceof Building) || ignoredIDs.has(cell.id)) continue;
-            income += cell.building.MONEY_PER_JOB * cell.workers;
+            income += cell.building.MONEY_PER_JOB * cell.workersCount;
             ignoredIDs.add(cell.id);
         }
     }

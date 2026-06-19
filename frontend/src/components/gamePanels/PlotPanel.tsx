@@ -15,7 +15,7 @@ export function PlotPanel() {
       e.stopPropagation();
       const row = Math.floor(index / plotManager.gridSize);
       const col = index % plotManager.gridSize;
-      const result = await ws.request("buy_cell", "money_decrease", [row, col]);
+      const result = await ws.request("buy_cell", "money_decrease", { y: row, x: col});
       if (!result.ok) {
         showError(result.error)
       }

@@ -1,8 +1,7 @@
-import Building from "../exports/Building.js";
 import { canDeleteBuilding, deleteBuilding, getBuildingBounds, getBuildingByName, hasRequiredBuilding, isTownHall, placeBuilding } from "../exports/utils/buildingUtils.js";
 import { buyCell, hasAdjacentCell, hasPlacementError, isPlacementInBounds } from "../exports/utils/fieldUtils.js";
 import { getGame, hasGameEnoughPlayers, hasGameStarted, startGame } from "../exports/utils/gameUtils.js";
-import { isValidData, throwError } from "../exports/utils/generalUtils.js";
+import { isValidObject, throwError } from "../exports/utils/generalUtils.js";
 import { buyMaterial, hasRequiredMaterials, hasRequiredMoney, sellMaterial } from "../exports/utils/inventoryUtils.js";
 import { createDefaultClientGameDataObject, getPlayer, getPlayerGame, isHost, removePlayer, setUpPlayer } from "../exports/utils/playerUtils.js";
 import { ERRORS, MARKET_VOLATILITY_MIN, MARKET_VOLATILITY_MAX, MATERIALS, MAX_FIELD_SIZE, POPULATION_POOL_PERCENT_MAX, POPULATION_POOL_PERCENT_MIN, POPULATION_POOL_PERCENT_DEFAULT, MARKET_VOLATILITY_DEFAULT, GAME_DURATION_TICKS_MIN, GAME_DURATION_TICKS_MAX, GAME_DURATION_TICKS_DEFAULT } from "../exports/gameStorage.js";
@@ -10,7 +9,7 @@ import { io } from "../server.js";
 
 function gameLogic(socket, socketId) {
     socket.on("start_game", settings => {
-        if (!isValidData(settings)) {
+        if (!isValidObject(settings)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
         let { populationPoolPercent, marketVolatility, gameDurationTicks } = settings;
@@ -60,9 +59,9 @@ function gameLogic(socket, socketId) {
     });
 
     socket.on("buy_cell", location => {
-        if (!Array.isArray(location) || 
-            !Number.isInteger(location[0]) || location[0] > (MAX_FIELD_SIZE - 1) || location[0] < 0 ||
-            !Number.isInteger(location[1]) || location[1] > (MAX_FIELD_SIZE - 1) || location[1] < 0) {
+        if (!isValidObject(location) || 
+            !Number.isInteger(location.y) || location.y > (MAX_FIELD_SIZE - 1) || location.y < 0 ||
+            !Number.isInteger(location.x) || location.x > (MAX_FIELD_SIZE - 1) || location.x < 0) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
 
@@ -93,7 +92,7 @@ function gameLogic(socket, socketId) {
     });
 
     socket.on("buy_material", data => {
-        if (!isValidData(data)) {
+        if (!isValidObject(data)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
 
@@ -124,7 +123,7 @@ function gameLogic(socket, socketId) {
     });
 
     socket.on("sell_material", data => {
-        if (!isValidData(data)) {
+        if (!isValidObject(data)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
 
@@ -155,14 +154,14 @@ function gameLogic(socket, socketId) {
     });
 
     socket.on("create_building", data => {
-        if (!isValidData(data)) {
+        if (!isValidObject(data)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
         const { buildingName, startLocation, isVertical } = data;
 
-        if (!Array.isArray(startLocation) || 
-            !Number.isInteger(startLocation[0]) || startLocation[0] > (MAX_FIELD_SIZE - 1) || startLocation[0] < 0 || 
-            !Number.isInteger(startLocation[1]) || startLocation[1] > (MAX_FIELD_SIZE - 1) || startLocation[1] < 0 || typeof isVertical !== "boolean") {
+        if (!isValidObject(startLocation) || 
+            !Number.isInteger(startLocation.y) || startLocation.y > (MAX_FIELD_SIZE - 1) || startLocation.y < 0 || 
+            !Number.isInteger(startLocation.x) || startLocation.x > (MAX_FIELD_SIZE - 1) || startLocation.x < 0 || typeof isVertical !== "boolean") {
                 return throwError(socketId, ERRORS.INVALID_DATA);
         }
 
@@ -219,14 +218,13 @@ function gameLogic(socket, socketId) {
     });
 
     socket.on("delete_building", location => {
-        if (!Array.isArray(location) ||
-            !Number.isInteger(location[0]) || location[0] > (MAX_FIELD_SIZE - 1) || location[0] < 0 ||
-            !Number.isInteger(location[1]) || location[1] > (MAX_FIELD_SIZE - 1) || location[1] < 0) {
+        if (!isValidObject(location) ||
+            !Number.isInteger(location.y) || location.y > (MAX_FIELD_SIZE - 1) || location.y < 0 ||
+            !Number.isInteger(location.x) || location.x > (MAX_FIELD_SIZE - 1) || location.x < 0) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
 
-        const y = location[0];
-        const x = location[1];
+        const { y, x } = location;
 
         const game = getGame(getPlayerGame(socketId));
         if (!game) {

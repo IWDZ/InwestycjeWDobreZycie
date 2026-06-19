@@ -1,5 +1,5 @@
 import { createGame, generateGameCode, getGame, hasGameStarted, isGameFull } from "../exports/utils/gameUtils.js";
-import { isValidData, throwError } from "../exports/utils/generalUtils.js";
+import { isValidObject, throwError } from "../exports/utils/generalUtils.js";
 import { addPlayer, getPlayerGame, hasGamePlayerWithUsername, isPlayerInGame, leaveGame, setPlayerGame } from "../exports/utils/playerUtils.js";
 import { ERRORS, MAX_PLAYERS, MIN_PLAYERS } from "../exports/gameStorage.js";
 import { io } from "../server.js";
@@ -10,7 +10,7 @@ function gameConnection(socket, socketId) {
             return throwError(socketId, ERRORS.PLAYER_ALREADY_IN_GAME);
         }
 
-        if (!isValidData(data)) {
+        if (!isValidObject(data)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
 
@@ -33,7 +33,7 @@ function gameConnection(socket, socketId) {
     });
 
     socket.on("join_game", (data) => {
-        if (!isValidData(data)) {
+        if (!isValidObject(data)) {
             return throwError(socketId, ERRORS.INVALID_DATA);
         }
 

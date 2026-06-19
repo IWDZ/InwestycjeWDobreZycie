@@ -1,5 +1,5 @@
 import { BUILDINGS, CELL_PRICE_INCREASE, EMPTY_CELL_INDICATOR, ERRORS, MAX_FIELD_SIZE } from "../gameStorage.js";
-import Building from "../Building.js";
+import Building from "../classes/Building.js";
 import { sendCellPriceUpdate, sendFieldUpdate, sendMoneyDecrease, sendMoneyUpdate } from "../clientUpdates.js";
 import { hasRequiredMoney, removeMoney } from "./inventoryUtils.js";
 
@@ -22,8 +22,7 @@ export function isCellBought(cell) {
 }
 
 export function hasAdjacentCell(field, location) {
-    const y = location[0];
-    const x = location[1];
+    const { y, x } = location;
 
     return (
         isCellBought(field[y-1]?.[x]) ||
@@ -37,8 +36,7 @@ export function buyCell(player, location) {
     if (!hasRequiredMoney(player.nextCellPrice, player.money)) return false;
 
     removeMoney(player, player.nextCellPrice);
-    const y = location[0];
-    const x = location[1];
+    const { y, x } = location;
     player.field[y][x] = EMPTY_CELL_INDICATOR;
     player.nextCellPrice += CELL_PRICE_INCREASE;
 
