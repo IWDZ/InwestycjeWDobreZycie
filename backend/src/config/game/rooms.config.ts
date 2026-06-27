@@ -1,0 +1,2 @@
+export const ROOM_CODE_CHARACTERS = "ABCDEFGHIJKLMNOPRSTUWVXYZabcdefghijklmnoprstuwvxyz1234567890";
+export const ROOM_CODE_LENGTH = 6;
